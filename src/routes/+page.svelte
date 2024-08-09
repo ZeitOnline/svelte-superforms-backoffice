@@ -14,7 +14,7 @@
 	let resultsDataHeader: Array<string> = $state([]);
 	let resultsDataBody: Array<string> = $state([]);
 
-	const { form, message, constraints, errors, enhance } = superForm(data.form, {
+	const { form, message, constraints, errors, enhance } = superForm(data.generateGameForm, {
 		resetForm: false,
 		validators: false,
 		SPA: true,
@@ -75,14 +75,12 @@
 
 {#if $message}<h1>{$message}</h1>{/if}
 
-<form method="POST" enctype="multipart/form-data" use:enhance>
-	<label for="name">Names</label>
-	<input
-		type="text"
-		name="name"
-		aria-invalid={$errors.name ? 'true' : undefined}
-		bind:value={$form.name}
-	/>
+<form method="POST" enctype="multipart/form-data" action="?/generateGame" use:enhance>
+	<div>
+		<label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First name</label>
+		<input type="text" id="name" aria-invalid={$errors.name ? 'true' : undefined}
+		bind:value={$form.name} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="John" required />
+	</div>
 	{#if $errors.name}<span style="color: red;" class="invalid">{$errors.name}</span>{/if}
 
 	<!-- <label for="image">
@@ -108,4 +106,4 @@
 	<div><button class="z-ds-button">Submit</button></div>
 </form>
 
-<AddGameTable {resultsDataHeader} {resultsDataBody} />
+<AddGameTable {data} {resultsDataHeader} {resultsDataBody} />

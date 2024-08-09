@@ -1,29 +1,20 @@
 import type { Actions } from '@sveltejs/kit';
-import { fail, message, setError, superValidate, withFiles } from 'sveltekit-superforms';
+import { fail, setError, superValidate, withFiles } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { z } from 'zod';
-
-const schema = z.object({
-  name: z.string().default('Paco'),
-  email: z.string().email().default("manuel@zeit.de"),
-  // image: z
-  //   .instanceof(File, { message: 'Please upload a file.'})
-  //   .refine((f) => f.size < 100_000, 'Max 100 kB upload size.'),
-  csv: z
-    .instanceof(File, { message: 'Please upload a file.'})
-    .refine((f) => f.size < 100_000, 'Max 100 kB upload size.'),
-});
+import { generateGameSchema, saveGameSchema } from '../schemas/generate-game';
 
 export const load = (async () => {
-  const form = await superValidate(zod(schema));
+  const generateGameForm = await superValidate(zod(generateGameSchema));
+  const saveGameForm = await superValidate(zod(saveGameSchema));
 
-  return { form }
+  return { generateGameForm, saveGameForm }
 });
 
 export const actions: Actions = {
   
-  default: async ({ request }) => {
-		const form = await superValidate(request, zod(schema));
+  generateGame: async ({ request }) => {
+		const form = await superValidate(request, zod(generateGameSchema));
 
 		if (!form.valid) return fail(400, withFiles({ form }));
 
