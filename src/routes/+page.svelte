@@ -1,10 +1,18 @@
 <script lang="ts">
-	import SuperDebug, { fileProxy } from 'sveltekit-superforms';
+	import SuperDebug from 'sveltekit-superforms';
 	import type { PageData } from './$types';
 	import { superForm } from 'sveltekit-superforms';
 	import Papa from 'papaparse';
+	import AddGameTable from '../components/AddGameTable.svelte';
 	let { data } = $props<{ data: PageData }>();
+
 	let IS_DEBUG = false;
+
+	let columns: Array<string> = [];
+	let rows: Array<string> = [];
+
+	let resultsDataHeader: Array<string> = $state([]);
+	let resultsDataBody: Array<string> = $state([]);
 
 	const { form, message, constraints, errors, enhance } = superForm(data.form, {
 		resetForm: false,
@@ -23,25 +31,41 @@
 		},
 		onUpdate({ form }) {
 			if (form.valid) {
-				console.log('form is valid');
-				console.log('form:', form);
-				console.log(form.data.csv);
+				// console.log('form is valid');
+				// console.log('form:', form);
+				// console.log(form.data.csv);
 				Papa.parse(form.data.csv, {
-					header: true,
+					// header: true,
 					complete: function (results) {
-						console.log('we have parsed the csv');
-						console.log(results.data);
+						// console.log('we have parsed the csv');
+						// console.log(results.data);
+
+						resultsDataHeader = results.data[0] as Array<string>;
+						resultsDataBody = results.data.slice(1) as Array<string>;
+
+						if (!results.data[0]) {
+							console.log('no columns found');
+							return;
+						}
+
+						if (!results.data[1]) {
+							console.log('no rows found');
+							return;
+						}
+
+						columns = results.data[0] as Array<string>;
+						rows = results.data.slice(1) as Array<string>;
+
+						console.log(rows);
 					}
 				});
-
-				console.log('we are sending to the database the following:');
 			}
 		},
 		onUpdated({ form }) {
 			if (form.valid) {
 				// Successful post! Do some more client-side stuff,
 				// like showing a toast notification.
-				console.log('toastchen here!');
+				// console.log('toastchen here!');
 			}
 		}
 	});
@@ -81,7 +105,7 @@
 	</label>
 	{#if $errors.csv}<span style="color: red;">{$errors.csv}</span>{/if}
 
-	<div><button>Submit</button></div>
+	<div><button class="z-ds-button">Submit</button></div>
 </form>
 
-
+<AddGameTable {resultsDataHeader} {resultsDataBody} />

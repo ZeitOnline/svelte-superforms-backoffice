@@ -17,7 +17,7 @@ const schema = z.object({
 export const load = (async () => {
   const form = await superValidate(zod(schema));
 
-  return {form}
+  return { form }
 });
 
 export const actions: Actions = {
@@ -36,4 +36,5 @@ export const actions: Actions = {
     
 		return withFiles({ form })
 	}
+  
 };
