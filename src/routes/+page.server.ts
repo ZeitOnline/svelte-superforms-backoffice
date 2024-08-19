@@ -6,6 +6,8 @@ import { generateGameSchema, saveGameSchema } from '../schemas/generate-game';
 
 export const load = (async () => {
   const generateGameForm = await superValidate(zod(generateGameSchema));
+
+  
   const saveGameForm = await superValidate(zod(saveGameSchema));
 
   return { generateGameForm, saveGameForm }

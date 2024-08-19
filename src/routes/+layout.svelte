@@ -4,4 +4,6 @@
 
 </script>
 
-<slot />
+<div class="max-w-5xl w-full mx-auto px-5 md:px-12 py-24">
+    <slot />
+</div>
