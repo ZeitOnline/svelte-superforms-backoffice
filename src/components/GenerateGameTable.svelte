@@ -2,17 +2,21 @@
 	import SuperDebug, { superForm } from 'sveltekit-superforms';
 	import Papa from 'papaparse';
 	import type { PageData } from '../routes/$types';
+	import { dev } from '$app/environment';
 
-    let IS_DEBUG = false;
+	let IS_DEBUG = false;
 
-    let {
+	let {
 		resultsDataHeader = $bindable(),
 		resultsDataBody = $bindable(),
 		data
-	}: { resultsDataHeader: Array<string>; resultsDataBody: Array<string>; data: PageData } =
-		$props();
+	}: {
+		resultsDataHeader: string[];
+		resultsDataBody: string[][];
+		data: PageData;
+	} = $props();
 
-    const { form, message, constraints, errors, enhance } = superForm(data.generateGameForm, {
+	const { form, message, constraints, errors, enhance } = superForm(data.generateGameForm, {
 		resetForm: false,
 		validators: false,
 		SPA: true,
@@ -31,19 +35,12 @@
 			if (form.valid) {
 				// console.log('form is valid');
 				// console.log('form:', form);
-				console.log("form csv: ", form.data.csv);
+				console.log('form csv: ', form.data.csv);
 				Papa.parse(form.data.csv, {
 					// header: true,
 					complete: function (results) {
-						// console.log('we have parsed the csv');
-						// console.log(results.data);
-
-                        const headers = results.data[0] as Array<string>;
-                        const body = results.data.slice(1) as Array<string>;
-
-                        // push the headers to the resultsDataHeader
-                        resultsDataHeader.push(...headers);
-                        resultsDataBody.push(...body);
+						const headers = results.data[0] as string[];
+						const body = results.data.slice(1) as string[][];
 
 						if (!headers) {
 							console.log('no columns found');
@@ -55,7 +52,10 @@
 							return;
 						}
 
-		
+						// push the headers to the resultsDataHeader
+						resultsDataHeader.push(...headers);
+						resultsDataBody.push(...body);
+					
 					}
 				});
 			}
@@ -70,13 +70,17 @@
 	});
 </script>
 
-
-<SuperDebug data={$form} />
-
+<SuperDebug collapsible={true} data={$form} display={dev} />
 
 {#if $message}<h1>{$message}</h1>{/if}
 
-<form class="flex flex-col items-center my-12" method="POST" enctype="multipart/form-data" action="?/generateGame" use:enhance>
+<form
+	class="flex flex-col items-center my-12"
+	method="POST"
+	enctype="multipart/form-data"
+	action="?/generateGame"
+	use:enhance
+>
 	<!-- <div>
 		<label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First name</label>
 		<input type="text" id="name" aria-invalid={$errors.name ? 'true' : undefined}
@@ -93,9 +97,10 @@
 	<!-- <label for="email">E-mail</label>
 	<input type="email" name="email" bind:value={$form.email} {...$constraints.email} /> -->
 
-	<label for="csv">
+	<label class="text-sm flex flex-col text-center items-center font-bold gap-2" for="csv">
 		Upload one CSV, max 100 Kb:
 		<input
+			class="max-w-[200px] border text-center border-black text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
 			type="file"
 			name="csv"
 			accept=".csv"
@@ -105,6 +110,6 @@
 	{#if $errors.csv}<span style="color: red;">{$errors.csv}</span>{/if}
 
 	<div class="flex flex-col items-center my-12 mx-auto w-full justify-center">
-        <button class="z-ds-button">Submit</button>
-    </div>
+		<button class="z-ds-button">Submit</button>
+	</div>
 </form>
