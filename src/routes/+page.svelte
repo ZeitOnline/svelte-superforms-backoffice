@@ -1,22 +1,19 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import AddGameTable from '../components/AddGameTable.svelte';
-	import GenerateGameTable from '../components/GenerateGameTable.svelte';
-	import EckchenLogo from '../components/EckchenLogo.svelte';
+	import Header from '../components/Header.svelte';
+	import NewGameView from '../views/NewGameView.svelte';
+	import DashboardView from '../views/DashboardView.svelte';
 
 	let { data } = $props<{ data: PageData }>();
 
-	let resultsDataHeader: Array<string> = $state([]);
-	let resultsDataBody: string[][] = $state([]);
+	let isNewGame = $state(false);
+
 </script>
 
-<div class="flex flex-col items-center justify-between gap-3 my-12">
-	<h1 class="text-3xl">Backoffice Eckchen</h1>
-	<EckchenLogo />
-</div>
+<Header />
 
-{#if resultsDataHeader.length > 0 && resultsDataBody.length > 0}
-	<AddGameTable {data} bind:resultsDataBody bind:resultsDataHeader />
+{#if isNewGame}
+	<NewGameView bind:isNewGame={isNewGame} {data} />
 {:else}
-	<GenerateGameTable {data} bind:resultsDataBody bind:resultsDataHeader />
+	<DashboardView bind:isNewGame={isNewGame} />
 {/if}
