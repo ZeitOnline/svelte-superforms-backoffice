@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/ZeitOnline/4bild1wort-superforms/compare/v1.0.0...v1.0.1) (2024-08-20)
+
+
+### Bug Fixes
+
+* add fix to ci maybe ([39087da](https://github.com/ZeitOnline/4bild1wort-superforms/commit/39087da7565323a6b48f5c77398620ca498e80c3))
+
 ## 1.0.0 (2024-08-20)
 
 
