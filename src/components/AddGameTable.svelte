@@ -3,7 +3,8 @@
 	import type { PageData } from '../routes/$types';
 	import GameRow from './GameRow.svelte';
 	import { dev } from '$app/environment';
-	import { toast } from '@zerodevx/svelte-toast'
+	import { toast } from '@zerodevx/svelte-toast';
+	import { onMount } from 'svelte';
 
 	let {
 		resultsDataHeader = $bindable(),
@@ -16,7 +17,6 @@
 	} = $props();
 
 	const { form, message, constraints, errors, enhance } = superForm(data.saveGameForm, {
-		resetForm: false,
 		validators: false,
 		SPA: true,
 		// onChange(event) {
@@ -32,13 +32,13 @@
 			toast.push('⭐️ Game amazingly added! Redirecting to main dashboard...', {
 				initial: 0,
 				theme: {
-					'--toastBackground': '#292929',
+					'--toastBackground': '#292929'
 				}
-			})
+			});
 
 			setTimeout(() => {
 				window.location.href = '/';
-			}, 3000)
+			}, 3000);
 			// TODO: get the data from the previous form, edited and send it to the backend transformed
 			console.log('it is working', form);
 		},
@@ -75,6 +75,19 @@
 	// 	});
 	// }
 
+	onMount(() => {
+		setTimeout(() => {
+			form.set({
+				...form,
+				games: {
+					// @ts-ignore
+					...form.games,
+					...resultsDataBody
+				}
+			});
+		}, 100);
+	});
+
 	$effect(() => {
 		form.set({
 			...form,
@@ -90,7 +103,9 @@
 <SuperDebug collapsible={true} data={$form} display={dev} />
 
 <div class="flex w-full justify-end my-6">
-	<button title="Add new row" class="z-ds-button flex justify-end" type="button" onclick={addRow}>+</button>
+	<button title="Add new row" class="z-ds-button flex justify-end" type="button" onclick={addRow}
+		>+</button
+	>
 </div>
 
 <form method="POST" enctype="multipart/form-data" use:enhance>
