@@ -4,6 +4,7 @@
 	import NewGameView from '$views/NewGameView.svelte';
 	import DashboardView from '$views/DashboardView.svelte';
 	import type { View } from '$types';
+	import EditGameView from '$views/EditGameView.svelte';
 
 	let { data } = $props<{ data: PageData }>();
 
@@ -15,6 +16,12 @@
 
 {#if view == "new-game"}
 	<NewGameView bind:view={view} {data} />
+{:else if view == "dashboard"}
+	<DashboardView bind:view={view} {data} />
+{:else if view == "edit-game"}
+	<EditGameView bind:view={view} {data} />
+{:else if view == "delete-game"}
+	<p>Delete game</p>
 {:else}
-	<DashboardView bind:view={view} />
+	<p>404</p>
 {/if}

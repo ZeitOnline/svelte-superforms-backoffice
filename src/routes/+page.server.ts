@@ -2,13 +2,17 @@ import type { Actions } from '@sveltejs/kit';
 import { fail, setError, superValidate, withFiles } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { generateGameSchema, saveGameFormSchema } from '../schemas/generate-game';
+import { getAllGames } from '$lib/queries';
 
 export const load = (async () => {
+  // The two forms are handled here
   const generateGameForm = await superValidate(zod(generateGameSchema));
-
   const saveGameForm = await superValidate(zod(saveGameFormSchema));
 
-  return { generateGameForm, saveGameForm }
+  // The games are loaded here from the db
+  const games = await getAllGames();
+
+  return { generateGameForm, saveGameForm, games }
 });
 
 export const actions: Actions = {
