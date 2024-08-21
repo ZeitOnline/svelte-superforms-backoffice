@@ -1,5 +1,7 @@
-<script>
-	let extraClasses = $props();
+<script lang="ts">
+	let {extraClasses}: {
+		extraClasses?: string;
+	} = $props();
 </script>
 
 <svg

@@ -1,0 +1,56 @@
+<script lang="ts">
+	import ChevronRight from './icons/ChevronRight.svelte';
+
+	let {
+		currentPage = $bindable(),
+		totalPages
+	}: {
+		currentPage: number;
+		totalPages: number;
+	} = $props();
+
+	// Navigate to the previous page
+	const prevPage = () => {
+		if (currentPage > 1) currentPage -= 1;
+	};
+
+	// Navigate to the next page
+	const nextPage = () => {
+		if (currentPage < totalPages) currentPage += 1;
+	};
+</script>
+
+<!-- Pagination controls -->
+<nav
+	aria-label="
+    Pagination controls
+    Current page: {currentPage}
+    Total pages: {totalPages}
+"
+	class="flex justify-center gap-z-ds-8 items-center mt-z-ds-16"
+>
+	<button
+		aria-label="Previous page"
+		onclick={prevPage}
+		class="z-ds-button px-1"
+		disabled={currentPage === 1}
+	>
+		<ChevronRight extraClasses="rotate-180" />
+	</button>
+
+	<div class="text-xs font-bold">
+        <span>Page</span>
+		<span aria-label="Current page" aria-current="page">{currentPage}</span>
+		<span>of</span>
+		<span>{totalPages}</span>
+	</div>
+
+	<button
+		aria-label="Next page"
+		onclick={nextPage}
+		class="z-ds-button px-1"
+		disabled={currentPage === totalPages}
+	>
+		<ChevronRight />
+	</button>
+</nav>
