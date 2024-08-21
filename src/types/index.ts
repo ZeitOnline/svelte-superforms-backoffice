@@ -11,6 +11,22 @@ export type View = "dashboard" | "new-game" | "edit-game" | "delete-game";
 export type Game = {
     id: string;
     name: string;
-    publishedAt: string;
-    isActive: boolean;
+    release_date: string;
+    active: boolean;
 }
+
+export type Question = {    
+    nr: number;
+    question: string;
+    answer: string;
+    xc: number;
+    yc: number;
+    direction: "h" | "v";
+    description: string;
+}
+
+export type QuestionComplete = Question & {
+    id: string;
+    game_id: string;
+}
+

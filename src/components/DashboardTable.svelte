@@ -22,11 +22,10 @@
 				const term = debouncedSearchTerm.toLowerCase();
 				return (
 					item.name.toLowerCase().includes(term) ||
-					item.id.includes(term) ||
-					transformedPublishedData(item.publishedAt).toLowerCase().includes(term)
+					transformedPublishedData(item.release_date).toLowerCase().includes(term)
 				);
 			})
-			.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+			.sort((a, b) => new Date(b.release_date).getTime() - new Date(a.release_date).getTime())
 	);
 
 	let currentPage: number = $state(1);
@@ -88,18 +87,15 @@
 		<tbody>
 			{#if paginatedItems.length > 0}
 				{#each paginatedItems as item (item.id)}
-					<tr
-						in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
-						out:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
-					>
+					<tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
 						<td>{@html highlightMatch(item.name, debouncedSearchTerm)}</td>
 						<td
 							>{@html highlightMatch(
-								transformedPublishedData(item.publishedAt),
+								transformedPublishedData(item.release_date),
 								debouncedSearchTerm
 							)}</td
 						>
-						<td>{item.isActive ? '✅ Yes ' : '❌ No'}</td>
+						<td>{item.active ? '✅ Yes ' : '❌ No'}</td>
 						<td>
 							<div class="flex items-center justify-end gap-z-ds-4">
 								<button

@@ -3,6 +3,7 @@
 	import type { Game } from '$types';
 	import { toast } from '@zerodevx/svelte-toast';
 	import { type ViewStateStore } from '../stores/view-state-store.svelte';
+	import { deleteGame } from '$lib/queries';
 
     let { store, games }: { store: ViewStateStore; games: Game[] } = $props();
 
@@ -11,7 +12,7 @@
         store.updateSelectedGameId('');
 	};
 
-    const handleDeleteFromList = (id: string) => {
+    const handleDeleteFromList = async (id: string) => {
         toast.push("Game deleted (Not working yet)", {
             theme: {
                 '--toastBackground': '#333',
@@ -20,7 +21,8 @@
         });
         store.updateView('dashboard');
         store.updateSelectedGameId('');
-        console.log("this deleted the game with id: ", id);
+
+        await deleteGame(id);
     };
 
 	const game = games.find((game: Game) => game.id === store.selectedGameId);

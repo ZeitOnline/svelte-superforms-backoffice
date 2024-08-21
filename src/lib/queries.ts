@@ -1,74 +1,54 @@
+import type { QuestionComplete } from "$types";
+
 export const getAllGames = async () => {
-    // const response = await fetch('/api/games');
-    // return response.json();
-    return [
-        {
-            id: "1",
-            name: "Test 1",
-            publishedAt: "2024-07-13",
-            isActive: false
-        },
-        {
-            id: "2",
-            name: "Test 2 Nico",
-            publishedAt: "2024-07-12",
-            isActive: true
-        },
-        {
-            id: "3",
-            name: "Test 3 Game",
-            publishedAt: "2024-07-11",
-            isActive: true
+    const response = await fetch('https://admin.spiele.devel.zeit.de/eckchen/game');
+    const data = await response.json();
+    return data
+}
 
-        },
-        {
-            id: "4",
-            name: "Test 4 Game ",
-            publishedAt: "2024-07-10",
-            isActive: false
-        },
-        {
-            id: "5",
-            name: "Test 5 Frieder",
-            publishedAt: "2024-07-09",
-            isActive: true
-        },
-        {
-            id: "6",
-            name: "Test 6 Manuel",
-            publishedAt: "2024-07-08",
-            isActive: true
-        },
-        {
-            id: "7",
-            name: "Test 7 Game",
-            publishedAt: "2024-07-07",
-            isActive: true
-        },
-        {
-            id: "8",
-            name: "Test 8 Andi",
-            publishedAt: "2024-07-06",
-            isActive: true
-        },
-        {
-            id: "9",
-            name: "Test 9 Daniel",
-            publishedAt: "2024-07-05",
-            isActive: true
-        },
-        {
-            id: "10",
-            name: "Test 10 Joseph",
-            publishedAt: "2024-07-04",
-            isActive: true
-        },
-        {
-            id: "11",
-            name: "Test 11 Retro",
-            publishedAt: "2024-07-03",
-            isActive: true
-        },
+export const getAllQuestionsByGameId = async (id: string) => {
+    const response = await fetch(`https://admin.spiele.devel.zeit.de/eckchen/game_question`);
+    const data = await response.json();
 
-    ]
+    const questions = data.filter((question: any) => question.game_id === id);
+    // console.log("questions", questions);
+    return questions as QuestionComplete[]
+}
+
+export const deleteGame = async (id: string) => {
+    // console.log("id", id);
+    const response = await fetch(`https://admin.spiele.devel.zeit.de/eckchen/game?id=eq.${id}`, {
+        method: 'DELETE'
+    });
+
+    return response.json();
+}
+
+export const updateGame = async (id: string, data: any) => {
+    // TODO: update the questions as well, here we receive only the previous ones
+    const questions = await getAllQuestionsByGameId(id);
+
+    // 1 - update all the questions 
+    upsertData('game_question', questions);
+
+    // 2 - update the game itself
+    upsertData('game', data);
+
+    return data;
+}
+
+/**
+ * Upsert data to a database
+ * @param table - the table name
+ * @param data - the data to be upserted
+ */
+const upsertData = async (table: string, data: any) => {
+    await fetch(`https://admin.spiele.devel.zeit.de/eckchen/${table}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify(data)
+    });
 }
