@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.2.0...v1.3.0) (2024-08-21)
+
+
+### Features
+
+* add pagination to the dashboard table ([7a45b68](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/7a45b680a30ccbe1388222bc3d3a27da674789fe))
+
 ## [1.2.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.1.0...v1.2.0) (2024-08-21)
 
 
