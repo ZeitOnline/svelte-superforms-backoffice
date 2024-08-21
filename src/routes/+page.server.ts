@@ -1,5 +1,5 @@
 import type { Actions } from '@sveltejs/kit';
-import { fail, setError, superValidate, withFiles } from 'sveltekit-superforms';
+import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { generateGameSchema, saveGameFormSchema } from '../schemas/generate-game';
 import { getAllGames } from '$lib/queries';

@@ -1,21 +1,22 @@
 <script lang="ts">
-	import type { View } from "$types";
-	import type { PageData } from "../routes/$types";
+	import type { Game, View } from "$types";
 	import { debounce, highlightMatch, transformedPublishedData } from "../utils";
 	import SearchIcon from "./icons/SearchIcon.svelte";
 
     let {
-		data,
+        selectedGameId = $bindable(),
+		games,
 		view = $bindable()
 	}: {
-		data: PageData;
+        selectedGameId: string;
+		games: Game[];
 		view: View;
 	} = $props();
 
     let searchTerm = $state("");
 	let debouncedSearchTerm = $state("");
 
-	let items = $state(data.games);
+	let items = $state(games);
 
 	let filteredItems = $derived(items
 		.filter((item) => {
@@ -28,13 +29,14 @@
 		})
 		.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()))
 
-    const handleEditGame = () => {
+    const handleEditGame = (id: string) => {
         view = "edit-game";
-        console.log("we are here")
+        selectedGameId = id;
     }
 
-    const handleDeleteGame = () => {
-        console.log("Delete game");
+    const handleDeleteGame = (id: string) => {
+        view = "delete-game";
+        selectedGameId = id;
     }
 
 	const handleSearch = debounce((value: string) => {
@@ -49,15 +51,14 @@
 <!-- Table of the dashboard with search  -->
 <div class="flex items-center justify-end gap-z-ds-8">
     <SearchIcon />
-    <input bind:value={searchTerm} placeholder="Game 200" class="placeholder:text-xs text-xs py-z-ds-4 border-b border-z-ds-general-black-100 px-z-ds-8" type="search" name="table-data" id="table-data" />
+    <input bind:value={searchTerm} placeholder="Game 200" class="placeholder:text-xs text-xs py-z-ds-4 border-b border-z-ds-general-black-100 px-z-ds-8" type="search" name="table-data" id="table-data" aria-label="Search games in the table below" aria-controls="search-results-table" />
 </div>
 
-<div class="relative overflow-x-auto border border-z-ds-general-black-100 rounded-lg my-z-ds-24">
-    <table class="w-full text-sm text-left rtl:text-right text-z-ds-general-black-100 ">
+<div class="relative overflow-x-auto border border-z-ds-general-black-100 rounded-lg my-z-ds-24" aria-live="polite">
+    <table id="search-results-table" class="w-full text-sm text-left rtl:text-right text-z-ds-general-black-100 ">
         <thead>
             <tr>
                 <th class="text-nowrap">Name of the game</th>
-                <th>Players</th>
                 <th>Datum</th>
                 <th>Published</th>
                 <th class="text-right">Actions</th>
@@ -68,15 +69,14 @@
                 {#each filteredItems as item (item.id)}
                     <tr>
                         <td>{@html highlightMatch(item.name, debouncedSearchTerm)}</td>
-                        <td>{item.players}</td>
                         <td>{@html highlightMatch(
                             transformedPublishedData(item.publishedAt),
                             debouncedSearchTerm
                         )}</td>
                         <td>{item.isActive ? "✅ Yes " : "❌ No"}</td>
                         <td class="flex items-center justify-end gap-z-ds-4">
-                            <button onclick={handleEditGame} class="z-ds-button">Edit</button>
-                            <button onclick={handleDeleteGame} class="z-ds-button">Delete</button>
+                            <button onclick={() => handleEditGame(item.id)} class="z-ds-button z-ds-button-outline">Edit</button>
+                            <button onclick={() => handleDeleteGame(item.id)} class="z-ds-button">Delete</button>
                         </td>
                     </tr>
                 {/each}

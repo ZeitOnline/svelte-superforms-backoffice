@@ -1,23 +1,24 @@
 <script lang="ts">
-	import DashboardTable from "$components/DashboardTable.svelte";
-	import type { View } from "$types";
-	import type { PageData } from "../routes/$types";
+	import DashboardTable from '$components/DashboardTable.svelte';
+	import ViewWrapper from '$components/ViewWrapper.svelte';
+	import type { Game, View } from '$types';
 
 	let {
-		data,
+		selectedGameId = $bindable(),
+		games,
 		view = $bindable()
 	}: {
-		data: PageData;
+		selectedGameId: string;
+		games: Game[];
 		view: View;
 	} = $props();
 
 	function handleNewGameView() {
-		view = "new-game";
+		view = 'new-game';
 	}
-
 </script>
 
-<div class="max-w-3xl p-z-ds-20 bg-z-ds-general-white-100 border border-z-ds-general-black-100 rounded-lg mx-auto">
+<ViewWrapper>
 	<!-- Header of the Dashboard  -->
 	<nav class="flex justify-between w-full items-center mb-z-ds-24">
 		<div class="flex flex-col">
@@ -28,5 +29,5 @@
 		<button class="z-ds-button" onclick={handleNewGameView}> Neues Spiel erstellen </button>
 	</nav>
 
-	<DashboardTable {data} bind:view={view} />
-</div>
+	<DashboardTable bind:selectedGameId {games} bind:view />
+</ViewWrapper>
