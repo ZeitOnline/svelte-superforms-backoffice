@@ -1,21 +1,14 @@
 <script lang="ts">
 	import ViewWrapper from '$components/ViewWrapper.svelte';
-	import type { Game, View } from '$types';
+	import type { Game } from '$types';
 	import { toast } from '@zerodevx/svelte-toast';
+	import { type ViewStateStore } from '../stores/view-state-store.svelte';
 
-	let {
-		selectedGameId = $bindable(),
-		games,
-		view = $bindable()
-	}: {
-		selectedGameId: string;
-		games: Game[];
-		view: View;
-	} = $props();
+    let { store, games }: { store: ViewStateStore; games: Game[] } = $props();
 
 	const handleBackToDashboard = () => {
-		view = 'dashboard';
-		selectedGameId = '';
+		store.updateView('dashboard');
+        store.updateSelectedGameId('');
 	};
 
     const handleDeleteFromList = (id: string) => {
@@ -25,13 +18,12 @@
                 '--toastColor': '#fff',
             },
         });
-        view = 'dashboard';
-        selectedGameId = '';
+        store.updateView('dashboard');
+        store.updateSelectedGameId('');
         console.log("this deleted the game with id: ", id);
     };
 
-
-	const game = games.find((game: any) => game.id === selectedGameId);
+	const game = games.find((game: Game) => game.id === store.selectedGameId);
 </script>
 
 <ViewWrapper>

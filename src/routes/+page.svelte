@@ -3,26 +3,25 @@
 	import Header from '$components/Header.svelte';
 	import NewGameView from '$views/NewGameView.svelte';
 	import DashboardView from '$views/DashboardView.svelte';
-	import type { View } from '$types';
 	import EditGameView from '$views/EditGameView.svelte';
 	import DeleteGameView from '$views/DeleteGameView.svelte';
+	import {viewStateStore, type ViewStateStore} from '../stores/view-state-store.svelte';
 
 	let { data } = $props<{ data: PageData }>();
 
-	let view = $state<View>('dashboard');
-	let selectedGameId = $state("");
+	let store: ViewStateStore = viewStateStore("dashboard")
 </script>
 
 <Header />
 
-{#if view == 'new-game'}
-	<NewGameView bind:view {data} />
-{:else if view == 'dashboard'}
-	<DashboardView bind:view bind:selectedGameId games={data.games} />
-{:else if view == 'edit-game'}
-	<EditGameView bind:view bind:selectedGameId games={data.games} />
-{:else if view == 'delete-game'}
-	<DeleteGameView bind:view bind:selectedGameId games={data.games} />
+{#if store.view == 'new-game'}
+	<NewGameView {store} {data} />
+{:else if store.view == 'dashboard'}
+	<DashboardView {store} games={data.games} />
+{:else if store.view == 'edit-game'}
+	<EditGameView {store} games={data.games} />
+{:else if store.view == 'delete-game'}
+	<DeleteGameView {store} games={data.games} />
 {:else}
-	<DashboardView bind:view bind:selectedGameId games={data.games} />
+	<DashboardView {store} games={data.games} />
 {/if}

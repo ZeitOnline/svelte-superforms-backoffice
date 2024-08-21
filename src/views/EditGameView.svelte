@@ -1,35 +1,28 @@
 <script lang="ts">
 	import ViewWrapper from '$components/ViewWrapper.svelte';
-	import type { Game, View } from '$types';
+	import type { Game } from '$types';
 	import { toast } from '@zerodevx/svelte-toast';
+	import { type ViewStateStore } from '../stores/view-state-store.svelte';
 
-	let {
-		selectedGameId = $bindable(),
-		games,
-		view = $bindable()
-	}: {
-		selectedGameId: string;
-		games: Game[];
-		view: View;
-	} = $props();
+	let { store, games }: { store: ViewStateStore; games: Game[] } = $props();
 
 	const handleBackToDashboard = () => {
-		view = 'dashboard';
-		selectedGameId = '';
+		store.updateSelectedGameId('');
+		store.updateView('dashboard');
 	};
 
 	const handleSaveEditedGame = () => {
-		toast.push("Game saved (Not working yet)", {
+		store.updateSelectedGameId('');
+		toast.push('Game saved (Not working yet)', {
 			theme: {
 				'--toastBackground': '#333',
-				'--toastColor': '#fff',
-			},
+				'--toastColor': '#fff'
+			}
 		});
-		view = 'dashboard';
-		selectedGameId = '';
+		store.updateView('dashboard');
 	};
 
-	const game = games.find((game: any) => game.id === selectedGameId);
+	const game = games.find((game: Game) => game.id === store.selectedGameId);
 </script>
 
 <ViewWrapper>
@@ -46,7 +39,9 @@
 		<nav class="flex justify-between w-full items-center mb-z-ds-12">
 			<div class="flex flex-col">
 				<span class="font-bold">Eckchen</span>
-				<span class="text-z-ds-general-black-80 text-xs">Spiel <strong>{game.name}</strong> bearbeiten</span>
+				<span class="text-z-ds-general-black-80 text-xs"
+					>Spiel <strong>{game.name}</strong> bearbeiten</span
+				>
 			</div>
 
 			<button class="z-ds-button" onclick={handleBackToDashboard}> Zurück </button>
@@ -64,9 +59,7 @@
 		</div>
 
 		<div class="flex justify-center mt-z-ds-32">
-			<button class="z-ds-button" onclick={handleSaveEditedGame}>
-				Speichern
-			</button>
+			<button class="z-ds-button" onclick={handleSaveEditedGame}> Speichern </button>
 		</div>
 	{/if}
 </ViewWrapper>

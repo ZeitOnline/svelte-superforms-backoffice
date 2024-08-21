@@ -1,22 +1,22 @@
 <script lang="ts">
-	import type { Game, View } from "$types";
+	import type { Game } from "$types";
+	import type { ViewStateStore } from "../stores/view-state-store.svelte";
 	import { debounce, highlightMatch, transformedPublishedData } from "../utils";
 	import SearchIcon from "./icons/SearchIcon.svelte";
 
     let {
-        selectedGameId = $bindable(),
+        store,
 		games,
-		view = $bindable()
 	}: {
-        selectedGameId: string;
+        store: ViewStateStore;
 		games: Game[];
-		view: View;
 	} = $props();
 
     let searchTerm = $state("");
 	let debouncedSearchTerm = $state("");
 
 	let items = $state(games);
+
 
 	let filteredItems = $derived(items
 		.filter((item) => {
@@ -30,13 +30,14 @@
 		.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()))
 
     const handleEditGame = (id: string) => {
-        view = "edit-game";
-        selectedGameId = id;
+        store.updateView("edit-game");
+        console.log("selectedGameId", store.selectedGameId);
+        store.updateSelectedGameId(id);
     }
 
     const handleDeleteGame = (id: string) => {
-        view = "delete-game";
-        selectedGameId = id;
+        store.updateSelectedGameId(id);
+        store.updateView("delete-game");
     }
 
 	const handleSearch = debounce((value: string) => {

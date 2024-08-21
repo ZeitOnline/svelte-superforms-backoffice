@@ -2,16 +2,16 @@
 	import AddGameTable from '$components/AddGameTable.svelte';
 	import GenerateGameTable from '$components/GenerateGameTable.svelte';
 	import type { PageData } from '../routes/$types';
-	import type { View } from '$types';
 	import ViewWrapper from '$components/ViewWrapper.svelte';
+	import type { ViewStateStore } from '../stores/view-state-store.svelte';
 
-	let { data, view = $bindable() } = $props<{ data: PageData; view: View }>();
+	let { data, store } = $props<{ data: PageData; store: ViewStateStore }>();
 
 	let resultsDataHeader: Array<string> = $state([]);
 	let resultsDataBody: string[][] = $state([]);
 
 	function handleBackToDashboard() {
-		view = "dashboard";
+		store.updateView("dashboard");
 	}
 </script>
 
