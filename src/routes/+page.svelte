@@ -1,19 +1,20 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import Header from '../components/Header.svelte';
-	import NewGameView from '../views/NewGameView.svelte';
-	import DashboardView from '../views/DashboardView.svelte';
+	import Header from '$components/Header.svelte';
+	import NewGameView from '$views/NewGameView.svelte';
+	import DashboardView from '$views/DashboardView.svelte';
+	import type { View } from '$types';
 
 	let { data } = $props<{ data: PageData }>();
 
-	let isNewGame = $state(false);
+	let view = $state<View>("dashboard");
 
 </script>
 
 <Header />
 
-{#if isNewGame}
-	<NewGameView bind:isNewGame={isNewGame} {data} />
+{#if view == "new-game"}
+	<NewGameView bind:view={view} {data} />
 {:else}
-	<DashboardView bind:isNewGame={isNewGame} />
+	<DashboardView bind:view={view} />
 {/if}

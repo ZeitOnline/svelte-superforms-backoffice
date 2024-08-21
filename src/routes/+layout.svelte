@@ -2,6 +2,7 @@
     import '../design-system.css'
 	import '../app.css';
     import { SvelteToast } from '@zerodevx/svelte-toast'
+	import BreakpointsDebug from '$components/BreakpointsDebug.svelte';
     const options = {}
 </script>
 
@@ -10,3 +11,4 @@
 </div>
 
 <SvelteToast {options} />
+<BreakpointsDebug />
