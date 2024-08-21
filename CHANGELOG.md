@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.3.0...v1.4.0) (2024-08-21)
+
+
+### Features
+
+* add some queries to handle db properly ([855bfc0](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/855bfc03605eaaf2a893725582bdc7eeadeaa147))
+
 ## [1.3.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.2.0...v1.3.0) (2024-08-21)
 
 
