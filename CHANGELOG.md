@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.1.0...v1.2.0) (2024-08-21)
+
+
+### Features
+
+* create store a la svelte 5 ([de48d35](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/de48d3541d3adce0fe37857cc4aacd1e6049288f))
+* fake edit and delete views ([518dbd6](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/518dbd63f57e8e995d3d29eae3db2abbb5115076))
+
 ## [1.1.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.0.1...v1.1.0) (2024-08-21)
 
 
