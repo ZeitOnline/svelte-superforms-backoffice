@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.0.1...v1.1.0) (2024-08-21)
+
+
+### Features
+
+* add right tailwind classes and alias to the config ([f2b6fb0](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/f2b6fb096d923e07eea6cdd9b8fcb5a33a84ce73))
+* add some functionalities for table search with fake data ([3a761e9](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/3a761e90881ff43b61db7d5059cca8be67847ed0))
+
 ## [1.0.1](https://github.com/ZeitOnline/4bild1wort-superforms/compare/v1.0.0...v1.0.1) (2024-08-20)
 
 
