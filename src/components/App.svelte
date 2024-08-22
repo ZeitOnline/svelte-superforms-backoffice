@@ -7,7 +7,7 @@
 	import { viewStateStore, type ViewStateStore } from '../stores/view-state-store.svelte';
 	import Header from './Header.svelte';
 
-	let store: ViewStateStore = viewStateStore('dashboard');
+	let store: ViewStateStore = viewStateStore();
 	let { data }: { data: PageData } = $props();
 </script>
 

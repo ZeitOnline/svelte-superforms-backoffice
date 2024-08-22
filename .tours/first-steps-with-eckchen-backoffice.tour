@@ -1,0 +1,26 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "First steps with Eckchen Backoffice!",
+  "steps": [
+    {
+      "file": "README.md",
+      "description": "This is the readme of the project. \n\nYou should be able to find here some useful info, like the repo, the Figma design, the technologies used, and how the get the project working! \n\nNext steps will be a bit more technical.",
+      "line": 1
+    },
+    {
+      "file": "src/components/App.svelte",
+      "description": "Everything starts here in the App.svelte, we are using Svelte 5 and we are trying to use the existing features, like runes, effects, new ways of sending/receiving props, etc.\n\nThe App has only one route and we are managing a global state through a store. \nThere we can change two things: the current view and the selected game.\n\nThis way we can easily go from the dashboard to the creation of a new game.\n\nWe will check what kind of data we are getting from the +page.server.ts in the next steps.\n\nLet us check first the store, which is what handles the reactivity.",
+      "line": 10
+    },
+    {
+      "file": "src/stores/view-state-store.svelte.ts",
+      "description": "Here you can see how the store looks like and how we make it reactive by using $state. \n\nWe return getters and setters and then we pass over the ONLY instance of the store that can be in the App.",
+      "line": 1
+    },
+    {
+      "file": "src/routes/+page.server.ts",
+      "description": "Here we are receiving some data from the server and we have commented some actions (we are still handling this).\n\nThe important thing here is that we are fetching all the games when app starts and that we are preparing the two forms we created with superforms.\n\nThese two forms are the ones you find in the NewGameView.svelte",
+      "line": 1
+    }
+  ]
+}
