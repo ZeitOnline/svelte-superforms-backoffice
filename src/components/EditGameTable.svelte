@@ -179,7 +179,16 @@
 					<th>Y</th>
 					<th>Ausrichtung</th>
 					<th>Beschreibung</th>
-					<th></th>
+					<th class="!border-0">
+                   
+                        <button
+                            title="Add new row"
+                            class="z-ds-button z-ds-button-outline font-light min-w-[30px]"
+                            type="button"
+                            onclick={addRow}>+</button
+                        >
+                
+                    </th>
 				</tr>
 			</thead>
 			<tbody>
@@ -206,7 +215,7 @@
 							<GameRow bind:dataToBind={item.yc} />
 							<GameRow bind:dataToBind={item.direction} />
 							<GameRow bind:dataToBind={item.description} />
-							<td>
+							<td class="!border-0">
 								<button
 									title="Remove this row"
 									class="z-ds-button z-ds-button-outline min-w-[30px]"

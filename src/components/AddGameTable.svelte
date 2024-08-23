@@ -59,8 +59,7 @@
 
 	// Function to remove the last row
 	function removeRow(index: number) {
-		confirm('Are you sure you want to remove the last row?') && 
-		resultsDataBody.splice(index, 1);
+		confirm('Are you sure you want to remove the last row?') && resultsDataBody.splice(index, 1);
 	}
 
 	onMount(() => {
@@ -116,7 +115,9 @@
 
 <form class="my-z-ds-24" method="POST" enctype="multipart/form-data" use:enhance>
 	<!-- Input text name  -->
-	<div class="w-full flex flex-col sm:flex-row sm:items-center justify-between pb-z-ds-24 relative gap-z-ds-4">
+	<div
+		class="w-full flex flex-col sm:flex-row sm:items-center justify-between pb-z-ds-24 relative gap-z-ds-4"
+	>
 		<label class="text-md font-bold" for="game_name">Name:</label>
 		<div class="relative">
 			<input
@@ -141,18 +142,22 @@
 	</div>
 
 	<!-- Input date  -->
-	<div class="w-full flex flex-col sm:flex-row sm:items-center justify-between py-z-ds-24 gap-z-ds-4">
+	<div
+		class="w-full flex flex-col sm:flex-row sm:items-center justify-between py-z-ds-24 gap-z-ds-4"
+	>
 		<label class="text-md font-bold" for="release_date">Date:</label>
 		<div class="relative">
-		<input
-			class="border py-z-ds-8 w-full sm:w-[250px] px-z-ds-12 border-black text-md"
-			name="release_date"
-			id="release_date"
-			type="date"
-			aria-invalid={$errors.release_date || customDateError ? 'true' : undefined}
-			bind:value={$form.release_date}
-		/>
-		{#if $errors.release_date}<span style="color: red;" class="invalid">{$errors.release_date}</span>{/if}
+			<input
+				class="border py-z-ds-8 w-full sm:w-[250px] px-z-ds-12 border-black text-md"
+				name="release_date"
+				id="release_date"
+				type="date"
+				aria-invalid={$errors.release_date || customDateError ? 'true' : undefined}
+				bind:value={$form.release_date}
+			/>
+			{#if $errors.release_date}<span style="color: red;" class="invalid"
+					>{$errors.release_date}</span
+				>{/if}
 			{#if customDateError}<div
 					in:blur
 					style="color: red;"
@@ -161,7 +166,7 @@
 					<ErrorIcon extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
 					<span class="text-nowrap text-xs">There is already a game on this day</span>
 				</div>{/if}
-			</div>
+		</div>
 	</div>
 
 	<!-- Input checkbox actice  -->
@@ -180,15 +185,6 @@
 
 	<div class="flex justify-between items-center w-full gap-z-ds-8 my-z-ds-24">
 		<div class="font-bold text-nowrap">Fragen des Spiels</div>
-
-		<div class="flex w-full justify-end gap-z-ds-4">
-			<button
-				title="Add new row"
-				class="z-ds-button z-ds-button-outline min-w-[30px]"
-				type="button"
-				onclick={addRow}>+</button
-			>
-		</div>
 	</div>
 
 	<div class="relative overflow-x-auto">
@@ -202,21 +198,29 @@
 					<th>Y</th>
 					<th>Direction</th>
 					<th>Description</th>
-					<th></th>
+					<th class="!border-0">
+						<button
+							title="Add new row"
+							class="z-ds-button z-ds-button-outline font-light min-w-[30px]"
+							type="button"
+							onclick={addRow}>+</button
+						>
+					</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#each resultsDataBody as row, i (i)}
-					<tr 
+					<tr
 						in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
 						out:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
 					>
 						{#each row as cell, j (j)}
 							<GameRow bind:dataToBind={resultsDataBody[i][j]} />
 						{/each}
-						<td>
+						<td class="!border-0">
 							<button
-								class="z-ds-button z-ds-button-outline"
+								title="Remove this row"
+								class="z-ds-button min-w-[30px] z-ds-button-outline"
 								type="button"
 								onclick={() => removeRow(i)}
 							>
