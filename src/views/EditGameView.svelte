@@ -6,6 +6,7 @@
 	import { getAllQuestionsByGameId, updateGame } from '$lib/queries';
 	import { blur } from 'svelte/transition';
 	import { cubicInOut } from 'svelte/easing';
+	import ViewNavigation from '$components/ViewNavigation.svelte';
 
 	let { store, games }: { store: ViewStateStore; games: Game[] } = $props();
 
@@ -39,25 +40,17 @@
 
 <ViewWrapper>
 	{#if game === undefined}
-		<nav class="flex justify-between w-full items-center mb-z-ds-12">
-			<div class="flex flex-col">
-				<span class="font-bold">Eckchen</span>
-				<span class="text-z-ds-general-black-80 text-xs">Game not found</span>
-			</div>
-
-			<button class="z-ds-button" onclick={handleBackToDashboard}> Zurück </button>
-		</nav>
+		<ViewNavigation
+			viewName="Game Not Found"
+			mainAction={handleBackToDashboard}
+			mainActionText="Back"
+		/>
 	{:else}
-		<nav class="flex justify-between w-full items-center mb-z-ds-12">
-			<div class="flex flex-col">
-				<span class="font-bold">Eckchen</span>
-				<span class="text-z-ds-general-black-80 text-xs"
-					>Spiel <strong>{game.name}</strong> bearbeiten</span
-				>
-			</div>
-
-			<button class="z-ds-button" onclick={handleBackToDashboard}> Zurück </button>
-		</nav>
+		<ViewNavigation
+			viewName={`Edit Game: ${game.name}`}
+			mainAction={handleBackToDashboard}
+			mainActionText="Back"
+		/>
 
 		<form>
 			<!-- Input text name  -->
@@ -144,10 +137,3 @@
 	{/if}
 </ViewWrapper>
 
-<style>
-	tr th,
-	tr td {
-		border: 1px solid var(--z-ds-color-general-black-100);
-		padding: var(--z-ds-space-xxs) var(--z-ds-space-m);
-	}
-</style>

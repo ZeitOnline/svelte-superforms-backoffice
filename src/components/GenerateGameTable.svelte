@@ -7,14 +7,14 @@
 	let IS_DEBUG = false;
 
 	let {
-		resultsDataHeader = $bindable(),
 		resultsDataBody = $bindable(),
 		data
 	}: {
-		resultsDataHeader: string[];
 		resultsDataBody: string[][];
 		data: PageData;
 	} = $props();
+
+	console.log('resultsDataBody:', resultsDataBody);
 
 	const { form, message, constraints, errors, enhance } = superForm(data.generateGameForm, {
 		resetForm: false,
@@ -39,21 +39,14 @@
 				Papa.parse(form.data.csv, {
 					// header: true,
 					complete: function (results) {
-						const headers = results.data[0] as string[];
 						const body = results.data.slice(1) as string[][];
-
-						if (!headers) {
-							console.log('no columns found');
-							return;
-						}
 
 						if (!body) {
 							console.log('no rows found');
 							return;
 						}
 
-						// push the headers to the resultsDataHeader
-						resultsDataHeader.push(...headers);
+						console.log('body:', body);
 						resultsDataBody.push(...body);
 					
 					}

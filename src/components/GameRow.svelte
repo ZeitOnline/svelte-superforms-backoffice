@@ -3,7 +3,7 @@
 </script>
 
 <td class={`border border-black p-3`}>
-	<textarea class="w-full bg-transparent" bind:value={dataToBind}></textarea>
+	<textarea class="px-z-ds-4 w-full bg-transparent" bind:value={dataToBind}></textarea>
 </td>
 
 <style>

@@ -56,8 +56,7 @@ You can run some tests by using the following commands:
 Check the main task on [Jira](https://zeit-online.atlassian.net/browse/ZO-5839) for further information.
 
 - [ ] Implement the Microsoft Authentication
-- [ ] Style properly the table in the NewGameView.svelte to look consistent
-- [ ] Add the name and date inputs in the NewGameView.svelte
+- [ ] Add search input in the add form for the questions (also in edit questions)
 - [ ] POST game and questions do not work yet.
 - [ ] PATCH game and questions do not work as expected (they are creating instead of UPSERT) and you need to update the page to make it work.
 - [ ] We have used superform in NewGameView.svelte in two forms. Do we need it also when updating game and deleting?

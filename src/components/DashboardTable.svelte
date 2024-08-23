@@ -118,11 +118,3 @@
 </div>
 
 <DashboardPagination bind:currentPage {totalPages} />
-
-<style>
-	tr th,
-	tr td {
-		border: 1px solid var(--z-ds-color-general-black-100);
-		padding: var(--z-ds-space-xxs) var(--z-ds-space-m);
-	}
-</style>

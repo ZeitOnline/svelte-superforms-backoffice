@@ -1,13 +1,25 @@
 import type { QuestionComplete } from "$types";
 
+/**
+ * Url to the backend cluster.
+ * 
+ * @author @witsch
+ * @remarks For any questions or issues related to this URL, please contact @witsch.
+ */
+const BASE_URL = 'https://admin.spiele.devel.zeit.de/eckchen';
+
 export const getAllGames = async () => {
-    const response = await fetch('https://admin.spiele.devel.zeit.de/eckchen/game');
+    const response = await fetch(
+        `${BASE_URL}/game`
+    );
     const data = await response.json();
     return data
 }
 
 export const getAllQuestionsByGameId = async (id: string) => {
-    const response = await fetch(`https://admin.spiele.devel.zeit.de/eckchen/game_question`);
+    const response = await fetch(
+        `${BASE_URL}/game_question`
+    );
     const data = await response.json();
 
     const questions = data.filter((question: any) => question.game_id === id);
@@ -17,7 +29,7 @@ export const getAllQuestionsByGameId = async (id: string) => {
 
 export const deleteGame = async (id: string) => {
     // console.log("id", id);
-    const response = await fetch(`https://admin.spiele.devel.zeit.de/eckchen/game?id=eq.${id}`, {
+    const response = await fetch(`${BASE_URL}/game?id=eq.${id}`, {
         method: 'DELETE'
     });
 
@@ -43,7 +55,7 @@ export const updateGame = async (id: string, data: any) => {
  * @param data - the data to be upserted
  */
 const upsertData = async (table: string, data: any) => {
-    await fetch(`https://admin.spiele.devel.zeit.de/eckchen/${table}`, {
+    await fetch(`${BASE_URL}/${table}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
