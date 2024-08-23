@@ -35,13 +35,12 @@
 		filteredItems.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 	);
 
-	const handleEditGame = (id: string) => {
+	const handleEditGame = (id: number) => {
 		store.updateView('edit-game');
-		console.log('selectedGameId', store.selectedGameId);
 		store.updateSelectedGameId(id);
 	};
 
-	const handleDeleteGame = (id: string) => {
+	const handleDeleteGame = (id: number) => {
 		store.updateSelectedGameId(id);
 		store.updateView('delete-game');
 	};

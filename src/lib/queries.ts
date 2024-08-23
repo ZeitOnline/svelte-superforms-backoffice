@@ -16,7 +16,7 @@ export const getAllGames = async () => {
     return data
 }
 
-export const getAllQuestionsByGameId = async (id: string) => {
+export const getAllQuestionsByGameId = async (id: number) => {
     const response = await fetch(
         `${BASE_URL}/game_question`
     );
@@ -27,7 +27,7 @@ export const getAllQuestionsByGameId = async (id: string) => {
     return questions as QuestionComplete[]
 }
 
-export const deleteGame = async (id: string) => {
+export const deleteGame = async (id: number) => {
     // console.log("id", id);
     const response = await fetch(`${BASE_URL}/game?id=eq.${id}`, {
         method: 'DELETE'
@@ -36,7 +36,7 @@ export const deleteGame = async (id: string) => {
     return response.json();
 }
 
-export const updateGame = async (id: string, data: any) => {
+export const updateGame = async (id: number, data: any) => {
     // TODO: update the questions as well, here we receive only the previous ones
     const questions = await getAllQuestionsByGameId(id);
 

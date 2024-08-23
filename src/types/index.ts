@@ -13,7 +13,7 @@ export type IconOption = "create" | "delete" | "update" | "chevron" | "search" |
  * This is how I game looks like
  */
 export type Game = {
-    id: string;
+    id: number;
     name: string;
     release_date: string;
     active: boolean;

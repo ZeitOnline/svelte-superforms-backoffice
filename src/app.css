@@ -16,10 +16,12 @@
     }
 }
 
-tr th,
-tr td {
+
+tr td, 
+tr th {
     border: 1px solid var(--z-ds-color-general-black-100);
     padding: var(--z-ds-space-xxs) var(--z-ds-space-m);
+    max-width: 150px;
 }
 
 input[aria-invalid='true'] {

@@ -2,13 +2,13 @@
 	import SuperDebug, { superForm } from 'sveltekit-superforms';
 	import type { PageData } from '../routes/$types';
 	import GameRow from './GameRow.svelte';
-	import { dev } from '$app/environment';
 	import { toast } from '@zerodevx/svelte-toast';
 	import { onMount } from 'svelte';
 	import Separator from './Separator.svelte';
 	import { blur } from 'svelte/transition';
 	import ErrorIcon from '$components/icons/HasErrorIcon.svelte';
 	import IconHandler from './icons/IconHandler.svelte';
+	import { cubicInOut } from 'svelte/easing';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -58,8 +58,9 @@
 	}
 
 	// Function to remove the last row
-	function removeRow() {
-		confirm('Are you sure you want to remove the last row?') && resultsDataBody.pop();
+	function removeRow(index: number) {
+		confirm('Are you sure you want to remove the last row?') && 
+		resultsDataBody.splice(index, 1);
 	}
 
 	onMount(() => {
@@ -182,12 +183,6 @@
 
 		<div class="flex w-full justify-end gap-z-ds-4">
 			<button
-				title="Remove last row"
-				class="z-ds-button z-ds-button-outline min-w-[30px]"
-				type="button"
-				onclick={removeRow}>-</button
-			>
-			<button
 				title="Add new row"
 				class="z-ds-button z-ds-button-outline min-w-[30px]"
 				type="button"
@@ -207,14 +202,27 @@
 					<th>Y</th>
 					<th>Direction</th>
 					<th>Description</th>
+					<th></th>
 				</tr>
 			</thead>
 			<tbody>
 				{#each resultsDataBody as row, i (i)}
-					<tr>
+					<tr 
+						in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
+						out:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
+					>
 						{#each row as cell, j (j)}
 							<GameRow bind:dataToBind={resultsDataBody[i][j]} />
 						{/each}
+						<td>
+							<button
+								class="z-ds-button z-ds-button-outline"
+								type="button"
+								onclick={() => removeRow(i)}
+							>
+								-
+							</button>
+						</td>
 					</tr>
 				{/each}
 			</tbody>
