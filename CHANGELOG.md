@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.5.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.4.0...v1.5.0) (2024-08-23)
+
+
+### Features
+
+* add icon handler with svelte ([a683d71](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/a683d714a18bf955965d1163c1c7e39a2a5fe6a2))
+* add search questions in edit game ([ff00f78](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/ff00f78fa6f903a1629507052a9b2eef30f9d1ab))
+* improve views and make everything consistent to german language ([ce9a806](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/ce9a806e5673d1bf27c423053b622d212c2893b5))
+* refactor and several additions like client error validation ([2bf8acf](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/2bf8acf4c41ac3cc0ff4ae70857210539e20f703))
+
 ## [1.4.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.3.0...v1.4.0) (2024-08-21)
 
 
