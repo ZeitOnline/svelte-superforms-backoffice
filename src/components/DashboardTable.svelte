@@ -4,8 +4,8 @@
 	import type { ViewStateStore } from '../stores/view-state-store.svelte';
 	import { debounce, highlightMatch, transformedPublishedData } from '../utils';
 	import DashboardPagination from './DashboardPagination.svelte';
-	import SearchIcon from './icons/SearchIcon.svelte';
 	import { blur } from 'svelte/transition';
+	import IconHandler from './icons/IconHandler.svelte';
 
 	const ITEMS_PER_PAGE = 10;
 
@@ -58,7 +58,7 @@
 
 <!-- Table of the dashboard with search  -->
 <div class="flex items-center justify-end gap-z-ds-8">
-	<SearchIcon />
+	<IconHandler iconName="search" />
 	<input
 		bind:value={searchTerm}
 		placeholder="Game 200"

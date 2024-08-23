@@ -1,5 +1,6 @@
 <script lang="ts">
-	import ChevronRight from './icons/ChevronRight.svelte';
+	import ChevronRight from './icons/ChevronRightIcon.svelte';
+	import IconHandler from './icons/IconHandler.svelte';
 
 	let {
 		currentPage = $bindable(),
@@ -35,7 +36,7 @@
 		class="z-ds-button px-1"
 		disabled={currentPage === 1}
 	>
-		<ChevronRight extraClasses="rotate-180" />
+		<IconHandler iconName="chevron" extraClasses="rotate-180" />
 	</button>
 
 	<div class="text-xs font-bold">
@@ -51,6 +52,7 @@
 		class="z-ds-button px-1"
 		disabled={currentPage === totalPages}
 	>
-		<ChevronRight />
+		<IconHandler iconName="chevron"  />
+
 	</button>
 </nav>

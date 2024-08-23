@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ActivityLogsView from '$views/ActivityLogsView.svelte';
 	import DashboardView from '$views/DashboardView.svelte';
 	import DeleteGameView from '$views/DeleteGameView.svelte';
 	import EditGameView from '$views/EditGameView.svelte';
@@ -11,7 +12,7 @@
 	let { data }: { data: PageData } = $props();
 </script>
 
-<Header />
+<Header {store} />
 
 {#if store.view == 'new-game'}
 	<NewGameView {store} {data} />
@@ -21,6 +22,8 @@
 	<EditGameView {store} games={data.games} />
 {:else if store.view == 'delete-game'}
 	<DeleteGameView {store} games={data.games} />
+{:else if store.view == 'activity-logs'}
+	<ActivityLogsView {store} />
 {:else}
 	<DashboardView {store} games={data.games} />
 {/if}

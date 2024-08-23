@@ -13,6 +13,22 @@ export const transformedPublishedData = (publishedAt: string) => {
 };
 
 /**
+ * This function is used to transform the published date with time
+ * @param publishedAt
+ * @returns
+ */
+export const transformedPublishedDataWithTime = (publishedAt: string) => {
+	const date = new Date(publishedAt);
+	return date.toLocaleDateString('en-US', {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: 'numeric'
+	});
+}
+
+/**
  * This function is used to debounce the function call
  * @param callback  debounce function
  * @param wait  debounce time

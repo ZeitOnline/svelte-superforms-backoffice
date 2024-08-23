@@ -22,6 +22,7 @@
 		mainActionText="Back"
 	/>
 
+	<!-- // TODO: add here a cool choice between start from scratch or start from csv -->
 	{#if resultsDataBody.length > 0}
 		<AddGameTable {data} bind:resultsDataBody />
 	{:else}

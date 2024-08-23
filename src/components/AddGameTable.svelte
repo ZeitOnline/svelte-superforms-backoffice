@@ -7,7 +7,8 @@
 	import { onMount } from 'svelte';
 	import Separator from './Separator.svelte';
 	import { blur } from 'svelte/transition';
-	import ErrorIcon from '$components/icons/ErrorIcon.svelte';
+	import ErrorIcon from '$components/icons/HasErrorIcon.svelte';
+	import IconHandler from './icons/IconHandler.svelte';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -91,7 +92,7 @@
 
 	// TODO: change this to server validation
 	$effect(() => {
-		if (games.some((game: any) => game.name === $form.name)) {
+		if (data.games.some((game: any) => game.name === $form.name)) {
 			customNameError = true;
 		} else {
 			customNameError = false;
@@ -101,7 +102,7 @@
 	let customDateError = $state(false);
 
 	$effect(() => {
-		if (games.some((game: any) => game.release_date === $form.release_date)) {
+		if (data.games.some((game: any) => game.release_date === $form.release_date)) {
 			customDateError = true;
 		} else {
 			customDateError = false;
@@ -130,7 +131,7 @@
 					style="color: red;"
 					class="invalid flex items-center gap-z-ds-4 absolute -bottom-6 left-0 text-xs"
 				>
-					<ErrorIcon extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
+					<IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
 					<span class="text-nowrap text-xs">This name is already taken</span>
 				</div>{/if}
 		</div>
