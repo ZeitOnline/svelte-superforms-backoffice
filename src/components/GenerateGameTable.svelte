@@ -1,27 +1,18 @@
 <script lang="ts">
-	import SuperDebug, { superForm } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 	import Papa from 'papaparse';
 	import type { PageData } from '../routes/$types';
 	import { dev } from '$app/environment';
 
-	let IS_DEBUG = false;
-
-	let {
-		resultsDataBody = $bindable(),
-		data
-	}: {
-		resultsDataBody: string[][];
-		data: PageData;
-	} = $props();
-
-	console.log('resultsDataBody:', resultsDataBody);
+	let { resultsDataBody = $bindable(), data }: { resultsDataBody: string[][]; data: PageData } =
+		$props();
 
 	const { form, message, constraints, errors, enhance } = superForm(data.generateGameForm, {
 		resetForm: false,
 		validators: false,
 		SPA: true,
 		onChange(event) {
-			if (IS_DEBUG) {
+			if (dev) {
 				if (event.target) {
 					// Form input event
 					console.log(event.path, 'was changed with', event.target, 'in form', event.formElement);
@@ -48,7 +39,6 @@
 
 						console.log('body:', body);
 						resultsDataBody.push(...body);
-					
 					}
 				});
 			}
@@ -62,8 +52,6 @@
 		}
 	});
 </script>
-
-<SuperDebug collapsible={true} data={$form} display={dev} />
 
 {#if $message}<h1>{$message}</h1>{/if}
 
@@ -93,7 +81,7 @@
 	<label class="text-sm flex flex-col text-center items-center font-bold gap-2" for="csv">
 		Upload one CSV, max 100 Kb:
 		<input
-			class="max-w-[200px] border text-center border-black text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
+			class="max-w-[200px] border text-center border-black text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
 			type="file"
 			name="csv"
 			accept=".csv"

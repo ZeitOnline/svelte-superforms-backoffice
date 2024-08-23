@@ -16,7 +16,7 @@
 	<ViewNavigation
 		viewName="Dashboard"
 		mainAction={handleNewGameView}
-		mainActionText="Create New Game"
+		mainActionText="Neues Spiel erstellen"
 	/>
 
 	<DashboardTable {store} {games} />

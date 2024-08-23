@@ -31,6 +31,6 @@
 	<div>
 		<button class="text-z-ds-color-black-80 text-sm" onclick={handleGoToLogs}>Activity Logs</button>
 		<span> | </span>
-		<button class="text-z-ds-color-black-80 text-sm" onclick={handleLogOut}>Logout</button>
+		<button class="text-z-ds-color-black-80 text-sm" onclick={handleLogOut}>Ausloggen</button>
 	</div>
 </header>

@@ -40,9 +40,9 @@
 	</button>
 
 	<div class="text-xs font-bold">
-        <span>Page</span>
+        <span>Seite</span>
 		<span aria-label="Current page" aria-current="page">{currentPage}</span>
-		<span>of</span>
+		<span>von</span>
 		<span>{totalPages}</span>
 	</div>
 

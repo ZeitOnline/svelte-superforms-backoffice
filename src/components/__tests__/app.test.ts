@@ -20,7 +20,10 @@ const fakeData = {
         posted: false,
         errors: {},
         data: {
-            games: [], // Empty array as per your test
+            published: false,
+            release_date: '',
+            name: '',
+            questions: [], // Empty array as per your test
         },
     },
     games: await getAllGames()

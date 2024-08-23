@@ -7,6 +7,7 @@
 	import { blur } from 'svelte/transition';
 	import { cubicInOut } from 'svelte/easing';
 	import ViewNavigation from '$components/ViewNavigation.svelte';
+	import Separator from '$components/Separator.svelte';
 
 	let { store, games }: { store: ViewStateStore; games: Game[] } = $props();
 
@@ -36,6 +37,26 @@
 		store.updateSelectedGameId('');
 		store.updateView('dashboard');
 	}
+
+
+	// Function to add a new row
+	function addRow() {
+		let defaultRow = [
+			'X',
+			'Example Question',
+			'Example Answer',
+			'1',
+			'1',
+			'h',
+			'I am so poor I cannot even pay attention'
+		];
+		alert("not working yet")
+	}
+
+	// Function to remove the last row
+	function removeRow() {
+		confirm('Are you sure you want to remove the last row?') && alert("not working yet");
+	}
 </script>
 
 <ViewWrapper>
@@ -43,13 +64,13 @@
 		<ViewNavigation
 			viewName="Game Not Found"
 			mainAction={handleBackToDashboard}
-			mainActionText="Back"
+			mainActionText="Zurück"
 		/>
 	{:else}
 		<ViewNavigation
-			viewName={`Edit Game: ${game.name}`}
+			viewName={`Spiel ${game.name} bearbeiten`}
 			mainAction={handleBackToDashboard}
-			mainActionText="Back"
+			mainActionText="Zurück"
 		/>
 
 		<form>
@@ -57,7 +78,7 @@
 			<div class="w-full flex items-center justify-between my-z-ds-8">
 				<label class="text-md" for="name">Name:</label>
 				<input
-					class="border py-z-ds-8 px-z-ds-12 border-black rounded-lg text-md"
+					class="border py-z-ds-8 px-z-ds-12 border-black text-md"
 					name="name"
 					id="name"
 					bind:value={game.name}
@@ -67,9 +88,9 @@
 
 			<!-- Input checkbox actice  -->
 			<div class="w-full flex items-center justify-between my-z-ds-8">
-				<label class="text-md" for="active">Published:</label>
+				<label class="text-md" for="active">Aktiv:</label>
 				<input
-					class="accent-black border py-z-ds-8 px-z-ds-12 border-black rounded-lg text-md"
+					class="accent-black border py-z-ds-8 px-z-ds-12 border-black text-md"
 					name="active"
 					id="active"
 					bind:checked={game.active}
@@ -77,8 +98,29 @@
 				/>
 			</div>
 
+			<Separator />
+
+	<div class="flex justify-between items-center w-full gap-z-ds-8 my-z-ds-24">
+		<div class="font-bold text-nowrap">Fragen des Spiels</div>
+
+		<div class="flex w-full justify-end gap-z-ds-4">
+			<button
+				title="Remove last row"
+				class="z-ds-button z-ds-button-outline min-w-[30px]"
+				type="button"
+				onclick={removeRow}>-</button
+			>
+			<button
+				title="Add new row"
+				class="z-ds-button z-ds-button-outline min-w-[30px]"
+				type="button"
+				onclick={addRow}>+</button
+			>
+		</div>
+	</div>
+
 			<!-- All the questions of the game  -->
-			<div class="relative overflow-x-auto rounded-lg py-z-ds-8 my-z-ds-24" aria-live="polite">
+			<div class="relative overflow-x-auto py-z-ds-8 my-z-ds-24" aria-live="polite">
 				<table
 					id="search-results-table"
 					class="w-full text-sm text-left rtl:text-right text-z-ds-general-black-100"
@@ -86,12 +128,12 @@
 					<thead>
 						<tr>
 							<th>Nr</th>
-							<th>Question</th>
-							<th>Answer</th>
+							<th>Frage</th>
+							<th>Antwort</th>
 							<th>X</th>
 							<th>Y</th>
-							<th>Direction</th>
-							<th>Description</th>
+							<th>Ausrichtung</th>
+							<th>Beschreibung</th>
 						</tr>
 					</thead>
 					<tbody>

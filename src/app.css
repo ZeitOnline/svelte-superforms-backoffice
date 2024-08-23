@@ -4,11 +4,11 @@
 
 @layer components {
     .z-ds-button {
-        @apply flex justify-center bg-z-ds-general-black-100 text-z-ds-general-white-100 gap-z-ds-8 w-fit px-z-ds-8 py-z-ds-4 rounded-z-ds-4 text-z-ds-12 cursor-pointer hover:bg-z-ds-general-black-40 focus:bg-z-ds-general-black-40 disabled:bg-gray-200 disabled:pointer-events-none;
+        @apply flex justify-center bg-z-ds-general-black-100 text-z-ds-general-white-100 gap-z-ds-8 w-fit px-z-ds-8 py-z-ds-4 text-z-ds-12 cursor-pointer hover:bg-gray-500 focus:bg-gray-500 disabled:bg-gray-200 disabled:pointer-events-none;
     }
 
     .z-ds-button-outline {
-        @apply bg-transparent text-z-ds-general-black-100 border border-z-ds-general-black-100;
+        @apply bg-transparent text-z-ds-general-black-100 border border-z-ds-general-black-100 hover:bg-gray-200 focus:bg-gray-200;
     }
 
     .z-ds-button-accent {

@@ -33,7 +33,6 @@
 				window.location.href = '/';
 			}, 3000);
 			// TODO: get the data from the previous form, edited and send it to the backend transformed
-			console.log('it is working', form);
 		},
 		onUpdated({ form }) {
 			if (form.valid) {
@@ -64,10 +63,12 @@
 	}
 
 	onMount(() => {
+		if (resultsDataBody.length === 0) {
+			addRow();
+		}
 		setTimeout(() => {
 			form.set({
 				...form,
-				name: 'Game3023',
 				questions: {
 					// @ts-ignore
 					...form.questions,
@@ -110,7 +111,7 @@
 	});
 </script>
 
-<SuperDebug collapsible={true} collapsed data={$form} display={dev} />
+<!-- <SuperDebug collapsible={true} collapsed data={$form} display={dev} /> -->
 
 <form class="my-z-ds-24" method="POST" enctype="multipart/form-data" use:enhance>
 	<!-- Input text name  -->
@@ -118,10 +119,11 @@
 		<label class="text-md font-bold" for="game_name">Name:</label>
 		<div class="relative">
 			<input
-				class="border py-z-ds-8 w-full sm:w-[250px] px-z-ds-12 invalid:border-red-600 border-black rounded-lg text-md"
+				class="border py-z-ds-8 w-full sm:w-[250px] px-z-ds-12 invalid:border-red-600 border-black text-md"
 				name="game_name"
 				id="game_name"
 				type="text"
+				placeholder="GameXXXX"
 				aria-invalid={$errors.name || customNameError ? 'true' : undefined}
 				bind:value={$form.name}
 			/>
@@ -142,7 +144,7 @@
 		<label class="text-md font-bold" for="release_date">Date:</label>
 		<div class="relative">
 		<input
-			class="border py-z-ds-8 w-full sm:w-[250px] px-z-ds-12 border-black rounded-lg text-md"
+			class="border py-z-ds-8 w-full sm:w-[250px] px-z-ds-12 border-black text-md"
 			name="release_date"
 			id="release_date"
 			type="date"
@@ -163,9 +165,9 @@
 
 	<!-- Input checkbox actice  -->
 	<div class="w-full flex items-center justify-between my-z-ds-16">
-		<label class="text-md font-bold" for="published">Published:</label>
+		<label class="text-md font-bold" for="published">Aktiv:</label>
 		<input
-			class="accent-black border py-z-ds-8 px-z-ds-12 border-black rounded-lg text-md"
+			class="accent-black border py-z-ds-8 px-z-ds-12 border-black text-md"
 			name="published"
 			id="published"
 			type="checkbox"
@@ -176,7 +178,7 @@
 	<Separator />
 
 	<div class="flex justify-between items-center w-full gap-z-ds-8 my-z-ds-24">
-		<div class="font-bold text-nowrap">Questions of the game</div>
+		<div class="font-bold text-nowrap">Fragen des Spiels</div>
 
 		<div class="flex w-full justify-end gap-z-ds-4">
 			<button
@@ -220,6 +222,6 @@
 	</div>
 
 	<div class="flex flex-row gap-4 items-center my-12 mx-auto w-full justify-center">
-		<button class="z-ds-button" type="submit">Create New Game</button>
+		<button class="z-ds-button" type="submit">Neues Spiel erstellen</button>
 	</div>
 </form>

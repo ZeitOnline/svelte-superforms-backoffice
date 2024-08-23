@@ -111,7 +111,7 @@
 	<ViewNavigation
 		viewName="Activity Logs"
 		mainAction={handleBackToDashboard}
-		mainActionText="Back"
+		mainActionText="Zurück"
 	/>
 
 	<LogsTable logs={FAKE_LOGS} />

@@ -7,7 +7,7 @@
 	let { logs }: { logs: Log[] } = $props();
 </script>
 
-<div class="relative overflow-x-auto rounded-lg py-z-ds-8 my-z-ds-24" aria-live="polite">
+<div class="relative overflow-x-auto py-z-ds-8 my-z-ds-24" aria-live="polite">
 	<table
 		id="search-results-table"
 		class="w-full text-sm text-left rtl:text-right text-z-ds-general-black-100"
@@ -16,8 +16,8 @@
 			<tr>
 				<th class="text-nowrap">Datum</th>
 				<th>Game Id</th>
-				<th>Action</th>
-				<th>User Name</th>
+				<th>Aktion</th>
+				<th>Benutzer</th>
 			</tr>
 		</thead>
 		<tbody>
