@@ -43,7 +43,8 @@ Following the modus operandi of other games, it was decided that eckchen needed 
 
 1. Clone the repo
 2. Run `nvm use` to install the latest lts version
-3. Run `npm run dev` to start the dev server
+3. Run `npm i --force` to install the required packages. As soon as Svelte 5 will become stable, we will not need --force.
+4. Run `npm run dev` to start the dev server
 
 ## Test
 

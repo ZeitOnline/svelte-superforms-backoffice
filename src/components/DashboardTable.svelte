@@ -71,51 +71,57 @@
 </div>
 
 <div class="relative overflow-x-auto py-z-ds-8 my-z-ds-24" aria-live="polite">
-
-		<table
-			id="search-results-table"
-			class="w-full text-sm text-left rtl:text-right text-z-ds-general-black-100"
-		>
-			<thead>
-				<tr>
-					<th class="text-nowrap">Name des Spiels</th>
-					<th>Datum</th>
-					<th>Aktiv</th>
-					<th class="text-right">Aktionen</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#if paginatedItems.length > 0}
-					{#each paginatedItems as item (item.id)}
-						<tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
-							<td>{@html highlightMatch(item.name, debouncedSearchTerm)}</td>
-							<td
-								>{@html highlightMatch(
-									transformedPublishedData(item.release_date),
-									debouncedSearchTerm
-								)}</td
-							>
-							<td>{item.active ? '✅' : '❌'}</td>
-							<td>
-								<div class="flex items-center justify-end gap-z-ds-4">
-									<button
-										onclick={() => handleEditGame(item.id)}
-										class="z-ds-button z-ds-button-outline">Bearbeiten</button
-									>
-									<button onclick={() => handleDeleteGame(item.id)} class="z-ds-button">Löschen</button
-									>
-								</div>
-							</td>
-						</tr>
-					{/each}
-				{:else}
-					<tr>
-						<td colspan="5" class="text-center py-z-ds-8">No data found</td>
+	<table
+		id="search-results-table"
+		class="w-full text-sm text-left rtl:text-right text-z-ds-general-black-100"
+	>
+		<thead>
+			<tr>
+				<th class="text-nowrap">Name des Spiels</th>
+				<th>Datum</th>
+				<th>Aktiv</th>
+				<th class="text-right">Aktionen</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#if paginatedItems.length > 0}
+				{#each paginatedItems as item (item.id)}
+					<tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
+						<td>{@html highlightMatch(item.name, debouncedSearchTerm)}</td>
+						<td
+							>{@html highlightMatch(
+								transformedPublishedData(item.release_date),
+								debouncedSearchTerm
+							)}</td
+						>
+						<td>{item.active ? '✅' : '❌'}</td>
+						<td>
+							<div class="flex items-center justify-end gap-z-ds-4">
+								<button
+									aria-label="Spiel bearbeiten"
+									onclick={() => handleEditGame(item.id)}
+									class="z-ds-button z-ds-button-outline"
+								>
+									<IconHandler iconName="update" />
+								</button>
+								<button
+									aria-label="Spiel löschen"
+									onclick={() => handleDeleteGame(item.id)}
+									class="z-ds-button"
+								>
+									<IconHandler iconName="delete" extraClasses="w-5 h-5" />
+								</button>
+							</div>
+						</td>
 					</tr>
-				{/if}
-			</tbody>
-		</table>
-
+				{/each}
+			{:else}
+				<tr>
+					<td colspan="5" class="text-center py-z-ds-8">No data found</td>
+				</tr>
+			{/if}
+		</tbody>
+	</table>
 </div>
 
 <DashboardPagination bind:currentPage {totalPages} />

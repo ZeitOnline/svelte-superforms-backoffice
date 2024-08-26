@@ -7,7 +7,7 @@ export type View = "dashboard" | "new-game" | "edit-game" | "delete-game" | "act
 /**
  * These are the possible icons in the app (used for the logs for example)
  */
-export type IconOption = "create" | "delete" | "update" | "chevron" | "search" | "error" | "upload";
+export type IconOption = "create" | "delete" | "update" | "chevron" | "search" | "error" | "upload" | "delete";
 
 /**
  * This is how I game looks like
