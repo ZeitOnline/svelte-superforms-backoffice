@@ -1,10 +1,9 @@
 <script lang="ts">
-	import ChevronRight from './icons/ChevronRightIcon.svelte';
 	import IconHandler from './icons/IconHandler.svelte';
 
 	let {
 		currentPage = $bindable(),
-		totalPages
+		totalPages,
 	}: {
 		currentPage: number;
 		totalPages: number;

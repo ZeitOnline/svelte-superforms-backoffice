@@ -9,10 +9,10 @@
 
 	const handleBackToDashboard = () => {
 		store.updateView('dashboard');
-        store.updateSelectedGameId('');
+        store.updateSelectedGameId(-1);
 	};
 
-    const handleDeleteFromList = async (id: string) => {
+    const handleDeleteFromList = async (id: number) => {
         toast.push("Game deleted (Not working yet)", {
             theme: {
                 '--toastBackground': '#333',
@@ -20,7 +20,7 @@
             },
         });
         store.updateView('dashboard');
-        store.updateSelectedGameId('');
+        store.updateSelectedGameId(-1);
 
         await deleteGame(id);
     };

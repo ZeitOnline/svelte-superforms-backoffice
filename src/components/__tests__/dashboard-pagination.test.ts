@@ -1,7 +1,7 @@
 import { render} from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest';
-import DashboardPagination from '$components/DashboardPagination.svelte'; // assuming your component is named Pagination.svelte
+import DashboardPagination from '$components/DashboardPagination.svelte'; 
 
 describe('Pagination', () => {
 
