@@ -6,7 +6,7 @@
 	import DashboardPagination from './DashboardPagination.svelte';
 	import { blur } from 'svelte/transition';
 	import IconHandler from './icons/IconHandler.svelte';
-	import PopOver from './PopOver.svelte';
+	import TableFilters from './TableFilters.svelte';
 
 	const ITEMS_PER_PAGE = 10;
 
@@ -70,7 +70,6 @@
 	let totalPages: number = $derived(Math.ceil(filteredBySearchItems().length / ITEMS_PER_PAGE));
 
 	let paginatedItems = $derived(
-		// Call `filteredBySearchItems` to get the array and then slice it for pagination
 		filteredBySearchItems().slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 	);
 
@@ -207,12 +206,7 @@
 	</svg>
 {/snippet}
 
-<div class="flex justify-end my-6 gap-2 items-center">
-	<button class="border border-black hover:bg-gray-200 focus:bg-gray-200 px-2 py-0.5 text-xs" onclick={resetAllFilters}>
-		Reset filters
-	</button>
-	<PopOver idButtonOpener="filter-opener" {popoverContent} {popoverOpener} />
-</div>
+<TableFilters {resetAllFilters} idButtonOpener="filter-opener" {popoverContent} {popoverOpener} />
 
 <div class="relative overflow-x-auto py-z-ds-8 my-z-ds-24" aria-live="polite">
 	<table

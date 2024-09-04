@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 
 	let positionLeft: number = $state(0);
 	let positionTop: number = $state(0);
