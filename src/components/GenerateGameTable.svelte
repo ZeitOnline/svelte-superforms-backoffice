@@ -21,6 +21,10 @@
 					console.log('Fields updated:', event.paths);
 				}
 			}
+
+			if ($form.csv) {
+				isDragging = false;
+			}
 		},
 		onUpdate({ form }) {
 			if (form.valid) {
@@ -51,46 +55,84 @@
 			}
 		}
 	});
+
+	let isDragging = $state(false);
+
+	function handleDragEnter(event: DragEvent) {
+		console.log('we are dragging');
+		isDragging = true;
+		event.preventDefault();
+	}
+
+	function handleDragLeave(event: DragEvent) {
+		console.log('we are not dragging');
+		isDragging = false;
+		event.preventDefault();
+	}
+
+	function handleDragOver(event: DragEvent) {
+		event.preventDefault();
+	}
 </script>
 
 {#if $message}<h1>{$message}</h1>{/if}
 
 <form
-	class="flex flex-col items-center my-12"
+	class="flex flex-col w-full items-center my-12"
 	method="POST"
 	enctype="multipart/form-data"
 	action="?/generateGame"
 	use:enhance
 >
-	<!-- <div>
-		<label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First name</label>
-		<input type="text" id="name" aria-invalid={$errors.name ? 'true' : undefined}
-		bind:value={$form.name} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="John" required />
-	</div>
-	{#if $errors.name}<span style="color: red;" class="invalid">{$errors.name}</span>{/if} -->
-
-	<!-- <label for="image">
-		Upload one image, max 100 Kb:
-		<input type="file" name="image" accept="image/png, image/jpeg" bind:files={$file} />
-	</label>
-	{#if $errors.image}<span style="color: red;">{$errors.image}</span>{/if} -->
-
-	<!-- <label for="email">E-mail</label>
-	<input type="email" name="email" bind:value={$form.email} {...$constraints.email} /> -->
-
-	<label class="text-sm flex flex-col text-center items-center font-bold gap-2" for="csv">
-		Upload one CSV, max 100 Kb:
+	<div class="group flex flex-col items-center w-fit">
 		<input
-			class="max-w-[200px] border text-center border-black text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 p-2.5"
+			ondragenter={handleDragEnter}
+			ondragleave={handleDragLeave}
+			ondragover={handleDragOver}
+			class="opacity-0 pointer-events-auto text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 p-4"
 			type="file"
 			name="csv"
 			accept=".csv"
 			oninput={(e) => ($form.csv = e.currentTarget.files?.item(0) as File)}
 		/>
-	</label>
+		<label
+			class="text-sm w-fit -mt-14 flex flex-col justify-center text-center items-center font-bold gap-2"
+			for="csv"
+			aria-live="polite"
+			aria-atomic="true"
+			role="status"
+			aria-dropeffect={isDragging ? 'copy' : 'none'}
+		>
+			<span
+				class={`
+				${isDragging ? 'bg-gray-200' : 'bg-white'} 
+				${$form.csv ? 'bg-white' : ''}
+				
+				border border-black px-5 py-4 group-hover:bg-gray-200 group-focus:bg-gray-200`}
+			>
+				{#if isDragging}
+					<span>Fast geschafft!</span>
+				{:else if $form.csv}
+					<p>Ausgewählte Datei: {$form.csv.name}</p>
+				{:else}
+					<span> Dragg und dropp eine CSV-Datei hier. Max 100kb.</span>
+				{/if}
+			</span>
+		</label>
+	</div>
+
 	{#if $errors.csv}<span style="color: red;">{$errors.csv}</span>{/if}
 
-	<div class="flex flex-col items-center my-12 mx-auto w-full justify-center">
-		<button class="z-ds-button">Submit</button>
-	</div>
+	{#if $form.csv}
+		<div class="flex flex-col items-center my-12 mx-auto w-full justify-center">
+			<button class="z-ds-button"> Submitten </button>
+		</div>
+	{/if}
 </form>
+
+<style>
+	input:focus + label {
+		outline: 2px solid #2563eb;
+		outline-offset: 2px;
+	}
+</style>

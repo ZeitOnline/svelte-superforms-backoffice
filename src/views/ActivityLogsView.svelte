@@ -14,6 +14,7 @@
             action: 'create',
             created_at: '2024-08-22T10:00:00Z',
             user_name: 'Silja',
+            detail: 'Game with id 2033 was created'
         },
         {
             id: '2',
@@ -21,13 +22,15 @@
             action: 'update',
             created_at: '2024-08-22T11:00:00Z',
             user_name: 'Frieder',
+            detail: 'Question with id 1234 was updated'
         },
         {
             id: '3',
             game_id: '2034',
             action: 'delete',
             created_at: '2024-08-22T12:00:00Z',
-            user_name: 'Paco'
+            user_name: 'Paco',
+            detail: 'Game with id 2034 was deleted'
         },
         {
             id: '4',
@@ -35,6 +38,7 @@
             action: 'create',
             created_at: '2024-08-22T13:00:00Z',
             user_name: 'Emma',
+            detail: 'Game with id 2035 was created'
         },
         {
             id: '5',
@@ -42,6 +46,7 @@
             action: 'update',
             created_at: '2024-08-22T14:00:00Z',
             user_name: 'Liam',
+            detail: 'Question with id 3 was updated'
         },
         {
             id: '6',
@@ -49,6 +54,7 @@
             action: 'delete',
             created_at: '2024-08-22T15:00:00Z',
             user_name: 'Olivia',
+            detail: 'Game with id 2036 was deleted'
         },
         {
             id: '7',
@@ -56,6 +62,7 @@
             action: 'create',
             created_at: '2024-08-22T16:00:00Z',
             user_name: 'Noah',
+            detail: 'Game with id 2036 was created'
         },
         {
             id: '8',
@@ -63,6 +70,7 @@
             action: 'update',
             created_at: '2024-08-22T17:00:00Z',
             user_name: 'Ava',
+            detail: 'Question with id 1234 was updated'
         },
         {
             id: '9',
@@ -70,6 +78,7 @@
             action: 'delete',
             created_at: '2024-08-22T18:00:00Z',
             user_name: 'William',
+            detail: 'Game with id 2037 was deleted'
         },
         {
             id: '10',
@@ -77,6 +86,7 @@
             action: 'create',
             created_at: '2024-08-22T19:00:00Z',
             user_name: 'Sophia',
+            detail: 'Game with id 2038 was created'
         },
         {
             id: '11',
@@ -84,6 +94,7 @@
             action: 'update',
             created_at: '2024-08-22T20:00:00Z',
             user_name: 'Isabella',
+            detail: 'Question with id 1234 was updated'
         },
         {
             id: '12',
@@ -91,6 +102,7 @@
             action: 'delete',
             created_at: '2024-08-22T21:00:00Z',
             user_name: 'Mia',
+            detail: 'Game with id 2039 was deleted'
         },
         {
             id: '13',
@@ -98,11 +110,12 @@
             action: 'create',
             created_at: '2024-08-22T22:00:00Z',
             user_name: 'James',
+            detail: 'Game with id 2039 was created'
         }
     ]
 
 	const handleBackToDashboard = () => {
-		store.updateSelectedGameId('');
+		store.updateSelectedGameId(-1);
 		store.updateView('dashboard');
 	};
 </script>

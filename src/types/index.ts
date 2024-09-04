@@ -38,6 +38,7 @@ export type Log = {
     id: string;
     game_id: string;
     user_name: string;
+    detail: string;
     action: "create" | "update" | "delete";
     created_at: string;
 }

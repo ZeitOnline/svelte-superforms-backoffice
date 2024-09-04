@@ -17,7 +17,8 @@
 				<th class="text-nowrap">Datum</th>
 				<th>Game Id</th>
 				<th>Aktion</th>
-				<th>Benutzer</th>
+				<th>Detail</th>
+				<!-- <th>Benutzer</th> -->
 			</tr>
 		</thead>
 		<tbody>
@@ -31,7 +32,7 @@
                                 {item.action.toUpperCase()}         
                             </div>
                         </td>
-						<td>{item.user_name}</td>
+						<td>{item.detail}</td>
 					</tr>
 				{/each}
 			{:else}

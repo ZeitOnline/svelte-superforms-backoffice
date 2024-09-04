@@ -100,6 +100,7 @@
 		filterDateDesc = true;
 		filterActive = false;
 		filterNotActive = false;
+		currentPage = 1;
 	}
 
 	function toggleFilter(filter: string) {
