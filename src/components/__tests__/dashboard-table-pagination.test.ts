@@ -1,12 +1,12 @@
 import { render} from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest';
-import DashboardPagination from '$components/DashboardPagination.svelte'; 
+import TablePagination from '$components/TablePagination.svelte'; 
 
 describe('Pagination', () => {
 
 it('should render pagination controls', () => {
-    const { getByLabelText, getByText } = render(DashboardPagination, {
+    const { getByLabelText } = render(TablePagination, {
         props: {
             currentPage: 1,
             totalPages: 5
@@ -20,7 +20,7 @@ it('should render pagination controls', () => {
 });
 
 it('should go to the next page when the Next button is clicked', async () => {
-    const { getByLabelText, getByText, component } = render(DashboardPagination, {
+    const { getByLabelText} = render(TablePagination, {
         props: {
             currentPage: 1,
             totalPages: 5
@@ -39,7 +39,7 @@ it('should go to the next page when the Next button is clicked', async () => {
 });
 
 it('should disable Next button on the last page', async () => {
-    const { getByLabelText } = render(DashboardPagination, {
+    const { getByLabelText } = render(TablePagination, {
         props: {
             currentPage: 5,
             totalPages: 5
@@ -52,7 +52,7 @@ it('should disable Next button on the last page', async () => {
 });
 
 it('should disable Previous button on the first page', async () => {
-    const { getByLabelText } = render(DashboardPagination, {
+    const { getByLabelText } = render(TablePagination, {
         props: {
             currentPage: 1,
             totalPages: 5

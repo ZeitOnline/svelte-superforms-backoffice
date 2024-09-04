@@ -1,5 +1,4 @@
 <script lang="ts">
-
 	let positionLeft: number = $state(0);
 	let positionTop: number = $state(0);
 
@@ -7,9 +6,13 @@
 		idButtonOpener,
 		popoverOpener,
 		popoverContent
-	}: { idButtonOpener: string; popoverOpener: any; popoverContent: any } = $props();
+	}: {
+		idButtonOpener: string;
+		popoverOpener: () => ReturnType<import('svelte').Snippet>;
+		popoverContent: () => ReturnType<import('svelte').Snippet>;
+	} = $props();
 
-	let isPopoverOpen = $state(false)
+	let isPopoverOpen = $state(false);
 	let id = `popover-${idButtonOpener}`;
 
 	let buttonOpener = $state<HTMLButtonElement>();
@@ -30,11 +33,11 @@
 		return () => {
 			popoverRef?.removeEventListener('toggle', (event: any) => {
 				if (event.newState === 'open') {
-				adjustPosition();
-				isPopoverOpen = true;
-			} else {
-				isPopoverOpen = false;
-			}
+					adjustPosition();
+					isPopoverOpen = true;
+				} else {
+					isPopoverOpen = false;
+				}
 			});
 			window.removeEventListener('resize', adjustPosition);
 		};
@@ -53,23 +56,19 @@
 
 <div class="relative">
 	{#if popoverOpener}
-	<button
-		aria-label={
-			isPopoverOpen
-				? 'Schließe das Popover'
-				: 'Öffne das Popover'
-		}
-		aria-expanded={isPopoverOpen ? 'true' : 'false'}
-		aria-haspopup="true"
-		aria-controls={id}
-		bind:this={buttonOpener}
-		id={idButtonOpener}
-		popovertarget={id}
-		popovertargetaction="toggle"
-		class="border border-black px-2 py-1 hover:bg-gray-200"
-	>
-		{@render popoverOpener()}
-	</button>
+		<button
+			aria-label={isPopoverOpen ? 'Schließe das Popover' : 'Öffne das Popover'}
+			aria-expanded={isPopoverOpen ? 'true' : 'false'}
+			aria-haspopup="true"
+			aria-controls={id}
+			bind:this={buttonOpener}
+			id={idButtonOpener}
+			popovertarget={id}
+			popovertargetaction="toggle"
+			class="border border-black px-2 py-1 hover:bg-gray-200"
+		>
+			{@render popoverOpener()}
+		</button>
 	{/if}
 
 	{#if popoverContent}
@@ -81,17 +80,16 @@
 			style="--position-left: {positionLeft}px; --position-top: {positionTop}px;"
 		>
 			<button
-
-				aria-label="Schließe das Popover"
+				aria-label="Das Popover schließen"
 				popovertarget={id}
 				popovertargetaction="hide"
-				class="border border-black hover:bg-gray-200 focus:bg-gray-200 px-2 absolute right-2 top-2">x</button
+				class="border border-black hover:bg-gray-200 focus:bg-gray-200 px-2 absolute right-2 top-2"
+				>x</button
 			>
 
 			{@render popoverContent()}
 		</div>
 	{/if}
-
 </div>
 
 <style>

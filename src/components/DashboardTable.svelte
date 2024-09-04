@@ -1,12 +1,13 @@
 <script lang="ts">
 	import type { Game } from '$types';
 	import { cubicInOut } from 'svelte/easing';
-	import type { ViewStateStore } from '../stores/view-state-store.svelte';
+	import type { ViewStateStore } from '$stores/view-state-store.svelte';
 	import { debounce, highlightMatch, transformedPublishedData } from '../utils';
-	import DashboardPagination from './DashboardPagination.svelte';
 	import { blur } from 'svelte/transition';
 	import IconHandler from './icons/IconHandler.svelte';
 	import TableFilters from './TableFilters.svelte';
+	import TableSearch from './TableSearch.svelte';
+	import TablePagination from './TablePagination.svelte';
 
 	const ITEMS_PER_PAGE = 10;
 
@@ -18,36 +19,38 @@
 	let items = $state(games);
 
 	// Filter states with mutual exclusivity
-	let filterAZ = $state(false);
-	let filterZA = $state(false);
-	let filterDateAsc = $state(false);
-	let filterDateDesc = $state(true);
-	let filterActive = $state(false);
-	let filterNotActive = $state(false);
+	let filters = $state({
+		az: false,
+		za: false,
+		dateAsc: false,
+		dateDesc: true,
+		active: false,
+		notActive: false,
+	});
 
 	let filteredByOptionsItems = $derived(() => {
 		let filteredItems = [...items];
 
 		// Example: Apply filtering logic based on your filter states
-		if (filterAZ) {
+		if (filters.az) {
 			filteredItems.sort((a, b) => a.name.localeCompare(b.name));
-		} else if (filterZA) {
+		} else if (filters.za) {
 			filteredItems.sort((a, b) => b.name.localeCompare(a.name));
 		}
 
-		if (filterDateAsc) {
+		if (filters.dateAsc) {
 			filteredItems.sort(
 				(a, b) => new Date(a.release_date).getTime() - new Date(b.release_date).getTime()
 			);
-		} else if (filterDateDesc) {
+		} else if (filters.dateDesc) {
 			filteredItems.sort(
 				(a, b) => new Date(b.release_date).getTime() - new Date(a.release_date).getTime()
 			);
 		}
 
-		if (filterActive) {
+		if (filters.active) {
 			filteredItems = filteredItems.filter((item) => item.active);
-		} else if (filterNotActive) {
+		} else if (filters.notActive) {
 			filteredItems = filteredItems.filter((item) => !item.active);
 		}
 
@@ -57,7 +60,6 @@
 	let filteredBySearchItems = $derived(() => {
 		const term = debouncedSearchTerm.toLowerCase();
 
-		// Call `filteredByOptionsItems` to get the array and then filter it
 		return filteredByOptionsItems().filter((item) => {
 			return (
 				item.name.toLowerCase().includes(term) ||
@@ -93,12 +95,14 @@
 	});
 
 	function resetAllFilters() {
-		filterAZ = false;
-		filterZA = false;
-		filterDateAsc = false;
-		filterDateDesc = true;
-		filterActive = false;
-		filterNotActive = false;
+		filters = {
+			az: false,
+			za: false,
+			dateAsc: false,
+			dateDesc: true,
+			active: false,
+			notActive: false,
+		};
 		currentPage = 1;
 	}
 
@@ -106,64 +110,56 @@
 		currentPage = 1;
 
 		if (filter === 'az') {
-			filterAZ = !filterAZ;
-			if (filterAZ) filterZA = false;
+			filters.az = !filters.az;
+			if (filters.az) filters.za = false;
 		} else if (filter === 'za') {
-			filterZA = !filterZA;
-			if (filterZA) filterAZ = false;
+			filters.za = !filters.za;
+			if (filters.za) filters.az = false;
 		} else if (filter === 'dateAsc') {
-			filterDateAsc = !filterDateAsc;
-			if (filterDateAsc) filterDateDesc = false;
+			filters.dateAsc = !filters.dateAsc;
+			if (filters.dateAsc) filters.dateDesc = false;
 		} else if (filter === 'dateDesc') {
-			filterDateDesc = !filterDateDesc;
-			if (filterDateDesc) filterDateAsc = false;
+			filters.dateDesc = !filters.dateDesc;
+			if (filters.dateDesc) filters.dateAsc = false;
 		} else if (filter === 'active') {
-			filterActive = !filterActive;
-			if (filterActive) filterNotActive = false;
+			filters.active = !filters.active;
+			if (filters.active) filters.notActive = false;
 		} else if (filter === 'notActive') {
-			filterNotActive = !filterNotActive;
-			if (filterNotActive) filterActive = false;
+			filters.notActive = !filters.notActive;
+			if (filters.notActive) filters.active = false;
 		}
 	}
 </script>
 
-<!-- Search  -->
-<div class="flex items-center justify-end gap-z-ds-8">
-	<IconHandler iconName="search" />
-	<input
-		bind:value={searchTerm}
-		placeholder="Game4024"
-		class="placeholder:text-xs text-xs py-z-ds-4 border-b border-z-ds-general-black-100 px-z-ds-8"
-		type="search"
-		name="table-data"
-		id="table-data"
-		aria-label="Search games in the table below"
-		aria-controls="search-results-table"
-	/>
-</div>
+<TableSearch 
+	bind:searchTerm 
+	idSearch="dashboard-games" 
+	ariaLabel="Nach Spiele suchen" 
+	ariaControls="search-results-table" 
+/>
 
 <!-- Filter Options  -->
 {#snippet popoverContent()}
 	<div class="flex flex-wrap gap-3 mt-12">
 		<div class="flex flex-col gap-2">
-			<button class="filter-button" class:active={filterAZ} onclick={() => toggleFilter('az')}>
+			<button class="filter-button" class:active={filters.az} onclick={() => toggleFilter('az')}>
 				A-Z
 			</button>
-			<button class="filter-button" class:active={filterZA} onclick={() => toggleFilter('za')}>
+			<button class="filter-button" class:active={filters.za} onclick={() => toggleFilter('za')}>
 				Z-A
 			</button>
 		</div>
 		<div class="flex flex-col gap-2">
 			<button
 				class="filter-button"
-				class:active={filterDateAsc}
+				class:active={filters.dateAsc}
 				onclick={() => toggleFilter('dateAsc')}
 			>
 				Date Ascending
 			</button>
 			<button
 				class="filter-button"
-				class:active={filterDateDesc}
+				class:active={filters.dateDesc}
 				onclick={() => toggleFilter('dateDesc')}
 			>
 				Date Descending
@@ -172,14 +168,14 @@
 		<div class="flex flex-col gap-2">
 			<button
 				class="filter-button"
-				class:active={filterActive}
+				class:active={filters.active}
 				onclick={() => toggleFilter('active')}
 			>
 				✅
 			</button>
 			<button
 				class="filter-button"
-				class:active={filterNotActive}
+				class:active={filters.notActive}
 				onclick={() => toggleFilter('notActive')}
 			>
 				❌
@@ -262,7 +258,7 @@
 	</table>
 </div>
 
-<DashboardPagination bind:currentPage {totalPages} />
+<TablePagination bind:currentPage {totalPages} />
 
 <style lang="postcss">
 	.filter-button {
