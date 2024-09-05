@@ -30,7 +30,6 @@
 			if (form.valid) {
 				// console.log('form is valid');
 				// console.log('form:', form);
-				console.log('form csv: ', form.data.csv);
 				Papa.parse(form.data.csv, {
 					// header: true,
 					complete: function (results) {
@@ -41,7 +40,6 @@
 							return;
 						}
 
-						console.log('body:', body);
 						resultsDataBody.push(...body);
 					}
 				});
@@ -59,13 +57,11 @@
 	let isDragging = $state(false);
 
 	function handleDragEnter(event: DragEvent) {
-		console.log('we are dragging');
 		isDragging = true;
 		event.preventDefault();
 	}
 
 	function handleDragLeave(event: DragEvent) {
-		console.log('we are not dragging');
 		isDragging = false;
 		event.preventDefault();
 	}

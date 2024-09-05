@@ -28,23 +28,34 @@ export const getAllQuestionsByGameId = async (id: number) => {
 }
 
 export const deleteGame = async (id: number) => {
-    // console.log("id", id);
+    console.log("we want to delete the game with the id: ", id);
     const response = await fetch(`${BASE_URL}/game?id=eq.${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
     });
 
-    return response.json();
+    if (!response.ok) {
+        throw new Error(`Failed to delete the game with id: ${id}. Status: ${response.status}`);
+    }
+
+    return response.statusText;
 }
 
 export const updateGame = async (id: number, data: any) => {
     // TODO: update the questions as well, here we receive only the previous ones
     const questions = await getAllQuestionsByGameId(id);
 
-    // 1 - update all the questions 
-    upsertData('game_question', questions);
+    if(questions.length > 0) {
 
+        // 1 - update all the questions 
+        // upsertData('game_question', questions);
+    }
+
+    console.log("adding the new game...", data);
     // 2 - update the game itself
-    upsertData('game', data);
+    await upsertData('game', data);
 
     return data;
 }
@@ -55,6 +66,22 @@ export const updateGame = async (id: number, data: any) => {
  * @param data - the data to be upserted
  */
 const upsertData = async (table: string, data: any) => {
+    console.log('this is the table: ', table);
+    console.log('this is the data: ', data);
+
+    if (table == "game") {
+        // we need to remove the questions from the game data
+        const questions = data.questions;
+        delete data.questions;
+        console.log('this is the data without questions: ', data);
+
+        // we need to update the questions separately
+        if (questions.length > 0) {
+            // upsertData('game_question', questions);
+        }
+    }
+
+
     await fetch(`${BASE_URL}/${table}`, {
         method: 'POST',
         headers: {

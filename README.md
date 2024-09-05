@@ -57,8 +57,11 @@ You can run some tests by using the following commands:
 Check the main task on [Jira](https://zeit-online.atlassian.net/browse/ZO-5839) for further information.
 
 - [ ] Implement the Microsoft Authentication
-- [ ] POST game and questions do not work yet.
+- [X] POST game 
+- [ ] POST questions
+- [ ] Validation is required (for the moment, we can create games without questions)
 - [ ] PATCH game and questions do not work as expected (they are creating instead of UPSERT) and you need to update the page to make it work.
 - [ ] We have used superform in NewGameView.svelte in two forms. Do we need it also when updating game and deleting?
-- [ ] DELETE game does not work as expected.
+- [X] DELETE game without questions
+- [ ] DELETE game with questions
 - [ ] Tests for the different views need to be written.

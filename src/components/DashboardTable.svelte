@@ -62,7 +62,8 @@
 
 		return filteredByOptionsItems().filter((item) => {
 			return (
-				item.name.toLowerCase().includes(term) ||
+				item.name.toLowerCase().includes(term) || 
+				item.id.toString().includes(term) ||
 				transformedPublishedData(item.release_date).toLowerCase().includes(term)
 			);
 		});
@@ -212,6 +213,7 @@
 		<thead>
 			<tr>
 				<th class="text-nowrap">Name des Spiels</th>
+				<th>ID</th>
 				<th>Datum</th>
 				<th>Aktiv</th>
 				<th class="text-right">Aktionen</th>
@@ -222,6 +224,7 @@
 				{#each paginatedItems as item (item.id)}
 					<tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
 						<td>{@html highlightMatch(item.name, debouncedSearchTerm)}</td>
+						<td>{@html highlightMatch(item.id, debouncedSearchTerm)}</td>
 						<td
 							>{@html highlightMatch(
 								transformedPublishedData(item.release_date),

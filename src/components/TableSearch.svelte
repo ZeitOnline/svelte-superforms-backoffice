@@ -13,7 +13,6 @@
         ariaControls: string;
 	} = $props();
 
-	console.log('ts');
 </script>
 
 <div class="flex items-center justify-end gap-z-ds-8">

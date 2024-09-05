@@ -1,14 +1,14 @@
 <script lang="ts">
-	import SuperDebug, { superForm } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 	import type { PageData } from '../routes/$types';
 	import GameRow from './GameRow.svelte';
 	import { toast } from '@zerodevx/svelte-toast';
-	import { onMount } from 'svelte';
 	import Separator from './Separator.svelte';
 	import { blur } from 'svelte/transition';
 	import ErrorIcon from '$components/icons/HasErrorIcon.svelte';
 	import IconHandler from './icons/IconHandler.svelte';
 	import { cubicInOut } from 'svelte/easing';
+	import { updateGame } from '$lib/queries';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -22,20 +22,35 @@
 		validators: false,
 		SPA: true,
 		onUpdate({ form }) {
-			toast.push('⭐️ Game amazingly added! Redirecting to main dashboard...', {
-				initial: 0,
-				theme: {
-					'--toastBackground': '#292929'
-				}
-			});
+			// TODO: get a logic for the next ids
+			const randomId = Math.floor(Math.random() * 1000);
+			const data = {
+				id: randomId,
+				name: $form.name,
+				release_date: $form.release_date,
+				active: $form.published,
+				questions: resultsDataBody
+			};
 
-			setTimeout(() => {
-				window.location.href = '/';
-			}, 3000);
+			console.log('adding ...', data);
+			updateGame(randomId, data);
+			// Successful post! Do some more client-side stuff,
+			// like showing a toast notification.
+			// console.log('toastchen here!');
+
 			// TODO: get the data from the previous form, edited and send it to the backend transformed
 		},
 		onUpdated({ form }) {
 			if (form.valid) {
+				toast.push('⭐️ Game amazingly added! Redirecting to main dashboard...', {
+					duration: 3000,
+					theme: {
+						'--toastBackground': '#292929'
+					}
+				});
+				setTimeout(() => {
+					window.location.href = '/';
+				}, 3000);
 				// Successful post! Do some more client-side stuff,
 				// like showing a toast notification.
 				// console.log('toastchen here!');
@@ -62,32 +77,21 @@
 		confirm('Are you sure you want to remove the last row?') && resultsDataBody.splice(index, 1);
 	}
 
-	onMount(() => {
+	$effect(() => {
 		if (resultsDataBody.length === 0) {
 			addRow();
 		}
-		setTimeout(() => {
-			form.set({
-				...form,
-				questions: {
-					// @ts-ignore
-					...form.questions,
-					...resultsDataBody
-				}
-			});
-		}, 200);
 	});
 
-	$effect(() => {
-		form.set({
-			...form,
-			questions: {
-				// @ts-ignore
-				...form.questions,
-				...resultsDataBody
-			}
-		});
-	});
+	// 	form.set({
+	// 		...form,
+	// 		questions: {
+	// 			// @ts-ignore
+	// 			...form.questions,
+	// 			...resultsDataBody
+	// 		}
+	// 	});
+	// });
 
 	let customNameError = $state(false);
 
