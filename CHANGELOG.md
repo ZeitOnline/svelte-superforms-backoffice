@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.6.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.5.0...v1.6.0) (2024-09-06)
+
+
+### Features
+
+* add sort possibility to the table ([8a6a5d4](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/8a6a5d49a1cc769f5c40b1e80526f132ce9d31a4))
+* improve delete game without questions ([d8b88d9](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/d8b88d95dbf826767685e65664674bb7ca947a1e))
+* make improvements in the new game view ([332648e](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/332648e79b0041e8856988c1391f8851c1def83e))
+* make provisional delete, post without questions and nice to have date default ([94e7e27](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/94e7e27b0002c04cfbfa387e7ab278790af4bc4f))
+
 ## [1.5.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.4.0...v1.5.0) (2024-08-23)
 
 
