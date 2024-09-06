@@ -26,6 +26,6 @@ export const saveGameArraySchema = z.array(saveGameSchema);
 export const saveGameFormSchema = z.object({
     name: z.string(),
     release_date: z.string(),
-    published: z.boolean(),
+    published: z.boolean().default(false),
     questions: saveGameArraySchema
 });

@@ -57,11 +57,13 @@ You can run some tests by using the following commands:
 Check the main task on [Jira](https://zeit-online.atlassian.net/browse/ZO-5839) for further information.
 
 - [ ] Implement the Microsoft Authentication
-- [X] POST game 
+- [ ] POST game (works but the id generation is manually done instead of through the db). Here we have the problem that when we submit the game, we are sending one only request to create the game and the questions (not yet the game_state). Since we cannot create the questions without the game_id, that is why we do the id generation manually. However, we might need to refactor to do 2 requests.
 - [ ] POST questions
 - [ ] Validation is required (for the moment, we can create games without questions)
 - [ ] PATCH game and questions do not work as expected (they are creating instead of UPSERT) and you need to update the page to make it work.
 - [ ] We have used superform in NewGameView.svelte in two forms. Do we need it also when updating game and deleting?
-- [X] DELETE game without questions
-- [ ] DELETE game with questions
+- [ ] DELETE game with CASCADE of the game_question and game_state
 - [ ] Tests for the different views need to be written.
+- [ ] beforeleave message (when clicking back in theb browser oder zueruck in the buttons so that user does not lose information if there was)
+- [ ] whole logs topic (need to be discussed) + logs table sort + pagination
+- [ ] adr (pr started)

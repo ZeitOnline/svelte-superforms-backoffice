@@ -8,7 +8,8 @@
 	import ErrorIcon from '$components/icons/HasErrorIcon.svelte';
 	import IconHandler from './icons/IconHandler.svelte';
 	import { cubicInOut } from 'svelte/easing';
-	import { updateGame } from '$lib/queries';
+	import { getHighestGameId, getNextAvailableDateForGame, updateGame } from '$lib/queries';
+	import { dev } from '$app/environment';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -21,24 +22,52 @@
 	const { form, message, constraints, errors, enhance } = superForm(data.saveGameForm, {
 		validators: false,
 		SPA: true,
-		onUpdate({ form }) {
-			// TODO: get a logic for the next ids
-			const randomId = Math.floor(Math.random() * 1000);
-			const data = {
-				id: randomId,
-				name: $form.name,
-				release_date: $form.release_date,
-				active: $form.published,
-				questions: resultsDataBody
-			};
+		// onChange(event) {
+		// 	if (dev) {
+		// 		if (event.target) {
+		// 			// Form input event
+		// 			console.log(event.path, 'was changed with', event.target, 'in form', event.formElement);
+		// 		} else {
+		// 			// Programmatic event
+		// 			console.log('Fields updated:', event.paths);
+		// 		}
 
-			console.log('adding ...', data);
-			updateGame(randomId, data);
-			// Successful post! Do some more client-side stuff,
-			// like showing a toast notification.
-			// console.log('toastchen here!');
+		// 		console.log('release date:', $form.release_date);
+		// 	}
 
-			// TODO: get the data from the previous form, edited and send it to the backend transformed
+		// },
+		async onUpdate({ form }) {
+			try {
+				// Fetch the highest existing game ID asynchronously
+				// TODO: incremental ID is working, but here we are doing it like this
+				// because the updateGame is asking for it before
+				// we need to separate the logic and do different requests for games and questions
+				const highestId = await getHighestGameId();
+				const newGameId = highestId + 1;
+
+				// Construct the data for the new game
+				const data = {
+					id: newGameId,
+					name: $form.name,
+					release_date: $form.release_date,
+					active: $form.published,
+					questions: resultsDataBody
+				};
+
+				// Log the new game data to be added
+				console.log('Adding new game:', data);
+
+				// Send the new game data to the backend
+				await updateGame(newGameId, data);
+			} catch (error) {
+				console.error('Error adding game:', error);
+				toast.push('⚠️ Failed to add the game. Please try again.', {
+					duration: 3000,
+					theme: {
+						'--toastBackground': '#e74c3c'
+					}
+				});
+			}
 		},
 		onUpdated({ form }) {
 			if (form.valid) {
@@ -81,6 +110,35 @@
 		if (resultsDataBody.length === 0) {
 			addRow();
 		}
+
+		const addCustomDate = async () => {
+			try {
+				// Fetch the last game date from the API
+				const lastGameDate = await getNextAvailableDateForGame();
+
+				// Convert lastGameDate to a Date object
+				const lastGameDateFormat = new Date(lastGameDate); // lastGameDate should be in ISO or a valid date string format
+
+				// Increment the date by 1 day
+				lastGameDateFormat.setDate(lastGameDateFormat.getDate() + 1); // Increment the date by 1
+
+				// Format the new date to YYYY-MM-DD
+				const nextGameDate = lastGameDateFormat.toISOString().split('T')[0];
+
+				console.log('Next Game Date:', nextGameDate);
+
+				// If you want to update the form with the new date
+				form.set({
+					name: $form.name,
+					published: $form.published,
+					questions: $form.questions,
+					release_date: nextGameDate
+				});
+			} catch (error) {
+				console.error('Error fetching next available date:', error);
+			}
+		};
+		addCustomDate();
 	});
 
 	// 	form.set({

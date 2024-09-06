@@ -18,7 +18,6 @@
 
 	let items = $state(games);
 
-	// Filter states with mutual exclusivity
 	let filters = $state({
 		az: false,
 		za: false,
@@ -110,6 +109,7 @@
 	function toggleFilter(filter: string) {
 		currentPage = 1;
 
+		// Some of the filter should have mutual exclusivity
 		if (filter === 'az') {
 			filters.az = !filters.az;
 			if (filters.az) filters.za = false;
