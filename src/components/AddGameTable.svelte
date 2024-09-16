@@ -10,18 +10,22 @@
 	import { cubicInOut } from 'svelte/easing';
 	import { getHighestGameId, getNextAvailableDateForGame, updateGame } from '$lib/queries';
 	import { dev } from '$app/environment';
+	import ViewNavigation from './ViewNavigation.svelte';
 
 	let {
 		resultsDataBody = $bindable(),
-		data
+		data,
+		beginning_option = $bindable()
 	}: {
 		resultsDataBody: string[][];
 		data: PageData;
+		beginning_option: 'scratch' | 'csv' | null;
 	} = $props();
 
-	const { form, message, constraints, errors, enhance } = superForm(data.saveGameForm, {
+	const { form, message, constraints, errors, enhance, isTainted } = superForm(data.saveGameForm, {
 		validators: false,
 		SPA: true,
+		taintedMessage: true,
 		// onChange(event) {
 		// 	if (dev) {
 		// 		if (event.target) {
@@ -171,9 +175,27 @@
 			customDateError = false;
 		}
 	});
+
+	function handleBackToDashboard(): void {
+		if (isTainted()) {
+			if (confirm('Are you sure you want to leave this page?')) {
+				beginning_option = null;
+			} else {
+				console.log('user decided to stay');
+			}
+		} else {
+			console.log('form is valid');
+			beginning_option = null;
+		}
+	}
 </script>
 
 <!-- <SuperDebug collapsible={true} collapsed data={$form} display={dev} /> -->
+<ViewNavigation
+	viewName="Neues Spiel erstellen"
+	mainAction={handleBackToDashboard}
+	mainActionText="Zurück"
+/>
 
 <form class="my-z-ds-24" method="POST" enctype="multipart/form-data" use:enhance>
 	<!-- Input text name  -->
