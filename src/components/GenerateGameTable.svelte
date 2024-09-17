@@ -55,6 +55,29 @@
 	});
 
 	let isDragging = $state(false);
+	let fileInput = $state<HTMLInputElement | null>(null);
+
+	function handleGlobalDrop(event: DragEvent) {
+		event.preventDefault();
+		if (isDragging) {
+			isDragging = false;
+
+			const file = event.dataTransfer?.files?.[0];
+			if (file && file.type === 'text/csv') {
+				$form.csv = file;
+				if (fileInput) fileInput.files = event.dataTransfer?.files;
+			}
+		}
+	}
+
+	$effect(() => {
+		window.addEventListener('dragover', handleDragOver);
+		window.addEventListener('drop', handleGlobalDrop);
+		return () => {
+			window.removeEventListener('dragover', handleDragOver);
+			window.removeEventListener('drop', handleGlobalDrop);
+		};
+	});
 
 	function handleDragEnter(event: DragEvent) {
 		isDragging = true;
