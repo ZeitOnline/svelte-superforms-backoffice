@@ -15,7 +15,7 @@
 		beginning_option: 'scratch' | 'csv' | null;
 	} = $props();
 
-	const { form, message, constraints, errors, enhance, isTainted } = superForm(
+	const { form, message, constraints, errors, enhance, isTainted, reset } = superForm(
 		data.generateGameForm,
 		{
 			resetForm: false,
@@ -82,16 +82,22 @@
 		event.preventDefault();
 	}
 
+	function resetAll(): void {
+		reset();
+		resultsDataBody = [];
+		beginning_option = null;
+	}
+
 	function handleBackToDashboard(): void {
 		if (isTainted()) {
 			if (confirm('Are you sure you want to leave this page?')) {
-				beginning_option = null;
+				console.log('user decided to leave GenerateGameTable');
+				resetAll();
 			} else {
 				console.log('user decided to stay');
 			}
 		} else {
-			console.log('form is valid');
-			beginning_option = null;
+			resetAll();
 		}
 	}
 </script>
