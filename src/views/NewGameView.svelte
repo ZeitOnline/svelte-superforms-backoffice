@@ -18,14 +18,12 @@
 </script>
 
 <ViewWrapper>
-	<ViewNavigation
-		viewName="Neues Spiel erstellen"
-		mainAction={handleBackToDashboard}
-		mainActionText="Zurück"
-	/>
-
-	<!-- // TODO: add here a cool choice between start from scratch or start from csv -->
 	{#if beginning_option === null}
+		<ViewNavigation
+			viewName="Neues Spiel erstellen"
+			mainAction={handleBackToDashboard}
+			mainActionText="Zurück"
+		/>
 		<div class="flex items-center justify-between gap-z-ds-8">
 			<button
 				class="relative flex-1 z-ds-button z-ds-button-outline flex items-center min-h-[200px] text-sm"
@@ -56,14 +54,14 @@
 	{/if}
 
 	{#if beginning_option === 'scratch'}
-		<AddGameTable {data} bind:resultsDataBody />
+		<AddGameTable {data} bind:beginning_option bind:resultsDataBody />
 	{/if}
 
 	{#if beginning_option === 'csv'}
 		{#if resultsDataBody.length > 0}
-			<AddGameTable {data} bind:resultsDataBody />
+			<AddGameTable {data} bind:beginning_option bind:resultsDataBody />
 		{:else}
-			<GenerateGameTable {data} bind:resultsDataBody />
+			<GenerateGameTable {data} bind:beginning_option bind:resultsDataBody />
 		{/if}
 	{/if}
 </ViewWrapper>

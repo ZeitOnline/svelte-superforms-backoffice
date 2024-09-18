@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms';
+	import { formFieldProxy, superForm, arrayProxy } from 'sveltekit-superforms';
 	import type { PageData } from '../routes/$types';
 	import GameRow from './GameRow.svelte';
 	import { toast } from '@zerodevx/svelte-toast';
@@ -10,146 +10,179 @@
 	import { cubicInOut } from 'svelte/easing';
 	import { getHighestGameId, getNextAvailableDateForGame, updateGame } from '$lib/queries';
 	import { dev } from '$app/environment';
+	import ViewNavigation from './ViewNavigation.svelte';
+	import GameCell from './GameCell.svelte';
+	import { Orientation, type Question } from '$types';
 
 	let {
 		resultsDataBody = $bindable(),
-		data
+		data,
+		beginning_option = $bindable()
 	}: {
 		resultsDataBody: string[][];
 		data: PageData;
+		beginning_option: 'scratch' | 'csv' | null;
 	} = $props();
 
-	const { form, message, constraints, errors, enhance } = superForm(data.saveGameForm, {
-		validators: false,
-		SPA: true,
-		// onChange(event) {
-		// 	if (dev) {
-		// 		if (event.target) {
-		// 			// Form input event
-		// 			console.log(event.path, 'was changed with', event.target, 'in form', event.formElement);
-		// 		} else {
-		// 			// Programmatic event
-		// 			console.log('Fields updated:', event.paths);
-		// 		}
+	let isSubmitted = false;
 
-		// 		console.log('release date:', $form.release_date);
-		// 	}
+	const superform = superForm(
+		data.saveGameForm,
+		{
+			validators: false,
+			SPA: true,
+			taintedMessage: isSubmitted ? false : true,
+			// onChange(event) {
+			// 	if (dev) {
+			// 		if (event.target) {
+			// 			// Form input event
+			// 			console.log(event.path, 'was changed with', event.target, 'in form', event.formElement);
+			// 		} else {
+			// 			// Programmatic event
+			// 			console.log('Fields updated:', event.paths);
+			// 		}
 
-		// },
-		async onUpdate({ form }) {
-			try {
-				// Fetch the highest existing game ID asynchronously
-				// TODO: incremental ID is working, but here we are doing it like this
-				// because the updateGame is asking for it before
-				// we need to separate the logic and do different requests for games and questions
-				const highestId = await getHighestGameId();
-				const newGameId = highestId + 1;
+			// 		console.log('release date:', $form.release_date);
+			// 	}
 
-				// Construct the data for the new game
-				const data = {
-					id: newGameId,
-					name: $form.name,
-					release_date: $form.release_date,
-					active: $form.published,
-					questions: resultsDataBody
-				};
+			// },
+			async onUpdate({ form }) {
+				try {
+					// Fetch the highest existing game ID asynchronously
+					// TODO: incremental ID is working, but here we are doing it like this
+					// because the updateGame is asking for it before
+					// we need to separate the logic and do different requests for games and questions
+					const highestId = await getHighestGameId();
+					const newGameId = highestId + 1;
 
-				// Log the new game data to be added
-				console.log('Adding new game:', data);
+					// Construct the data for the new game
+					const data = {
+						id: newGameId,
+						name: $form.name,
+						release_date: $form.release_date,
+						active: $form.published,
+						questions: $form.questions
+					};
 
-				// Send the new game data to the backend
-				await updateGame(newGameId, data);
-			} catch (error) {
-				console.error('Error adding game:', error);
-				toast.push('⚠️ Failed to add the game. Please try again.', {
-					duration: 3000,
-					theme: {
-						'--toastBackground': '#e74c3c'
-					}
-				});
-			}
-		},
-		onUpdated({ form }) {
-			if (form.valid) {
-				toast.push('⭐️ Game amazingly added! Redirecting to main dashboard...', {
-					duration: 3000,
-					theme: {
-						'--toastBackground': '#292929'
-					}
-				});
-				setTimeout(() => {
-					window.location.href = '/';
-				}, 3000);
-				// Successful post! Do some more client-side stuff,
-				// like showing a toast notification.
-				// console.log('toastchen here!');
+					// Log the new game data to be added
+					console.log('Adding new game:', data);
+
+					// Send the new game data to the backend
+					await updateGame(newGameId, data);
+				} catch (error) {
+					console.error('Error adding game:', error);
+					toast.push('⚠️ Failed to add the game. Please try again.', {
+						duration: 3000,
+						theme: {
+							'--toastBackground': '#e74c3c'
+						}
+					});
+				}
+			},
+			onUpdated({ form }) {
+				if (form.valid) {
+					toast.push('⭐️ Game amazingly added! Redirecting to main dashboard...', {
+						duration: 3000,
+						theme: {
+							'--toastBackground': '#292929'
+						}
+					});
+					setTimeout(() => {
+						window.location.href = '/';
+					}, 3000);
+					// Successful post! Do some more client-side stuff,
+					// like showing a toast notification.
+					// console.log('toastchen here!');
+				}
+			},
+			onResult({ result }) {
+				console.log('onResult:', result);
+				isSubmitted = true;
 			}
 		}
-	});
-
+	);
+	const { form, message, constraints, errors, enhance, isTainted, reset } = superform;
+	const { path, value } = formFieldProxy(superform, 'name');
+	const { path: pathQuestions, values: questionValues } = arrayProxy(superform, 'questions');
+	
 	// Function to add a new row
 	function addRow() {
 		let defaultRow = [
-			'X',
+			'1',
 			'Example Question',
 			'Example Answer',
 			'1',
 			'1',
-			'h',
+			Orientation.HORIZONTAL,
 			'I am so poor I cannot even pay attention'
 		];
+		// console.log('Adding new row:', defaultRow);
 		resultsDataBody.push(defaultRow);
+		// $form.questions.push(serializeRow(defaultRow));
+		const newQuestions = [...$form.questions, serializeRow(defaultRow)];
+		$form.questions = newQuestions; // Reassign to trigger reactivity
+	}
+
+	function serializeRow(row: any[]): Question {
+		return {
+			nr: Number(row[0]),
+			question: String(row[1]),
+			answer: String(row[2]),
+			xc: Number(row[3]),
+			yc: Number(row[4]),
+			direction: row[5] as Orientation,
+			description: String(row[6])
+		};
 	}
 
 	// Function to remove the last row
 	function removeRow(index: number) {
-		confirm('Are you sure you want to remove the last row?') && resultsDataBody.splice(index, 1);
+		if (confirm(`Are you sure you want to remove the ${index+1}. row?`) && $form.questions.length > 0) {
+			$form.questions.splice(index, 1);
+			$form.questions = $form.questions; // Reassign to trigger reactivity
+		};
 	}
 
 	$effect(() => {
-		if (resultsDataBody.length === 0) {
-			addRow();
-		}
-
-		const addCustomDate = async () => {
-			try {
-				// Fetch the last game date from the API
-				const lastGameDate = await getNextAvailableDateForGame();
-
-				// Convert lastGameDate to a Date object
-				const lastGameDateFormat = new Date(lastGameDate); // lastGameDate should be in ISO or a valid date string format
-
-				// Increment the date by 1 day
-				lastGameDateFormat.setDate(lastGameDateFormat.getDate() + 1); // Increment the date by 1
-
-				// Format the new date to YYYY-MM-DD
-				const nextGameDate = lastGameDateFormat.toISOString().split('T')[0];
-
-				console.log('Next Game Date:', nextGameDate);
-
-				// If you want to update the form with the new date
-				form.set({
-					name: $form.name,
-					published: $form.published,
-					questions: $form.questions,
-					release_date: nextGameDate
-				});
-			} catch (error) {
-				console.error('Error fetching next available date:', error);
+		if (!isSubmitted) {
+			if (resultsDataBody.length === 0) {
+				addRow();
+			} else if (resultsDataBody.length > 0 && $form.questions.length === 0) {
+				const newQuestions = [
+					...$form.questions,
+					...resultsDataBody.map((row) => serializeRow(row))
+				];
+				$form.questions = newQuestions; // Reassign to trigger reactivity
 			}
-		};
-		addCustomDate();
-	});
+			const addCustomDate = async () => {
+				try {
+					// Fetch the last game date from the API
+					const lastGameDate = await getNextAvailableDateForGame();
 
-	// 	form.set({
-	// 		...form,
-	// 		questions: {
-	// 			// @ts-ignore
-	// 			...form.questions,
-	// 			...resultsDataBody
-	// 		}
-	// 	});
-	// });
+					// Convert lastGameDate to a Date object
+					const lastGameDateFormat = new Date(lastGameDate); // lastGameDate should be in ISO or a valid date string format
+
+					// Increment the date by 1 day
+					lastGameDateFormat.setDate(lastGameDateFormat.getDate() + 1); // Increment the date by 1
+
+					// Format the new date to YYYY-MM-DD
+					const nextGameDate = lastGameDateFormat.toISOString().split('T')[0];
+
+
+					// If you want to update the form with the new date
+					form.set({
+						name: $form.name,
+						published: $form.published,
+						questions: $form.questions,
+						release_date: nextGameDate
+					});
+				} catch (error) {
+					console.error('Error fetching next available date:', error);
+				}
+			};
+			addCustomDate();
+		} 
+	});
 
 	let customNameError = $state(false);
 
@@ -171,9 +204,35 @@
 			customDateError = false;
 		}
 	});
+
+	function resetAll() {
+		reset();
+		resultsDataBody = [];
+		beginning_option = null;
+	}
+
+	function handleBackToDashboard(): void {
+		if (isTainted()) {
+			if (confirm('Are you sure you want to leave this page?')) {
+				console.log('user decided to leave AddGameTable');
+				resetAll();
+			} else {
+				console.log('user decided to stay');
+			}
+		} 
+		else {
+			resetAll();
+		}
+	}
+
 </script>
 
 <!-- <SuperDebug collapsible={true} collapsed data={$form} display={dev} /> -->
+<ViewNavigation
+	viewName="Neues Spiel erstellen"
+	mainAction={handleBackToDashboard}
+	mainActionText="Zurück"
+/>
 
 <form class="my-z-ds-24" method="POST" enctype="multipart/form-data" use:enhance>
 	<!-- Input text name  -->
@@ -189,8 +248,8 @@
 				type="text"
 				placeholder="GameXXXX"
 				aria-invalid={$errors.name || customNameError ? 'true' : undefined}
-				bind:value={$form.name}
-			/>
+				bind:value={$value}
+				/>
 			{#if $errors.name}<span style="color: red;" class="invalid">{$errors.name}</span>{/if}
 			{#if customNameError}<div
 					in:blur
@@ -271,14 +330,19 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each resultsDataBody as row, i (i)}
+				{#each $questionValues as _, i}
 					<tr
 						in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
 						out:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
 					>
-						{#each row as cell, j (j)}
-							<GameRow bind:dataToBind={resultsDataBody[i][j]} />
-						{/each}
+						<GameCell bind:dataToBind={$questionValues[i].nr} />
+						<GameCell bind:dataToBind={$questionValues[i].question} />
+						<GameCell bind:dataToBind={$questionValues[i].answer} />
+						<GameCell bind:dataToBind={$questionValues[i].xc} />
+						<GameCell bind:dataToBind={$questionValues[i].yc} />
+						<GameCell bind:dataToBind={$questionValues[i].direction} />
+						<GameCell bind:dataToBind={$questionValues[i].description} />
+
 						<td class="!border-0">
 							<button
 								title="Remove this row"

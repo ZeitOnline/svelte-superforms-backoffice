@@ -25,7 +25,7 @@ export type Question = {
     answer: string;
     xc: number;
     yc: number;
-    direction: "h" | "v";
+    direction: Orientation;
     description: string;
 }
 
@@ -41,4 +41,9 @@ export type Log = {
     detail: string;
     action: "create" | "update" | "delete";
     created_at: string;
+}
+
+export enum Orientation {
+    HORIZONTAL = "h",
+    VERTICAL = "v",
 }

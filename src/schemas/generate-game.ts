@@ -1,3 +1,4 @@
+import { Orientation } from "$types";
 import { z } from "zod";
 
 export const generateGameSchema = z.object({
@@ -6,19 +7,14 @@ export const generateGameSchema = z.object({
         .refine((f) => f.size < 100_000, 'Max 100 kB upload size.'),
 });
 
-enum Orientation {
-    HORIZONTAL = "h",
-    VERTICAL = "v",
-}
-
 export const saveGameSchema = z.object({
-    number: z.number(),
+    nr: z.number(),
     question: z.string(),
     answer: z.string(),
-    coordinateX: z.number(),
-    coordinateY: z.number(),
-    orientation: z.nativeEnum(Orientation),
-    hint: z.string(),
+    xc: z.number(),
+    yc: z.number(),
+    direction: z.nativeEnum(Orientation),
+    description: z.string(),
 });
 
 export const saveGameArraySchema = z.array(saveGameSchema);
