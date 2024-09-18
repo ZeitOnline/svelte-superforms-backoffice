@@ -170,17 +170,14 @@
 
 
 					// If you want to update the form with the new date
-					form.set({
-						name: $form.name,
-						published: $form.published,
-						questions: $form.questions,
-						release_date: nextGameDate
-					});
+					$form.release_date = nextGameDate;
 				} catch (error) {
 					console.error('Error fetching next available date:', error);
 				}
 			};
-			addCustomDate();
+			if ($form.release_date === '') {
+				addCustomDate();
+			}
 		} 
 	});
 
