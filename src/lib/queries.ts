@@ -1,4 +1,4 @@
-import type { QuestionComplete } from "$types";
+import type { Game, GameComplete, QuestionComplete } from "$types";
 
 /**
  * Url to the backend cluster.
@@ -46,19 +46,6 @@ export const getAllQuestionsByGameId = async (id: number) => {
     const questions = data.filter((question: any) => question.game_id === id);
     // console.log("questions", questions);
     return questions as QuestionComplete[]
-}
-
-/**
- * Get the highest game id.
- * This is mainly used to generate a new game id from this value + 1.
- * @returns the highest game id
- */
-export const getHighestGameId = async () => {
-    const response = await fetch(
-        `${BASE_URL}/game?select=id&order=id.desc&limit=1`
-    );
-    const data = await response.json();
-    return data[0].id;
 }
 
 /**

@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { formFieldProxy, superForm, arrayProxy } from 'sveltekit-superforms';
 	import type { PageData } from '../routes/$types';
-	import GameRow from './GameRow.svelte';
 	import { toast } from '@zerodevx/svelte-toast';
 	import Separator from './Separator.svelte';
 	import { blur } from 'svelte/transition';
 	import ErrorIcon from '$components/icons/HasErrorIcon.svelte';
 	import IconHandler from './icons/IconHandler.svelte';
 	import { cubicInOut } from 'svelte/easing';
-	import { getHighestGameId, getNextAvailableDateForGame, updateGame } from '$lib/queries';
+	import { createGame, createGameQuestions, getNextAvailableDateForGame } from '$lib/queries';
 	import { dev } from '$app/environment';
 	import ViewNavigation from './ViewNavigation.svelte';
 	import GameCell from './GameCell.svelte';
@@ -52,16 +51,12 @@
 					// TODO: incremental ID is working, but here we are doing it like this
 					// because the updateGame is asking for it before
 					// we need to separate the logic and do different requests for games and questions
-					const highestId = await getHighestGameId();
-					const newGameId = highestId + 1;
 
 					// Construct the data for the new game
 					const data = {
-						id: newGameId,
 						name: $form.name,
 						release_date: $form.release_date,
 						active: $form.published,
-						questions: $form.questions
 					};
 
 					// Log the new game data to be added
