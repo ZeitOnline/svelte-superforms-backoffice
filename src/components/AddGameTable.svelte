@@ -63,8 +63,18 @@
 					console.log('Adding new game:', data);
 
 					// Send the new game data to the backend
-					await updateGame(newGameId, data);
+					const newGameArray = await createGame(data);
+					const newGame = newGameArray[0];
+					newGame.questions = $form.questions;
+					newGame.questions.map((question) => {
+						question.game_id = newGame.id;
+					});
+					const resp = await createGameQuestions(newGame);
+					if (!resp.ok) {
+						throw new Error('Failed to add questions');
+					}
 				} catch (error) {
+					// TODO: Error handling for conflict 409/500 etc
 					console.error('Error adding game:', error);
 					toast.push('⚠️ Failed to add the game. Please try again.', {
 						duration: 3000,
