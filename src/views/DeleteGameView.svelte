@@ -1,11 +1,11 @@
 <script lang="ts">
 	import ViewWrapper from '$components/ViewWrapper.svelte';
-	import type { Game } from '$types';
+	import type { GameComplete } from '$types';
 	import { toast } from '@zerodevx/svelte-toast';
 	import { type ViewStateStore } from '../stores/view-state-store.svelte';
 	import { deleteGame } from '$lib/queries';
 
-	let { store, games }: { store: ViewStateStore; games: Game[] } = $props();
+	let { store, games }: { store: ViewStateStore; games: GameComplete[] } = $props();
 
 	const handleBackToDashboard = () => {
 		store.updateView('dashboard');
@@ -31,7 +31,7 @@
 		}, 3500);
 	};
 
-	const game = games.find((game: Game) => game.id === store.selectedGameId);
+	const game = games.find((game: GameComplete) => game.id === store.selectedGameId);
 </script>
 
 <ViewWrapper>

@@ -13,13 +13,14 @@ export type IconOption = "create" | "delete" | "update" | "chevron" | "search" |
  * This is how I game looks like
  */
 export type Game = {
-    id: number;
     name: string;
     release_date: string;
     active: boolean;
+    questions?: Question[];
 }
 
 export type Question = {    
+    game_id?: number;
     nr: number;
     question: string;
     answer: string;
@@ -29,9 +30,12 @@ export type Question = {
     description: string;
 }
 
+export type GameComplete = Game & {
+    id: number;
+}
+
 export type QuestionComplete = Question & {
-    id: string;
-    game_id: string;
+    id: number;
 }
 
 export type Log = {
