@@ -14,10 +14,10 @@
 	let { store, game }: { store: ViewStateStore; game: Game } = $props();
 
 	const handleSaveEditedGame = () => {
-		updateGame(store.selectedGameId, {
-			name: (document.getElementById('name') as HTMLInputElement)?.value as string,
-			active: (document.getElementById('active') as HTMLInputElement)?.checked as boolean
-		});
+		// updateGame(store.selectedGameId, {
+		// 	name: (document.getElementById('name') as HTMLInputElement)?.value as string,
+		// 	active: (document.getElementById('active') as HTMLInputElement)?.checked as boolean
+		// });
 
 		toast.push('Game saved (Not working yet)', {
 			theme: {

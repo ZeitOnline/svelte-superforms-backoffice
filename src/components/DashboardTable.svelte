@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Game } from '$types';
+	import type { GameComplete } from '$types';
 	import { cubicInOut } from 'svelte/easing';
 	import type { ViewStateStore } from '$stores/view-state-store.svelte';
 	import { debounce, highlightMatch, transformedPublishedData } from '../utils';
@@ -11,7 +11,7 @@
 
 	const ITEMS_PER_PAGE = 10;
 
-	let { store, games }: { store: ViewStateStore; games: Game[] } = $props();
+	let { store, games }: { store: ViewStateStore; games: GameComplete[] } = $props();
 
 	let searchTerm = $state('');
 	let debouncedSearchTerm = $state('');

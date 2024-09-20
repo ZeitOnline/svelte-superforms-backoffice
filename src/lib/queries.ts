@@ -1,4 +1,4 @@
-import type { QuestionComplete } from "$types";
+import type { Game, GameComplete, QuestionComplete } from "$types";
 
 /**
  * Url to the backend cluster.
@@ -46,19 +46,6 @@ export const getAllQuestionsByGameId = async (id: number) => {
     const questions = data.filter((question: any) => question.game_id === id);
     // console.log("questions", questions);
     return questions as QuestionComplete[]
-}
-
-/**
- * Get the highest game id.
- * This is mainly used to generate a new game id from this value + 1.
- * @returns the highest game id
- */
-export const getHighestGameId = async () => {
-    const response = await fetch(
-        `${BASE_URL}/game?select=id&order=id.desc&limit=1`
-    );
-    const data = await response.json();
-    return data[0].id;
 }
 
 /**
@@ -142,21 +129,24 @@ export const deleteGame = async (id: number) => {
  * @param data the data to be updated or created
  * @returns the updated or created game
  */
-export const updateGame = async (id: number, data: any) => {
+export const updateGame = async (game: GameComplete) => {
     // TODO: update the questions as well, here we receive only the previous ones
-    const questions = await getAllQuestionsByGameId(id);
 
-    if (questions.length > 0) {
-
-        // 1 - update all the questions 
-        // upsertData('game_question', questions);
+    // const questions = await getAllQuestionsByGameId(game.id!);
+    try {
+        if (game.questions && game.questions.length > 0) {
+            // 1 - update all the questions 
+            await upsertData('game_question', game.questions);
+        }
+        
+        console.log("adding the new game...", game);
+        // 2 - update the game itself
+        // await upsertData('game', game);
+        
+    } catch (error) {
+        console.error("Failed to update the game", error);
     }
-
-    console.log("adding the new game...", data);
-    // 2 - update the game itself
-    await upsertData('game', data);
-
-    return data;
+        return game;
 }
 
 /**
@@ -189,4 +179,28 @@ const upsertData = async (table: string, data: any) => {
         },
         body: JSON.stringify(data)
     });
+}
+
+export async function createGame(data: Game): Promise<GameComplete[]> {
+	const game = await fetch(`${BASE_URL}/game`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Prefer': 'return=representation' 
+		},
+		body: JSON.stringify(data)
+	});
+	return await game.json();
+}
+
+export async function createGameQuestions(data: Game): Promise<Response> {
+    const { questions } = data;
+    const game = await fetch(`${BASE_URL}/game_question`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(questions)
+    });
+    return game;
 }
