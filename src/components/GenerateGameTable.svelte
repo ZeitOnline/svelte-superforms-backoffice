@@ -6,6 +6,7 @@
 	import ViewNavigation from './ViewNavigation.svelte';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { generateGameSchema } from '../schemas/generate-game';
+	import { ERRORS } from '$lib/error-messages';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -47,14 +48,14 @@
 							const fieldSize = (results.data[0] as any).length;
 
 							if (fieldSize !== 7) {
-								setError(form, 'csv', 'Die CSV-Datei muss 7 Spalten haben.');
+								setError(form, 'csv', ERRORS.CSV.NUMBER_OF_COLUMNS);
 								return;
 							}
 
 							const body = results.data.slice(1) as string[][];
 
 							if (!body) {
-								setError(form, 'csv', 'Die CSV-Datei muss Spalten haben.');
+								setError(form, 'csv', ERRORS.CSV.EMPTY);
 								return;
 							}
 
