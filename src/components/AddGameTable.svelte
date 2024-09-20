@@ -4,7 +4,6 @@
 	import { toast } from '@zerodevx/svelte-toast';
 	import Separator from './Separator.svelte';
 	import { blur } from 'svelte/transition';
-	import ErrorIcon from '$components/icons/HasErrorIcon.svelte';
 	import IconHandler from './icons/IconHandler.svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { createGame, createGameQuestions, getNextAvailableDateForGame } from '$lib/queries';
@@ -116,7 +115,7 @@
 	);
 	const { form, message, constraints, errors, enhance, isTainted, reset } = superform;
 	const { path, value } = formFieldProxy(superform, 'name');
-	const { path: pathQuestions, values: questionValues } = arrayProxy(superform, 'questions');
+	const { path: pathQuestions, values: questionValues, valueErrors: questionErrors } = arrayProxy(superform, 'questions');
 	
 	// Function to add a new row
 	function addRow() {
@@ -317,13 +316,28 @@
 						in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
 						out:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
 					>
-						<GameCell bind:dataToBind={$questionValues[i].nr} />
-						<GameCell bind:dataToBind={$questionValues[i].question} />
-						<GameCell bind:dataToBind={$questionValues[i].answer} />
-						<GameCell bind:dataToBind={$questionValues[i].xc} />
-						<GameCell bind:dataToBind={$questionValues[i].yc} />
-						<GameCell bind:dataToBind={$questionValues[i].direction} />
-						<GameCell bind:dataToBind={$questionValues[i].description} />
+						<td>
+							<input type="number" class="w-full bg-transparent" aria-invalid={$questionErrors?.[i]?.nr ? 'true' : undefined} bind:value={$questionValues[i].nr} />
+							{#if $questionErrors?.[i]?.nr}
+								<span class="text-red-500 invalid text-xs">{$questionErrors?.[i]?.nr}</span>
+							{/if}
+						</td>
+						<GameCell bind:dataToBind={$questionValues[i].question} error={$questionErrors?.[i]?.question} />
+						<GameCell bind:dataToBind={$questionValues[i].answer} error={$questionErrors?.[i]?.answer} />
+						<td>
+							<input type="number" class="w-full bg-transparent" aria-invalid={$questionErrors?.[i]?.xc ? 'true' : undefined} bind:value={$questionValues[i].xc} />
+							{#if $questionErrors?.[i]?.xc}
+								<span class="text-red-500 invalid text-xs">{$questionErrors?.[i]?.xc}</span>
+							{/if}
+						</td>
+						<td>
+							<input type="number" class="w-full bg-transparent" aria-invalid={$questionErrors?.[i]?.yc ? 'true' : undefined} bind:value={$questionValues[i].yc} />
+							{#if $questionErrors?.[i]?.yc}
+								<span class="text-red-500 invalid text-xs">{$questionErrors?.[i]?.yc}</span>
+							{/if}
+						</td>
+						<GameCell bind:dataToBind={$questionValues[i].direction} error={$questionErrors?.[i]?.direction} />
+						<GameCell bind:dataToBind={$questionValues[i].description} error={$questionErrors?.[i]?.description} />
 
 						<td class="!border-0">
 							<button
