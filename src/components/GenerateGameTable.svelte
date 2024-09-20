@@ -144,14 +144,14 @@
 			ondragenter={handleDragEnter}
 			ondragleave={handleDragLeave}
 			ondragover={handleDragOver}
-			class="opacity-0 pointer-events-auto text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 p-4"
+			class="peer opacity-0 pointer-events-auto text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 p-4"
 			type="file"
 			name="csv"
 			accept=".csv"
 			oninput={(e) => ($form.csv = e.currentTarget.files?.item(0) as File)}
 		/>
 		<label
-			class="text-sm w-fit -mt-14 flex flex-col justify-center text-center items-center font-bold gap-2"
+			class="text-sm w-fit -mt-14 flex flex-col justify-center text-center items-center font-bold gap-2 peer-focus:outline peer-focus:outline-offset-2 peer-focus:outline-2 peer-focus:outline-blue-500"
 			for="csv"
 			aria-live="polite"
 			aria-atomic="true"
@@ -176,7 +176,7 @@
 		</label>
 	</div>
 
-	{#if $errors.csv}<span style="color: red;">{$errors.csv}</span>{/if}
+	{#if $errors.csv}<span class="border-red-500 border text-red-500 my-5 px-2 py-1 text-sm">Error: {$errors.csv}</span>{/if}
 
 	{#if $form.csv}
 		<div class="flex flex-col items-center my-12 mx-auto w-full justify-center">
@@ -184,10 +184,3 @@
 		</div>
 	{/if}
 </form>
-
-<style>
-	input:focus + label {
-		outline: 2px solid #2563eb;
-		outline-offset: 2px;
-	}
-</style>
