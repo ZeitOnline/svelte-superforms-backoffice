@@ -3,8 +3,9 @@ import { z } from "zod";
 
 export const generateGameSchema = z.object({
     csv: z
-        .instanceof(File, { message: 'Please upload a file.' })
-        .refine((f) => f.size < 100_000, 'Max 100 kB upload size.'),
+        .instanceof(File, { message: 'Bitte laden sie eine CSV hoch.' })
+        .refine((f) => f.size < 100_000, 'Darf nicht größer als 100 kB sein.')
+        .refine((f) => f.type === 'text/csv', 'Es sind nur CSV Dateien erlaubt.'),
 });
 
 export const saveGameSchema = z.object({

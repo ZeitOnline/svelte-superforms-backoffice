@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms';
+	import { superForm, setError } from 'sveltekit-superforms';
 	import Papa from 'papaparse';
 	import type { PageData } from '../routes/$types';
 	import { dev } from '$app/environment';
 	import ViewNavigation from './ViewNavigation.svelte';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { generateGameSchema } from '../schemas/generate-game';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -15,11 +17,11 @@
 		beginning_option: 'scratch' | 'csv' | null;
 	} = $props();
 
-	const { form, message, constraints, errors, enhance, isTainted, reset } = superForm(
+	const { form, errors, enhance, isTainted, reset } = superForm(
 		data.generateGameForm,
 		{
 			resetForm: false,
-			validators: false,
+			validators: zodClient(generateGameSchema),
 			SPA: true,
 			taintedMessage: true,
 			onChange(event) {
@@ -39,15 +41,20 @@
 			},
 			onUpdate({ form }) {
 				if (form.valid) {
-					// console.log('form is valid');
-					// console.log('form:', form);
 					Papa.parse(form.data.csv, {
 						// header: true,
 						complete: function (results) {
+							const fieldSize = (results.data[0] as any).length;
+
+							if (fieldSize !== 7) {
+								setError(form, 'csv', 'Die CSV-Datei muss 7 Spalten haben.');
+								return;
+							}
+
 							const body = results.data.slice(1) as string[][];
 
 							if (!body) {
-								console.log('no rows found');
+								setError(form, 'csv', 'Die CSV-Datei muss Spalten haben.');
 								return;
 							}
 
@@ -56,13 +63,6 @@
 					});
 				}
 			},
-			onUpdated({ form }) {
-				if (form.valid) {
-					// Successful post! Do some more client-side stuff,
-					// like showing a toast notification.
-					// console.log('toastchen here!');
-				}
-			}
 		}
 	);
 
@@ -75,7 +75,8 @@
 			isDragging = false;
 
 			const file = event.dataTransfer?.files?.[0];
-			if (file && file.type === 'text/csv') {
+			// Filetype and size is validated through zod schema
+			if (file) {
 				$form.csv = file;
 				if (fileInput) fileInput.files = event.dataTransfer?.files;
 			}
@@ -124,8 +125,6 @@
 		}
 	}
 </script>
-
-{#if $message}<h1>{$message}</h1>{/if}
 
 <ViewNavigation
 	viewName="Neues Spiel erstellen"
