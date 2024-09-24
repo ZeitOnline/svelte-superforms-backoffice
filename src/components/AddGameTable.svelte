@@ -287,9 +287,10 @@
 
 	<div class="flex justify-between items-center w-full gap-z-ds-8 my-z-ds-24">
 		<div class="font-bold text-nowrap">Fragen des Spiels</div>
+
 	</div>
 
-	<div class="relative overflow-x-auto">
+	<div class="relative overflow-x-auto overflow-y-visible">
 		<table class="w-full text-sm text-left rtl:text-right text-gray-900">
 			<thead>
 				<tr>
@@ -318,23 +319,21 @@
 					>
 						<td>
 							<input type="number" class="w-full bg-transparent" aria-invalid={$questionErrors?.[i]?.nr ? 'true' : undefined} bind:value={$questionValues[i].nr} />
-							{#if $questionErrors?.[i]?.nr}
-								<span class="text-red-500 invalid text-xs">{$questionErrors?.[i]?.nr}</span>
-							{/if}
+							<!-- {#if $questionErrors?.[i]?.nr}
+								{@const error = $questionErrors?.[i]?.nr}
+							{/if} -->
 						</td>
 						<GameCell bind:dataToBind={$questionValues[i].question} error={$questionErrors?.[i]?.question} />
 						<GameCell bind:dataToBind={$questionValues[i].answer} error={$questionErrors?.[i]?.answer} />
 						<td>
 							<input type="number" class="w-full bg-transparent" aria-invalid={$questionErrors?.[i]?.xc ? 'true' : undefined} bind:value={$questionValues[i].xc} />
-							{#if $questionErrors?.[i]?.xc}
-								<span class="text-red-500 invalid text-xs">{$questionErrors?.[i]?.xc}</span>
-							{/if}
+						
 						</td>
 						<td>
 							<input type="number" class="w-full bg-transparent" aria-invalid={$questionErrors?.[i]?.yc ? 'true' : undefined} bind:value={$questionValues[i].yc} />
-							{#if $questionErrors?.[i]?.yc}
+							<!-- {#if $questionErrors?.[i]?.yc}
 								<span class="text-red-500 invalid text-xs">{$questionErrors?.[i]?.yc}</span>
-							{/if}
+							{/if} -->
 						</td>
 						<GameCell bind:dataToBind={$questionValues[i].direction} error={$questionErrors?.[i]?.direction} />
 						<GameCell bind:dataToBind={$questionValues[i].description} error={$questionErrors?.[i]?.description} />
@@ -349,11 +348,50 @@
 								-
 							</button>
 						</td>
+
+						
 					</tr>
 				{/each}
 			</tbody>
 		</table>
 	</div>
+
+	{#if $questionErrors.some((error) => error.nr || error.xc || error.yc || error.direction || error.description)}
+
+		<div role="alert" aria-atomic="true" class="flex flex-col justify-center mx-auto mt-12 w-fit border-red-500 border text-red-500 p-4">
+	
+			<div class="flex items-center gap-3 mb-3">
+				<IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
+				<span id="error-heading">Bitte, korrigieren Sie die Fehler hier:</span>
+			</div>
+
+			
+			<ul aria-live="assertive" class="flex flex-col justify-center list-inside list-disc max-w-[300px]" aria-labelledby="error-heading">
+
+				{#each $questionErrors as _i, i}
+					{#if $questionErrors?.[i]?.nr}
+						<li class="px-2 text-sm">
+							[R: {i + 1}] - {$questionErrors?.[i]?.nr}
+						</li>
+						
+					{/if}
+					{#if $questionErrors?.[i]?.xc}
+						<li class="px-2 text-sm">
+							[R: {i + 1}] - {$questionErrors?.[i]?.xc}
+			
+						</li>
+					{/if}
+					{#if $questionErrors?.[i]?.yc}
+						<li class="px-2 text-sm">
+							[R: {i + 1}] - {$questionErrors?.[i]?.yc}
+						</li>
+					{/if}
+				{/each}
+			</ul>
+		</div>
+
+	{/if}
+
 
 	<div class="flex flex-row gap-4 items-center my-12 mx-auto w-full justify-center">
 		<button class="z-ds-button" type="submit">Neues Spiel erstellen</button>

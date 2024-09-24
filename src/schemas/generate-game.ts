@@ -10,11 +10,11 @@ export const generateGameSchema = z.object({
 });
 
 export const saveGameSchema = z.object({
-	nr: z.number({ message: ERRORS.EMPTY }).min(1, { message: ERRORS.GAME.QUESTIONS.NR.MIN }),
+	nr: z.number({ message: ERRORS.GAME.QUESTIONS.NR.EMPTY }).min(1, { message: ERRORS.GAME.QUESTIONS.NR.MIN }),
 	question: z.string().min(1, { message: ERRORS.GAME.QUESTIONS.QUESTION }),
 	answer: z.string().min(1, { message: ERRORS.GAME.QUESTIONS.ANSWER }),
-	xc: z.number({ message: ERRORS.EMPTY}),
-	yc: z.number({ message: ERRORS.EMPTY }),
+	xc: z.number({ message: ERRORS.GAME.QUESTIONS.XC.EMPTY}).min(0, { message: ERRORS.GAME.QUESTIONS.XC.MIN}),
+	yc: z.number({ message: ERRORS.GAME.QUESTIONS.YC.EMPTY }).min(0, { message: ERRORS.GAME.QUESTIONS.YC.MIN}),
 	direction: z
 		.nativeEnum(Orientation, { message: ERRORS.GAME.QUESTIONS.DIRECTION })
 		.default(Orientation.HORIZONTAL),

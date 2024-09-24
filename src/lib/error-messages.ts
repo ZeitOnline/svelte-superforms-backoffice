@@ -19,12 +19,19 @@ export const ERRORS = {
         },
         QUESTIONS: {
             NR: {
-                MIN: 'Muss größer als 0 sein.',
+                EMPTY: 'Die Nummer darf nicht leer sein.',
+                MIN: 'Nr. muss größer als 0 sein.',
+            },
+            XC: {
+                EMPTY: 'Die X-Koordinate darf nicht leer sein.',
+                MIN: 'Die X-Koordinate muss größer oder gleich 0 sein.',
+            },
+            YC: {
+                EMPTY: 'Die Y-Koordinate darf nicht leer sein.',
+                MIN: 'Die Y-Koordinate muss größer oder gleich 0 sein.',
             },
             QUESTION: 'Die Frage darf nicht leer sein.',
             ANSWER: 'Die Antwort darf nicht leer sein.',
-            XC: 'Die X-Koordinate darf nicht leer sein.',
-            YC: 'Die Y-Koordinate darf nicht leer sein.',
             DIRECTION: `Die Richtung muss '${Orientation.HORIZONTAL}' oder '${Orientation.VERTICAL}' sein.`,
             DESCRIPTION: 'Die Beschreibung darf nicht leer sein.',
         }
