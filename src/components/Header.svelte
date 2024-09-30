@@ -2,9 +2,9 @@
 	import { toast } from '@zerodevx/svelte-toast';
 	import EckchenLogo from './EckchenLogo.svelte';
 	import ZeitSpieleLogo from './ZeitSpieleLogo.svelte';
-	import type { ViewStateStore } from '../stores/view-state-store.svelte';
+	// import type { ViewStateStore } from '../stores/view-state-store.svelte';
 
-	let { store }: { store: ViewStateStore } = $props();
+	// let { store }: { store: ViewStateStore } = $props();
 
 	function handleLogOut() {
 		toast.push('Logged out successfully', {
@@ -13,10 +13,6 @@
 				'--toastColor': '#fff'
 			}
 		});
-	}
-
-	function handleGoToLogs() {
-		store.updateView('activity-logs');
 	}
 </script>
 
@@ -29,8 +25,6 @@
 	</div>
 
 	<div>
-		<button class="text-z-ds-color-black-80 text-sm" onclick={handleGoToLogs}>Activity Logs</button>
-		<span> | </span>
 		<button class="text-z-ds-color-black-80 text-sm" onclick={handleLogOut}>Ausloggen</button>
 	</div>
 </header>

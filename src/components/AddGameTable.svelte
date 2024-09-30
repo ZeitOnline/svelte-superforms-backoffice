@@ -8,10 +8,10 @@
 	import { cubicInOut } from 'svelte/easing';
 	import { createGame, createGameQuestions, getNextAvailableDateForGame } from '$lib/queries';
 	import ViewNavigation from './ViewNavigation.svelte';
-	import GameCell from './GameCell.svelte';
 	import { Orientation, type Question } from '$types';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { saveGameFormSchema } from '../schemas/generate-game';
+	import { onMount } from 'svelte';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -25,98 +25,81 @@
 
 	let isSubmitted = false;
 
-	const superform = superForm(
-		data.saveGameForm,
-		{
-			validators: zodClient(saveGameFormSchema),
-			SPA: true,
-			taintedMessage: isSubmitted ? false : true,
-			// onChange(event) {
-			// 	if (event.target) {
-			// 		if(event.path === 'name') {
-			// 			const isNameTaken = data.games.some((game: any) => game.name === $form.name)
-						
-			// 			console.log('we are changing the name')
-			// 		} else if (event.path === 'release_date') {
-			// 			const isDateTaken = data.games.some((game: any) => game.release_date === $form.release_date)
-			// 			console.log('we are changing the date')
-			// 		}
-			// 	}
-			// },
-			async onUpdate({ form }) {
-				try {
-					
-					if (data.games.some((game: any) => game.name === $form.name)) {
-						setError(form, 'name', 'This name is already taken');
-					} 
-
-					if (data.games.some((game: any) => game.release_date === $form.release_date)) {
-						setError(form, 'release_date', 'There is already a game on this day');
-					}
-
-					const finalData = {
-						name: $form.name,
-						release_date: $form.release_date,
-						active: $form.published,
-					};
-
-					// Log the new game data to be added
-					console.log('Adding new game:', finalData);
-
-					if (!form.valid) {
-						return;
-					}
-
-					// Send the new game data to the backend
-					const newGameArray = await createGame(finalData);
-					const newGame = newGameArray[0];
-					newGame.questions = $form.questions;
-					newGame.questions.map((question) => {
-						question.game_id = newGame.id;
-					});
-					const resp = await createGameQuestions(newGame);
-					if (!resp.ok) {
-						throw new Error('Failed to add questions');
-					}
-
-				
-				} catch (error) {
-					// TODO: Error handling for conflict 409/500 etc
-					console.error('Error adding game:', error);
-					toast.push('⚠️ Failed to add the game. Please try again.', {
-						duration: 3000,
-						theme: {
-							'--toastBackground': '#e74c3c'
-						}
-					});
+	const superform = superForm(data.saveGameForm, {
+		validators: zodClient(saveGameFormSchema),
+		SPA: true,
+		taintedMessage: isSubmitted ? false : true,
+		async onUpdate({ form }) {
+			try {
+				if (data.games.some((game: any) => game.name === $form.name)) {
+					setError(form, 'name', 'This name is already taken');
 				}
-			},
-			onUpdated({ form }) {
-				if (form.valid) {
-					toast.push('⭐️ Game amazingly added! Redirecting to main dashboard...', {
-						duration: 3000,
-						theme: {
-							'--toastBackground': '#292929'
-						}
-					});
-					setTimeout(() => {
-						window.location.href = '/';
-					}, 3000);
-					// Successful post! Do some more client-side stuff,
-					// like showing a toast notification.
-					// console.log('toastchen here!');
+
+				if (data.games.some((game: any) => game.release_date === $form.release_date)) {
+					setError(form, 'release_date', 'There is already a game on this day');
 				}
-			},
-			onResult({ result }) {
-				console.log('onResult:', result);
-				isSubmitted = true;
+
+				const finalData = {
+					name: $form.name,
+					release_date: $form.release_date,
+					active: $form.published
+				};
+
+				// Log the new game data to be added
+				console.log('Adding new game:', finalData);
+
+				if (!form.valid) {
+					return;
+				}
+
+				// Send the new game data to the backend
+				const newGameArray = await createGame(finalData);
+				const newGame = newGameArray[0];
+				newGame.questions = $form.questions;
+				newGame.questions.map((question) => {
+					question.game_id = newGame.id;
+				});
+				const resp = await createGameQuestions(newGame);
+				if (!resp.ok) {
+					throw new Error('Failed to add questions');
+				}
+			} catch (error) {
+				// TODO: Error handling for conflict 409/500 etc
+				console.error('Error adding game:', error);
+				toast.push('⚠️ Failed to add the game. Please try again.', {
+					duration: 3000,
+					theme: {
+						'--toastBackground': '#e74c3c'
+					}
+				});
 			}
+		},
+		onUpdated({ form }) {
+			if (form.valid) {
+				toast.push('⭐️ Game amazingly added! Redirecting to main dashboard...', {
+					duration: 3000,
+					theme: {
+						'--toastBackground': '#292929'
+					}
+				});
+				setTimeout(() => {
+					window.location.href = '/';
+				}, 3000);
+			}
+		},
+		onResult({ result }) {
+			console.log('onResult:', result);
+			isSubmitted = true;
 		}
-	);
+	});
 	const { form, message, constraints, errors, enhance, isTainted, reset } = superform;
 	const { path, value } = formFieldProxy(superform, 'name');
-	const { path: pathQuestions, values: questionValues, valueErrors: questionErrors } = arrayProxy(superform, 'questions');
-	
+	const {
+		path: pathQuestions,
+		values: questionValues,
+		valueErrors: questionErrors
+	} = arrayProxy(superform, 'questions');
+
 	// Function to add a new row
 	function addRow() {
 		let defaultRow = [
@@ -149,49 +132,60 @@
 
 	// Function to remove the last row
 	function removeRow(index: number) {
-		if (confirm(`Are you sure you want to remove the ${index+1}. row?`) && $form.questions.length > 0) {
+		if (
+			confirm(`Are you sure you want to remove the ${index + 1}. row?`) &&
+			$form.questions.length > 0
+		) {
 			$form.questions.splice(index, 1);
 			$form.questions = $form.questions; // Reassign to trigger reactivity
-		};
+		}
 	}
+
+	onMount(() => {
+		if (resultsDataBody.length === 0) {
+			addRow();
+		}
+	});
 
 	$effect(() => {
 		if (!isSubmitted) {
-			if (resultsDataBody.length === 0) {
-				addRow();
-			} else if (resultsDataBody.length > 0 && $form.questions.length === 0) {
+			if (resultsDataBody.length > 0 && $form.questions.length === 0) {
 				const newQuestions = [
 					...$form.questions,
 					...resultsDataBody.map((row) => serializeRow(row))
 				];
-				$form.questions = newQuestions; // Reassign to trigger reactivity
+
+				setTimeout(() => {
+					$form.questions = newQuestions; // Reassign to trigger reactivity
+				}, 0);
 			}
-			const addCustomDate = async () => {
-				try {
-					// Fetch the last game date from the API
-					const lastGameDate = await getNextAvailableDateForGame();
 
-					// Convert lastGameDate to a Date object
-					const lastGameDateFormat = new Date(lastGameDate); // lastGameDate should be in ISO or a valid date string format
-
-					// Increment the date by 1 day
-					lastGameDateFormat.setDate(lastGameDateFormat.getDate() + 1); // Increment the date by 1
-
-					// Format the new date to YYYY-MM-DD
-					const nextGameDate = lastGameDateFormat.toISOString().split('T')[0];
-
-
-					// If you want to update the form with the new date
-					$form.release_date = nextGameDate;
-				} catch (error) {
-					console.error('Error fetching next available date:', error);
-				}
-			};
 			if ($form.release_date === '') {
 				addCustomDate();
 			}
-		} 
+		}
 	});
+
+	const addCustomDate = async () => {
+		try {
+			// Fetch the last game date from the API
+			const lastGameDate = await getNextAvailableDateForGame();
+
+			// Convert lastGameDate to a Date object
+			const lastGameDateFormat = new Date(lastGameDate); // lastGameDate should be in ISO or a valid date string format
+
+			// Increment the date by 1 day
+			lastGameDateFormat.setDate(lastGameDateFormat.getDate() + 1); // Increment the date by 1
+
+			// Format the new date to YYYY-MM-DD
+			const nextGameDate = lastGameDateFormat.toISOString().split('T')[0];
+
+			// If you want to update the form with the new date
+			$form.release_date = nextGameDate;
+		} catch (error) {
+			console.error('Error fetching next available date:', error);
+		}
+	};
 
 	function resetAll() {
 		reset();
@@ -207,12 +201,10 @@
 			} else {
 				console.log('user decided to stay');
 			}
-		} 
-		else {
+		} else {
 			resetAll();
 		}
 	}
-
 </script>
 
 <!-- <SuperDebug collapsible={true} collapsed data={$form} display={dev} /> -->
@@ -237,9 +229,12 @@
 				placeholder="GameXXXX"
 				aria-invalid={$errors.name ? 'true' : undefined}
 				bind:value={$value}
-				/>
+			/>
 			{#if $errors.name}
-				<div in:blur class="text-red-500 invalid flex items-center gap-z-ds-4 absolute -bottom-6 left-0 text-xs">
+				<div
+					in:blur
+					class="text-red-500 invalid flex items-center gap-z-ds-4 absolute -bottom-6 left-0 text-xs"
+				>
 					<IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
 					<span class="text-nowrap text-xs">{$errors.name}</span>
 				</div>
@@ -262,12 +257,14 @@
 				bind:value={$form.release_date}
 			/>
 			{#if $errors.release_date}
-				<div in:blur class="text-red-500 invalid flex items-center gap-z-ds-4 absolute -bottom-6 left-0 text-xs">
+				<div
+					in:blur
+					class="text-red-500 invalid flex items-center gap-z-ds-4 absolute -bottom-6 left-0 text-xs"
+				>
 					<IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
 					<span class="text-nowrap text-xs">{$errors.release_date}</span>
 				</div>
 			{/if}
-
 		</div>
 	</div>
 
@@ -287,7 +284,6 @@
 
 	<div class="flex justify-between items-center w-full gap-z-ds-8 my-z-ds-24">
 		<div class="font-bold text-nowrap">Fragen des Spiels</div>
-
 	</div>
 
 	<div class="relative overflow-x-auto overflow-y-visible">
@@ -318,25 +314,50 @@
 						out:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
 					>
 						<td>
-							<input type="number" class="w-full bg-transparent" aria-invalid={$questionErrors?.[i]?.nr ? 'true' : undefined} bind:value={$questionValues[i].nr} />
-							<!-- {#if $questionErrors?.[i]?.nr}
-								{@const error = $questionErrors?.[i]?.nr}
-							{/if} -->
-						</td>
-						<GameCell bind:dataToBind={$questionValues[i].question} error={$questionErrors?.[i]?.question} />
-						<GameCell bind:dataToBind={$questionValues[i].answer} error={$questionErrors?.[i]?.answer} />
-						<td>
-							<input type="number" class="w-full bg-transparent" aria-invalid={$questionErrors?.[i]?.xc ? 'true' : undefined} bind:value={$questionValues[i].xc} />
-						
+							<input
+								type="number"
+								class="w-full bg-transparent"
+								aria-invalid={$questionErrors?.[i]?.nr ? 'true' : undefined}
+								bind:value={$questionValues[i].nr}
+							/>
 						</td>
 						<td>
-							<input type="number" class="w-full bg-transparent" aria-invalid={$questionErrors?.[i]?.yc ? 'true' : undefined} bind:value={$questionValues[i].yc} />
-							<!-- {#if $questionErrors?.[i]?.yc}
-								<span class="text-red-500 invalid text-xs">{$questionErrors?.[i]?.yc}</span>
-							{/if} -->
+							<textarea class="w-full bg-transparent"
+								aria-invalid={$questionErrors?.[i]?.question ? 'true' : undefined}
+								bind:value={$questionValues[i].question}></textarea>
 						</td>
-						<GameCell bind:dataToBind={$questionValues[i].direction} error={$questionErrors?.[i]?.direction} />
-						<GameCell bind:dataToBind={$questionValues[i].description} error={$questionErrors?.[i]?.description} />
+						<td>
+							<textarea class="w-full bg-transparent"
+								aria-invalid={$questionErrors?.[i]?.answer ? 'true' : undefined}
+								bind:value={$questionValues[i].answer}></textarea>
+						</td>
+						<td>
+							<input
+								type="number"
+								class="w-full bg-transparent"
+								aria-invalid={$questionErrors?.[i]?.xc ? 'true' : undefined}
+								bind:value={$questionValues[i].xc}
+							/>
+						</td>
+						<td>
+							<input
+								type="number"
+								class="w-full bg-transparent"
+								aria-invalid={$questionErrors?.[i]?.yc ? 'true' : undefined}
+								bind:value={$questionValues[i].yc}
+							/>
+						</td>
+						<td>
+							<input class="w-full bg-transparent"
+								aria-invalid={$questionErrors?.[i]?.direction ? 'true' : undefined}
+								bind:value={$questionValues[i].direction} />
+						</td>
+
+						<td>
+							<textarea class="w-full bg-transparent"
+								aria-invalid={$questionErrors?.[i]?.description ? 'true' : undefined}
+								bind:value={$questionValues[i].description}></textarea>
+						</td>
 
 						<td class="!border-0">
 							<button
@@ -348,37 +369,37 @@
 								-
 							</button>
 						</td>
-
-						
 					</tr>
 				{/each}
 			</tbody>
 		</table>
 	</div>
 
-	{#if $questionErrors.some((error) => error.nr || error.xc || error.yc || error.direction || error.description)}
-
-		<div role="alert" aria-atomic="true" class="flex flex-col justify-center mx-auto mt-12 w-fit border-red-500 border text-red-500 p-4">
-	
+	{#if $questionErrors.some((error) => error.nr || error.xc || error.yc || error.direction || error.description || error.question || error.answer)}
+		<div
+			role="alert"
+			aria-atomic="true"
+			class="flex flex-col justify-center mx-auto mt-12 w-fit border-red-500 border text-red-500 p-4"
+		>
 			<div class="flex items-center gap-3 mb-3">
 				<IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
 				<span id="error-heading">Bitte, korrigieren Sie die Fehler hier:</span>
 			</div>
 
-			
-			<ul aria-live="assertive" class="flex flex-col justify-center list-inside list-disc max-w-[300px]" aria-labelledby="error-heading">
-
+			<ul
+				aria-live="assertive"
+				class="flex flex-col justify-center list-inside list-disc max-w-[300px]"
+				aria-labelledby="error-heading"
+			>
 				{#each $questionErrors as _i, i}
 					{#if $questionErrors?.[i]?.nr}
 						<li class="px-2 text-sm">
 							[R: {i + 1}] - {$questionErrors?.[i]?.nr}
 						</li>
-						
 					{/if}
 					{#if $questionErrors?.[i]?.xc}
 						<li class="px-2 text-sm">
 							[R: {i + 1}] - {$questionErrors?.[i]?.xc}
-			
 						</li>
 					{/if}
 					{#if $questionErrors?.[i]?.yc}
@@ -386,14 +407,39 @@
 							[R: {i + 1}] - {$questionErrors?.[i]?.yc}
 						</li>
 					{/if}
+					{#if $questionErrors?.[i]?.direction}
+						<li class="px-2 text-sm">
+							[R: {i + 1}] - {$questionErrors?.[i]?.direction}
+						</li>
+					{/if}
+					{#if $questionErrors?.[i]?.description}
+						<li class="px-2 text-sm">
+							[R: {i + 1}] - {$questionErrors?.[i]?.description}
+						</li>
+					{/if}
+					{#if $questionErrors?.[i]?.question}
+						<li class="px-2 text-sm">
+							[R: {i + 1}] - {$questionErrors?.[i]?.question}
+						</li>
+					{/if}
+					{#if $questionErrors?.[i]?.answer}
+						<li class="px-2 text-sm">
+							[R: {i + 1}] - {$questionErrors?.[i]?.answer}
+						</li>
+					{/if}
+
 				{/each}
 			</ul>
 		</div>
-
 	{/if}
-
 
 	<div class="flex flex-row gap-4 items-center my-12 mx-auto w-full justify-center">
 		<button class="z-ds-button" type="submit">Neues Spiel erstellen</button>
 	</div>
 </form>
+
+<style>
+	textarea {
+		field-sizing: content;
+	}
+</style>
