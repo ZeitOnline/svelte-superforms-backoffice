@@ -43,6 +43,7 @@
 			onUpdate({ form }) {
 				if (form.valid) {
 					Papa.parse(form.data.csv, {
+						skipEmptyLines: true,
 						// header: true,
 						complete: function (results) {
 							const fieldSize = (results.data[0] as any).length;
@@ -58,6 +59,12 @@
 								setError(form, 'csv', ERRORS.CSV.EMPTY);
 								return;
 							}
+
+							// filter row if all cells are empty
+							const emptyRow = body.findIndex((row) => row.every((cell) => cell === '' || cell === '\x1A'));
+                            if (emptyRow !== -1) {
+                                body.splice(emptyRow, 1);
+                            }
 
 							resultsDataBody.push(...body);
 						}
