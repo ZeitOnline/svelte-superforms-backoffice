@@ -12,14 +12,14 @@
 	let { data }: { data: PageData } = $props();
 </script>
 
-<Header {store} />
+<Header />
 
 {#if store.view == 'new-game'}
 	<NewGameView {store} {data} />
 {:else if store.view == 'dashboard'}
 	<DashboardView {store} games={data.games} />
 {:else if store.view == 'edit-game'}
-	<EditGameView {store} games={data.games} />
+	<EditGameView {store} {data} />
 {:else if store.view == 'delete-game'}
 	<DeleteGameView {store} games={data.games} />
 {:else if store.view == 'activity-logs'}

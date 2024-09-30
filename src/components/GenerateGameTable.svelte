@@ -7,6 +7,7 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { generateGameSchema } from '../schemas/generate-game';
 	import { ERRORS } from '$lib/error-messages';
+	import type { BeginningOptions } from '$types';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -15,7 +16,7 @@
 	}: {
 		resultsDataBody: string[][];
 		data: PageData;
-		beginning_option: 'scratch' | 'csv' | null;
+		beginning_option: BeginningOptions;
 	} = $props();
 
 	const { form, errors, enhance, isTainted, reset } = superForm(

@@ -6,21 +6,26 @@
 	import { blur } from 'svelte/transition';
 	import IconHandler from './icons/IconHandler.svelte';
 	import { cubicInOut } from 'svelte/easing';
-	import { createGame, createGameQuestions, getNextAvailableDateForGame } from '$lib/queries';
+	import { createGame, createGameQuestions, getNextAvailableDateForGame, updateGame } from '$lib/queries';
 	import ViewNavigation from './ViewNavigation.svelte';
-	import { Orientation, type Question } from '$types';
+	import { Orientation, type BeginningOptions, type Game, type GameComplete, type Question } from '$types';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { saveGameFormSchema } from '../schemas/generate-game';
 	import { onMount } from 'svelte';
+	import type { ViewStateStore } from '$stores/view-state-store.svelte';
 
 	let {
 		resultsDataBody = $bindable(),
 		data,
-		beginning_option = $bindable()
+		game,
+		beginning_option = $bindable(),
+		store
 	}: {
 		resultsDataBody: string[][];
 		data: PageData;
-		beginning_option: 'scratch' | 'csv' | null;
+		game?: GameComplete;
+		beginning_option: BeginningOptions;
+		store: ViewStateStore;
 	} = $props();
 
 	let isSubmitted = false;
@@ -145,6 +150,14 @@
 		if (resultsDataBody.length === 0) {
 			addRow();
 		}
+		if (game) {
+			if (game.name) {
+				$value = game.name;
+			}
+			if (game.release_date) {
+				$form.release_date = game.release_date;
+			}
+		}
 	});
 
 	$effect(() => {
@@ -191,6 +204,10 @@
 		reset();
 		resultsDataBody = [];
 		beginning_option = null;
+		if (game) {
+			store.updateSelectedGameId(-1);
+			store.updateView('dashboard');
+		}
 	}
 
 	function handleBackToDashboard(): void {
@@ -205,14 +222,23 @@
 			resetAll();
 		}
 	}
+
 </script>
 
 <!-- <SuperDebug collapsible={true} collapsed data={$form} display={dev} /> -->
-<ViewNavigation
-	viewName="Neues Spiel erstellen"
-	mainAction={handleBackToDashboard}
-	mainActionText="Zurück"
-/>
+ {#if beginning_option === 'edit' && game}
+ 	<ViewNavigation
+		viewName={`Spiel ${game.name} bearbeiten`}
+		mainAction={handleBackToDashboard}
+		mainActionText="Zurück"
+	/>
+ {:else}
+	<ViewNavigation
+		viewName="Neues Spiel erstellen"
+		mainAction={handleBackToDashboard}
+		mainActionText="Zurück"
+	/>
+{/if}
 
 <form class="my-z-ds-24" method="POST" enctype="multipart/form-data" use:enhance>
 	<!-- Input text name  -->

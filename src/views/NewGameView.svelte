@@ -6,11 +6,12 @@
 	import type { ViewStateStore } from '../stores/view-state-store.svelte';
 	import ViewNavigation from '$components/ViewNavigation.svelte';
 	import IconHandler from '$components/icons/IconHandler.svelte';
+	import type { BeginningOptions } from '$types';
 
 	let { data, store } = $props<{ data: PageData; store: ViewStateStore }>();
 
 	let resultsDataBody: string[][] = $state([]);
-	let beginning_option: 'scratch' | 'csv' | null = $state(null);
+	let beginning_option: BeginningOptions = $state(null);
 
 	function handleBackToDashboard() {
 		store.updateView('dashboard');
