@@ -29,6 +29,13 @@ export const getNextAvailableDateForGame = async () => {
         `${BASE_URL}/game?select=release_date&order=release_date.desc&limit=1`
     );
     const data = await response.json();
+
+    // if latest available date is in the past, return today's date
+    let isDateInThePast = data[0].release_date < new Date().toISOString().split('T')[0];
+    if (isDateInThePast) {
+        return new Date().toISOString().split('T')[0];
+    }
+
     return data[0].release_date;
 }
 

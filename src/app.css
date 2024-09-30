@@ -24,7 +24,9 @@ tr th {
     max-width: 150px;
 }
 
-input[aria-invalid='true'] {
+input[aria-invalid='true'],
+textarea[aria-invalid='true'],
+select[aria-invalid='true'] {
     border: 2px solid var(--z-ds-color-accent-100);
     background-color: var(--z-ds-general-white-100);
 }
