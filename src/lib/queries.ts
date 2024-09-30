@@ -39,13 +39,10 @@ export const getNextAvailableDateForGame = async () => {
  */
 export const getAllQuestionsByGameId = async (id: number) => {
     const response = await fetch(
-        `${BASE_URL}/game_question`
+        `${BASE_URL}/game_question?game_id=eq.${id}`
     );
     const data = await response.json();
-
-    const questions = data.filter((question: any) => question.game_id === id);
-    // console.log("questions", questions);
-    return questions as QuestionComplete[]
+    return data as QuestionComplete[];
 }
 
 /**

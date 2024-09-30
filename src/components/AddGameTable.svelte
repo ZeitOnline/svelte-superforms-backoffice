@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { formFieldProxy, superForm, arrayProxy } from 'sveltekit-superforms';
+	import { formFieldProxy, superForm, arrayProxy, setError } from 'sveltekit-superforms';
 	import type { PageData } from '../routes/$types';
 	import { toast } from '@zerodevx/svelte-toast';
 	import Separator from './Separator.svelte';
 	import { blur } from 'svelte/transition';
-	import ErrorIcon from '$components/icons/HasErrorIcon.svelte';
 	import IconHandler from './icons/IconHandler.svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { createGame, createGameQuestions, getNextAvailableDateForGame } from '$lib/queries';
-	import { dev } from '$app/environment';
 	import ViewNavigation from './ViewNavigation.svelte';
 	import GameCell from './GameCell.svelte';
 	import { Orientation, type Question } from '$types';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { saveGameFormSchema } from '../schemas/generate-game';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -28,42 +28,47 @@
 	const superform = superForm(
 		data.saveGameForm,
 		{
-			validators: false,
+			validators: zodClient(saveGameFormSchema),
 			SPA: true,
 			taintedMessage: isSubmitted ? false : true,
 			// onChange(event) {
-			// 	if (dev) {
-			// 		if (event.target) {
-			// 			// Form input event
-			// 			console.log(event.path, 'was changed with', event.target, 'in form', event.formElement);
-			// 		} else {
-			// 			// Programmatic event
-			// 			console.log('Fields updated:', event.paths);
+			// 	if (event.target) {
+			// 		if(event.path === 'name') {
+			// 			const isNameTaken = data.games.some((game: any) => game.name === $form.name)
+						
+			// 			console.log('we are changing the name')
+			// 		} else if (event.path === 'release_date') {
+			// 			const isDateTaken = data.games.some((game: any) => game.release_date === $form.release_date)
+			// 			console.log('we are changing the date')
 			// 		}
-
-			// 		console.log('release date:', $form.release_date);
 			// 	}
-
 			// },
 			async onUpdate({ form }) {
 				try {
-					// Fetch the highest existing game ID asynchronously
-					// TODO: incremental ID is working, but here we are doing it like this
-					// because the updateGame is asking for it before
-					// we need to separate the logic and do different requests for games and questions
+					
+					if (data.games.some((game: any) => game.name === $form.name)) {
+						setError(form, 'name', 'This name is already taken');
+					} 
 
-					// Construct the data for the new game
-					const data = {
+					if (data.games.some((game: any) => game.release_date === $form.release_date)) {
+						setError(form, 'release_date', 'There is already a game on this day');
+					}
+
+					const finalData = {
 						name: $form.name,
 						release_date: $form.release_date,
 						active: $form.published,
 					};
 
 					// Log the new game data to be added
-					console.log('Adding new game:', data);
+					console.log('Adding new game:', finalData);
+
+					if (!form.valid) {
+						return;
+					}
 
 					// Send the new game data to the backend
-					const newGameArray = await createGame(data);
+					const newGameArray = await createGame(finalData);
 					const newGame = newGameArray[0];
 					newGame.questions = $form.questions;
 					newGame.questions.map((question) => {
@@ -73,6 +78,8 @@
 					if (!resp.ok) {
 						throw new Error('Failed to add questions');
 					}
+
+				
 				} catch (error) {
 					// TODO: Error handling for conflict 409/500 etc
 					console.error('Error adding game:', error);
@@ -108,7 +115,7 @@
 	);
 	const { form, message, constraints, errors, enhance, isTainted, reset } = superform;
 	const { path, value } = formFieldProxy(superform, 'name');
-	const { path: pathQuestions, values: questionValues } = arrayProxy(superform, 'questions');
+	const { path: pathQuestions, values: questionValues, valueErrors: questionErrors } = arrayProxy(superform, 'questions');
 	
 	// Function to add a new row
 	function addRow() {
@@ -186,27 +193,6 @@
 		} 
 	});
 
-	let customNameError = $state(false);
-
-	// TODO: change this to server validation
-	$effect(() => {
-		if (data.games.some((game: any) => game.name === $form.name)) {
-			customNameError = true;
-		} else {
-			customNameError = false;
-		}
-	});
-
-	let customDateError = $state(false);
-
-	$effect(() => {
-		if (data.games.some((game: any) => game.release_date === $form.release_date)) {
-			customDateError = true;
-		} else {
-			customDateError = false;
-		}
-	});
-
 	function resetAll() {
 		reset();
 		resultsDataBody = [];
@@ -249,18 +235,15 @@
 				id="game_name"
 				type="text"
 				placeholder="GameXXXX"
-				aria-invalid={$errors.name || customNameError ? 'true' : undefined}
+				aria-invalid={$errors.name ? 'true' : undefined}
 				bind:value={$value}
 				/>
-			{#if $errors.name}<span style="color: red;" class="invalid">{$errors.name}</span>{/if}
-			{#if customNameError}<div
-					in:blur
-					style="color: red;"
-					class="invalid flex items-center gap-z-ds-4 absolute -bottom-6 left-0 text-xs"
-				>
+			{#if $errors.name}
+				<div in:blur class="text-red-500 invalid flex items-center gap-z-ds-4 absolute -bottom-6 left-0 text-xs">
 					<IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
-					<span class="text-nowrap text-xs">This name is already taken</span>
-				</div>{/if}
+					<span class="text-nowrap text-xs">{$errors.name}</span>
+				</div>
+			{/if}
 		</div>
 	</div>
 
@@ -275,20 +258,16 @@
 				name="release_date"
 				id="release_date"
 				type="date"
-				aria-invalid={$errors.release_date || customDateError ? 'true' : undefined}
+				aria-invalid={$errors.release_date ? 'true' : undefined}
 				bind:value={$form.release_date}
 			/>
-			{#if $errors.release_date}<span style="color: red;" class="invalid"
-					>{$errors.release_date}</span
-				>{/if}
-			{#if customDateError}<div
-					in:blur
-					style="color: red;"
-					class="invalid flex items-center gap-z-ds-4 absolute -bottom-6 left-0 text-xs"
-				>
-					<ErrorIcon extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
-					<span class="text-nowrap text-xs">There is already a game on this day</span>
-				</div>{/if}
+			{#if $errors.release_date}
+				<div in:blur class="text-red-500 invalid flex items-center gap-z-ds-4 absolute -bottom-6 left-0 text-xs">
+					<IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
+					<span class="text-nowrap text-xs">{$errors.release_date}</span>
+				</div>
+			{/if}
+
 		</div>
 	</div>
 
@@ -308,9 +287,10 @@
 
 	<div class="flex justify-between items-center w-full gap-z-ds-8 my-z-ds-24">
 		<div class="font-bold text-nowrap">Fragen des Spiels</div>
+
 	</div>
 
-	<div class="relative overflow-x-auto">
+	<div class="relative overflow-x-auto overflow-y-visible">
 		<table class="w-full text-sm text-left rtl:text-right text-gray-900">
 			<thead>
 				<tr>
@@ -337,13 +317,26 @@
 						in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
 						out:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
 					>
-						<GameCell bind:dataToBind={$questionValues[i].nr} />
-						<GameCell bind:dataToBind={$questionValues[i].question} />
-						<GameCell bind:dataToBind={$questionValues[i].answer} />
-						<GameCell bind:dataToBind={$questionValues[i].xc} />
-						<GameCell bind:dataToBind={$questionValues[i].yc} />
-						<GameCell bind:dataToBind={$questionValues[i].direction} />
-						<GameCell bind:dataToBind={$questionValues[i].description} />
+						<td>
+							<input type="number" class="w-full bg-transparent" aria-invalid={$questionErrors?.[i]?.nr ? 'true' : undefined} bind:value={$questionValues[i].nr} />
+							<!-- {#if $questionErrors?.[i]?.nr}
+								{@const error = $questionErrors?.[i]?.nr}
+							{/if} -->
+						</td>
+						<GameCell bind:dataToBind={$questionValues[i].question} error={$questionErrors?.[i]?.question} />
+						<GameCell bind:dataToBind={$questionValues[i].answer} error={$questionErrors?.[i]?.answer} />
+						<td>
+							<input type="number" class="w-full bg-transparent" aria-invalid={$questionErrors?.[i]?.xc ? 'true' : undefined} bind:value={$questionValues[i].xc} />
+						
+						</td>
+						<td>
+							<input type="number" class="w-full bg-transparent" aria-invalid={$questionErrors?.[i]?.yc ? 'true' : undefined} bind:value={$questionValues[i].yc} />
+							<!-- {#if $questionErrors?.[i]?.yc}
+								<span class="text-red-500 invalid text-xs">{$questionErrors?.[i]?.yc}</span>
+							{/if} -->
+						</td>
+						<GameCell bind:dataToBind={$questionValues[i].direction} error={$questionErrors?.[i]?.direction} />
+						<GameCell bind:dataToBind={$questionValues[i].description} error={$questionErrors?.[i]?.description} />
 
 						<td class="!border-0">
 							<button
@@ -355,11 +348,50 @@
 								-
 							</button>
 						</td>
+
+						
 					</tr>
 				{/each}
 			</tbody>
 		</table>
 	</div>
+
+	{#if $questionErrors.some((error) => error.nr || error.xc || error.yc || error.direction || error.description)}
+
+		<div role="alert" aria-atomic="true" class="flex flex-col justify-center mx-auto mt-12 w-fit border-red-500 border text-red-500 p-4">
+	
+			<div class="flex items-center gap-3 mb-3">
+				<IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
+				<span id="error-heading">Bitte, korrigieren Sie die Fehler hier:</span>
+			</div>
+
+			
+			<ul aria-live="assertive" class="flex flex-col justify-center list-inside list-disc max-w-[300px]" aria-labelledby="error-heading">
+
+				{#each $questionErrors as _i, i}
+					{#if $questionErrors?.[i]?.nr}
+						<li class="px-2 text-sm">
+							[R: {i + 1}] - {$questionErrors?.[i]?.nr}
+						</li>
+						
+					{/if}
+					{#if $questionErrors?.[i]?.xc}
+						<li class="px-2 text-sm">
+							[R: {i + 1}] - {$questionErrors?.[i]?.xc}
+			
+						</li>
+					{/if}
+					{#if $questionErrors?.[i]?.yc}
+						<li class="px-2 text-sm">
+							[R: {i + 1}] - {$questionErrors?.[i]?.yc}
+						</li>
+					{/if}
+				{/each}
+			</ul>
+		</div>
+
+	{/if}
+
 
 	<div class="flex flex-row gap-4 items-center my-12 mx-auto w-full justify-center">
 		<button class="z-ds-button" type="submit">Neues Spiel erstellen</button>

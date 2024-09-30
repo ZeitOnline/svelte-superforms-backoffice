@@ -1,9 +1,12 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms';
+	import { superForm, setError } from 'sveltekit-superforms';
 	import Papa from 'papaparse';
 	import type { PageData } from '../routes/$types';
 	import { dev } from '$app/environment';
 	import ViewNavigation from './ViewNavigation.svelte';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { generateGameSchema } from '../schemas/generate-game';
+	import { ERRORS } from '$lib/error-messages';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -15,11 +18,11 @@
 		beginning_option: 'scratch' | 'csv' | null;
 	} = $props();
 
-	const { form, message, constraints, errors, enhance, isTainted, reset } = superForm(
+	const { form, errors, enhance, isTainted, reset } = superForm(
 		data.generateGameForm,
 		{
 			resetForm: false,
-			validators: false,
+			validators: zodClient(generateGameSchema),
 			SPA: true,
 			taintedMessage: true,
 			onChange(event) {
@@ -39,15 +42,20 @@
 			},
 			onUpdate({ form }) {
 				if (form.valid) {
-					// console.log('form is valid');
-					// console.log('form:', form);
 					Papa.parse(form.data.csv, {
 						// header: true,
 						complete: function (results) {
+							const fieldSize = (results.data[0] as any).length;
+
+							if (fieldSize !== 7) {
+								setError(form, 'csv', ERRORS.CSV.NUMBER_OF_COLUMNS);
+								return;
+							}
+
 							const body = results.data.slice(1) as string[][];
 
 							if (!body) {
-								console.log('no rows found');
+								setError(form, 'csv', ERRORS.CSV.EMPTY);
 								return;
 							}
 
@@ -56,13 +64,6 @@
 					});
 				}
 			},
-			onUpdated({ form }) {
-				if (form.valid) {
-					// Successful post! Do some more client-side stuff,
-					// like showing a toast notification.
-					// console.log('toastchen here!');
-				}
-			}
 		}
 	);
 
@@ -75,7 +76,8 @@
 			isDragging = false;
 
 			const file = event.dataTransfer?.files?.[0];
-			if (file && file.type === 'text/csv') {
+			// Filetype and size is validated through zod schema
+			if (file) {
 				$form.csv = file;
 				if (fileInput) fileInput.files = event.dataTransfer?.files;
 			}
@@ -125,8 +127,6 @@
 	}
 </script>
 
-{#if $message}<h1>{$message}</h1>{/if}
-
 <ViewNavigation
 	viewName="Neues Spiel erstellen"
 	mainAction={handleBackToDashboard}
@@ -145,14 +145,14 @@
 			ondragenter={handleDragEnter}
 			ondragleave={handleDragLeave}
 			ondragover={handleDragOver}
-			class="opacity-0 pointer-events-auto text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 p-4"
+			class="peer opacity-0 pointer-events-auto text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 p-4"
 			type="file"
 			name="csv"
 			accept=".csv"
 			oninput={(e) => ($form.csv = e.currentTarget.files?.item(0) as File)}
 		/>
 		<label
-			class="text-sm w-fit -mt-14 flex flex-col justify-center text-center items-center font-bold gap-2"
+			class="text-sm w-fit -mt-14 flex flex-col justify-center text-center items-center font-bold gap-2 peer-focus:outline peer-focus:outline-offset-2 peer-focus:outline-2 peer-focus:outline-blue-500"
 			for="csv"
 			aria-live="polite"
 			aria-atomic="true"
@@ -177,7 +177,7 @@
 		</label>
 	</div>
 
-	{#if $errors.csv}<span style="color: red;">{$errors.csv}</span>{/if}
+	{#if $errors.csv}<span class="border-red-500 border text-red-500 my-5 px-2 py-1 text-sm">Error: {$errors.csv}</span>{/if}
 
 	{#if $form.csv}
 		<div class="flex flex-col items-center my-12 mx-auto w-full justify-center">
@@ -185,10 +185,3 @@
 		</div>
 	{/if}
 </form>
-
-<style>
-	input:focus + label {
-		outline: 2px solid #2563eb;
-		outline-offset: 2px;
-	}
-</style>
