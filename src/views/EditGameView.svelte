@@ -19,8 +19,11 @@
 		store.updateView('dashboard');
 	};
 
+	const game = data.games.find((game: GameComplete) => game.id === store.selectedGameId);
+
 	async function populateResultBodyForGame(id: number) {
 		const questions = await getAllQuestionsByGameId(id);
+		game.questions = questions;
 		resultsDataBody = questions.map((question: QuestionComplete) => {
 			return [
 				String(question.nr),
@@ -33,14 +36,6 @@
 			];
 		});
 	}
-	// console.log('store.selectedGameId', store.selectedGameId);
-	const game = data.games.find((game: GameComplete) => game.id === store.selectedGameId);
-	// if (!game) {
-	// 	store.updateSelectedGameId(-1);
-	// 	store.updateView('dashboard');
-	// } else {
-	// 	populateResultBodyForGame(game.id);
-	// }
 
 	onMount(async () => {
 		if (!game) {
