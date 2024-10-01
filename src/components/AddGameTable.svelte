@@ -6,9 +6,21 @@
 	import { blur } from 'svelte/transition';
 	import IconHandler from './icons/IconHandler.svelte';
 	import { cubicInOut } from 'svelte/easing';
-	import { createGame, createGameQuestions, getNextAvailableDateForGame, updateGame } from '$lib/queries';
+	import {
+		createGame,
+		createGameQuestions,
+		getNextAvailableDateForGame,
+		updateGame,
+		updateGameQuestions
+	} from '$lib/queries';
 	import ViewNavigation from './ViewNavigation.svelte';
-	import { Orientation, type BeginningOptions, type Game, type GameComplete, type Question } from '$types';
+	import {
+		Orientation,
+		type BeginningOptions,
+		type GameComplete,
+		type Question,
+		type QuestionComplete
+	} from '$types';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { saveGameFormSchema } from '../schemas/generate-game';
 	import { onMount } from 'svelte';
@@ -33,40 +45,81 @@
 	const superform = superForm(data.saveGameForm, {
 		validators: zodClient(saveGameFormSchema),
 		SPA: true,
+		resetForm: false,
 		taintedMessage: isSubmitted ? false : true,
 		async onUpdate({ form }) {
 			try {
-				if (data.games.some((game: any) => game.name === $form.name)) {
-					setError(form, 'name', 'This name is already taken');
-				}
-
-				if (data.games.some((game: any) => game.release_date === $form.release_date)) {
-					setError(form, 'release_date', 'There is already a game on this day');
-				}
-
 				const finalData = {
 					name: $form.name,
 					release_date: $form.release_date,
 					active: $form.published
 				};
+				
+				if (beginning_option === "edit" && game) {
+
+					if (game.name !== $form.name) {
+						if (data.games.some((game: any) => game.name === $form.name)) {
+							setError(form, 'name', 'This name is already taken');
+						}
+					}
+					
+					if (game.release_date !== $form.release_date) {
+						if (data.games.some((game: any) => game.release_date === $form.release_date)) {
+							setError(form, 'release_date', 'There is already a game on this day');
+						}
+					}
+					
+				} else {
+					
+					if (data.games.some((game: any) => game.name === $form.name)) {
+						setError(form, 'name', 'This name is already taken');
+					}
+	
+					if (data.games.some((game: any) => game.release_date === $form.release_date)) {
+						setError(form, 'release_date', 'There is already a game on this day');
+					}
+				}
 
 				// Log the new game data to be added
-				console.log('Adding new game:', finalData);
+				// console.log('Adding new game:', finalData);
 
 				if (!form.valid) {
 					return;
 				}
 
 				// Send the new game data to the backend
-				const newGameArray = await createGame(finalData);
-				const newGame = newGameArray[0];
-				newGame.questions = $form.questions;
-				newGame.questions.map((question) => {
-					question.game_id = newGame.id;
-				});
-				const resp = await createGameQuestions(newGame);
-				if (!resp.ok) {
-					throw new Error('Failed to add questions');
+				if (beginning_option === 'edit' && game) {
+					const finalEditedGame = {
+						id: game.id,
+						name: $form.name,
+						release_date: $form.release_date,
+						active: $form.published,
+						
+					};
+
+					await updateGame(game.id, finalEditedGame);
+
+					const editedQuestions = $form.questions as QuestionComplete[]
+
+					editedQuestions.forEach((question, index) => {
+						question.game_id = game.id; // Ensure the game_id is correctly assigned
+						// @ts-ignore 
+						question.id = game.questions[index].id; // Ensure the question id is correctly assigned
+					});
+
+					await updateGameQuestions(editedQuestions);
+
+				} else {
+					const newGameArray = await createGame(finalData);
+					const newGame = newGameArray[0];
+					newGame.questions = $form.questions;
+					newGame.questions.map((question) => {
+						question.game_id = newGame.id;
+					});
+					const resp = await createGameQuestions(newGame);
+					if (!resp.ok) {
+						throw new Error('Failed to add questions');
+					}
 				}
 			} catch (error) {
 				// TODO: Error handling for conflict 409/500 etc
@@ -82,14 +135,14 @@
 		onUpdated({ form }) {
 			if (form.valid) {
 				toast.push('⭐️ Game amazingly added! Redirecting to main dashboard...', {
-					duration: 3000,
+					duration: 1000,
 					theme: {
 						'--toastBackground': '#292929'
 					}
 				});
 				setTimeout(() => {
 					window.location.href = '/';
-				}, 3000);
+				}, 1000);
 			}
 		},
 		onResult({ result }) {
@@ -97,13 +150,9 @@
 			isSubmitted = true;
 		}
 	});
-	const { form, message, constraints, errors, enhance, isTainted, reset } = superform;
-	const { path, value } = formFieldProxy(superform, 'name');
-	const {
-		path: pathQuestions,
-		values: questionValues,
-		valueErrors: questionErrors
-	} = arrayProxy(superform, 'questions');
+	const { form, errors, enhance, isTainted, reset } = superform;
+	const { value } = formFieldProxy(superform, 'name');
+	const { values: questionValues, valueErrors: questionErrors } = arrayProxy(superform, 'questions');
 
 	// Function to add a new row
 	function addRow() {
@@ -151,16 +200,17 @@
 			addRow();
 		}
 		if (game) {
+			console.log('we are editing this cool game: ', game)
 			if (game.name) {
 				$value = game.name;
 			}
 			if (game.release_date) {
 				$form.release_date = game.release_date;
 			}
-		}
-	});
 
-	$effect(() => {
+			console.log('this is the id of the game we are editing: ', game.id);
+		}
+
 		if (!isSubmitted) {
 			if (resultsDataBody.length > 0 && $form.questions.length === 0) {
 				const newQuestions = [
@@ -222,17 +272,15 @@
 			resetAll();
 		}
 	}
-
 </script>
 
-<!-- <SuperDebug collapsible={true} collapsed data={$form} display={dev} /> -->
- {#if beginning_option === 'edit' && game}
- 	<ViewNavigation
+{#if beginning_option === 'edit' && game}
+	<ViewNavigation
 		viewName={`Spiel ${game.name} bearbeiten`}
 		mainAction={handleBackToDashboard}
 		mainActionText="Zurück"
 	/>
- {:else}
+{:else}
 	<ViewNavigation
 		viewName="Neues Spiel erstellen"
 		mainAction={handleBackToDashboard}
@@ -323,14 +371,16 @@
 					<th>Y</th>
 					<th>Direction</th>
 					<th>Description</th>
-					<th class="!border-0">
-						<button
-							title="Add new row"
-							class="z-ds-button z-ds-button-outline font-light min-w-[30px]"
-							type="button"
-							onclick={addRow}>+</button
-						>
-					</th>
+					{#if beginning_option !== 'edit' && !game}
+						<th class="!border-0">
+							<button
+								title="Add new row"
+								class="z-ds-button z-ds-button-outline font-light min-w-[30px]"
+								type="button"
+								onclick={addRow}>+</button
+							>
+						</th>
+					{/if}
 				</tr>
 			</thead>
 			<tbody>
@@ -348,14 +398,18 @@
 							/>
 						</td>
 						<td>
-							<textarea class="w-full bg-transparent"
+							<textarea
+								class="w-full bg-transparent"
 								aria-invalid={$questionErrors?.[i]?.question ? 'true' : undefined}
-								bind:value={$questionValues[i].question}></textarea>
+								bind:value={$questionValues[i].question}
+							></textarea>
 						</td>
 						<td>
-							<textarea class="w-full bg-transparent"
+							<textarea
+								class="w-full bg-transparent"
 								aria-invalid={$questionErrors?.[i]?.answer ? 'true' : undefined}
-								bind:value={$questionValues[i].answer}></textarea>
+								bind:value={$questionValues[i].answer}
+							></textarea>
 						</td>
 						<td>
 							<input
@@ -374,34 +428,40 @@
 							/>
 						</td>
 						<td>
-							<input class="w-full bg-transparent"
+							<input
+								class="w-full bg-transparent"
 								aria-invalid={$questionErrors?.[i]?.direction ? 'true' : undefined}
-								bind:value={$questionValues[i].direction} />
+								bind:value={$questionValues[i].direction}
+							/>
 						</td>
 
 						<td>
-							<textarea class="w-full bg-transparent"
+							<textarea
+								class="w-full bg-transparent"
 								aria-invalid={$questionErrors?.[i]?.description ? 'true' : undefined}
-								bind:value={$questionValues[i].description}></textarea>
+								bind:value={$questionValues[i].description}
+							></textarea>
 						</td>
 
-						<td class="!border-0">
-							<button
-								title="Remove this row"
-								class="z-ds-button min-w-[30px] z-ds-button-outline"
-								type="button"
-								onclick={() => removeRow(i)}
-							>
-								-
-							</button>
-						</td>
+						{#if beginning_option !== 'edit' && !game}
+							<td class="!border-0">
+								<button
+									title="Remove this row"
+									class="z-ds-button min-w-[30px] z-ds-button-outline"
+									type="button"
+									onclick={() => removeRow(i)}
+								>
+									-
+								</button>
+							</td>
+						{/if}
 					</tr>
 				{/each}
 			</tbody>
 		</table>
 	</div>
 
-	{#if $questionErrors.some((error) => error.nr || error.xc || error.yc || error.direction || error.description || error.question || error.answer)}
+	{#if $errors.questions?._errors || $questionErrors.some((error) => error.nr || error.xc || error.yc || error.direction || error.description || error.question || error.answer)}
 		<div
 			role="alert"
 			aria-atomic="true"
@@ -453,14 +513,23 @@
 							[R: {i + 1}] - {$questionErrors?.[i]?.answer}
 						</li>
 					{/if}
-
 				{/each}
+
+				{#if $errors.questions?._errors}
+					<li class="px-2 text-sm">Errors: {$errors.questions._errors}</li>
+				{/if}
 			</ul>
 		</div>
 	{/if}
 
 	<div class="flex flex-row gap-4 items-center my-12 mx-auto w-full justify-center">
-		<button class="z-ds-button" type="submit">Neues Spiel erstellen</button>
+		<button class="z-ds-button" type="submit">
+			{#if beginning_option === 'edit'}
+				Spiel speichern
+			{:else}
+				Neues Spiel erstellen
+			{/if}
+		</button>
 	</div>
 </form>
 
