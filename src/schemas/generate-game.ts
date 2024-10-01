@@ -13,15 +13,20 @@ export const saveGameSchema = z.object({
 	nr: z.number({ message: ERRORS.GAME.QUESTIONS.NR.EMPTY }).min(1, { message: ERRORS.GAME.QUESTIONS.NR.MIN }),
 	question: z.string().min(1, { message: ERRORS.GAME.QUESTIONS.QUESTION }),
 	answer: z.string().min(1, { message: ERRORS.GAME.QUESTIONS.ANSWER }),
-	xc: z.number({ message: ERRORS.GAME.QUESTIONS.XC.EMPTY}).min(0, { message: ERRORS.GAME.QUESTIONS.XC.MIN}),
-	yc: z.number({ message: ERRORS.GAME.QUESTIONS.YC.EMPTY }).min(0, { message: ERRORS.GAME.QUESTIONS.YC.MIN}),
+	xc: z.number({ message: ERRORS.GAME.QUESTIONS.XC.EMPTY }).min(0, { message: ERRORS.GAME.QUESTIONS.XC.MIN }),
+	yc: z.number({ message: ERRORS.GAME.QUESTIONS.YC.EMPTY }).min(0, { message: ERRORS.GAME.QUESTIONS.YC.MIN }),
 	direction: z
 		.nativeEnum(Orientation, { message: ERRORS.GAME.QUESTIONS.DIRECTION })
 		.default(Orientation.HORIZONTAL),
 	description: z.string().min(1, { message: ERRORS.GAME.QUESTIONS.DESCRIPTION })
 });
 
-export const saveGameArraySchema = z.array(saveGameSchema);
+export const saveGameArraySchema = z.array(saveGameSchema).refine((questions) => {
+	const pairs = questions.map(({ nr, direction }) => `${nr}-${direction}`);
+	const uniquePairs = new Set(pairs);
+	return pairs.length === uniquePairs.size;
+}, { message: ERRORS.GAME.QUESTIONS.DUPLICATED_ID_OR_DIRECTION })
+
 
 export const saveGameFormSchema = z.object({
 	name: z.string().trim().min(1, {
