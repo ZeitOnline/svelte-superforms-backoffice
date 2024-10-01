@@ -2,9 +2,7 @@
 	import ViewWrapper from '$components/ViewWrapper.svelte';
 	import type { BeginningOptions, GameComplete, QuestionComplete } from '$types';
 	import { type ViewStateStore } from '../stores/view-state-store.svelte';
-	import ViewNavigation from '$components/ViewNavigation.svelte';
-	import EditGameTable from '$components/EditGameTable.svelte';
-	import AddGameTable from '$components/AddGameTable.svelte';
+	import GameTable from '$components/GameTable.svelte';
 	import type { PageData } from '../routes/$types';
 	import { getAllQuestionsByGameId } from '$lib/queries';
 	import { onMount } from 'svelte';
@@ -13,11 +11,6 @@
 
 	let resultsDataBody: string[][] = $state([]);
 	let beginning_option: BeginningOptions = $state('edit');
-
-	const handleBackToDashboard = () => {
-		store.updateSelectedGameId(-1);
-		store.updateView('dashboard');
-	};
 
 	const game = data.games.find((game: GameComplete) => game.id === store.selectedGameId);
 
@@ -49,6 +42,6 @@
 
 <ViewWrapper>
 	{#if resultsDataBody.length > 0}
-		<AddGameTable {data} {game} {store} bind:beginning_option bind:resultsDataBody />
+		<GameTable {data} {game} {store} bind:beginning_option bind:resultsDataBody />
 	{/if}
 </ViewWrapper>

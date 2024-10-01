@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AddGameTable from '$components/AddGameTable.svelte';
+	import GameTable from '$components/GameTable.svelte';
 	import GenerateGameTable from '$components/GenerateGameTable.svelte';
 	import type { PageData } from '../routes/$types';
 	import ViewWrapper from '$components/ViewWrapper.svelte';
@@ -55,12 +55,12 @@
 	{/if}
 
 	{#if beginning_option === 'scratch'}
-		<AddGameTable {data} bind:beginning_option bind:resultsDataBody />
+		<GameTable {store} {data} bind:beginning_option bind:resultsDataBody />
 	{/if}
 
 	{#if beginning_option === 'csv'}
 		{#if resultsDataBody.length > 0}
-			<AddGameTable {data} bind:beginning_option bind:resultsDataBody />
+			<GameTable {store} {data} bind:beginning_option bind:resultsDataBody />
 		{:else}
 			<GenerateGameTable {data} bind:beginning_option bind:resultsDataBody />
 		{/if}

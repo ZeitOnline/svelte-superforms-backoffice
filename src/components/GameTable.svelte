@@ -80,9 +80,6 @@
 					}
 				}
 
-				// Log the new game data to be added
-				// console.log('Adding new game:', finalData);
-
 				if (!form.valid) {
 					return;
 				}
@@ -146,7 +143,7 @@
 			}
 		},
 		onResult({ result }) {
-			console.log('onResult:', result);
+			// console.log('onResult:', result);
 			isSubmitted = true;
 		}
 	});
@@ -200,15 +197,12 @@
 			addRow();
 		}
 		if (game) {
-			console.log('we are editing this cool game: ', game)
 			if (game.name) {
 				$value = game.name;
 			}
 			if (game.release_date) {
 				$form.release_date = game.release_date;
 			}
-
-			console.log('this is the id of the game we are editing: ', game.id);
 		}
 
 		if (!isSubmitted) {
@@ -263,10 +257,10 @@
 	function handleBackToDashboard(): void {
 		if (isTainted()) {
 			if (confirm('Are you sure you want to leave this page?')) {
-				console.log('user decided to leave AddGameTable');
+				// console.log('user decided to leave GameTable');
 				resetAll();
 			} else {
-				console.log('user decided to stay');
+				// console.log('user decided to stay');
 			}
 		} else {
 			resetAll();
