@@ -1,0 +1,32 @@
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+  name: eckchen-admin
+  namespace: spiele-eckchen
+spec:
+  ingressClassName: nginx-internal
+  rules:
+  - host: admin.spiele.devel.zeit.de
+    http:
+      paths:
+      - backend:
+          service:
+            name: postgrest
+            port:
+              number: 3000
+        path: /eckchen/pgrest/?(.*)
+        pathType: ImplementationSpecific
+      - backend:
+          service:
+            name: sveltekit-frontend
+            port:
+              number: 80
+        path: /eckchen/?(.*)
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - admin.spiele.devel.zeit.de
+    secretName: admin-spiele-tls-cert

@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: node
+  labels:
+    app: node
+spec:
+  selector:
+    app: node
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 5173
