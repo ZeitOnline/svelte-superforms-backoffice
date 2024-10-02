@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.7.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.6.0...v1.7.0) (2024-10-02)
+
+
+### Features
+
+* add right queries for patch both game and game_question ([8d47709](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/8d47709be579ffdeccae17b4fad59ef98e0f232f))
+* check user if navigation is wanted when form is tainted ([5424c0b](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/5424c0ba255ac7818642a643973385b5d1d13a1f))
+* create game and game questions in seperate, cascading methods ([1751de6](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/1751de657c8583a6dccba89fb9157f0301aa0704))
+* handle patch, right validation and remove add and delete questions in edit mode ([caf9a34](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/caf9a343429432330236ee218ff0ac5ab2facf6e))
+* make general improvements to validation ([eeb427a](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/eeb427a4c45180598edc526715103a142948a01d))
+* Rework edit view ([20db26c](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/20db26c2c62c8ad4d249c7a819251cd624562cb7))
+* send questions with the game ([89a12d2](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/89a12d2b9e7efbcbc641224cd6ba268eba91aa04))
+* **validation:** feat(validation):  ([1026fc4](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/1026fc48f89c5d7e6d422d3149ce0250b7e719e5))
+* **validation:** add individual error messages to cells of AddGameTable ([83c257e](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/83c257e327a8cb76a619ac47828d725fba3b7cd5))
+* **validation:** improve style, error message and schema of the questions ([6719227](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/67192277b7ef82c551fa1b724ea1a529f4fc8d4b))
+* **validation:** wip of the validation of the name and release_date fields ([961b653](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/961b653493af32ba4df10e1ecb3ed370968d0329))
+
+
+### Bug Fixes
+
+* add custom date only if no date is set ([ff6a4d9](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/ff6a4d9f1946ce45acc1134a06ac0be838a85e13))
+* add global listener for a wider input file recognition ([1b2b972](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/1b2b972d1f4bc38c535b724b3705e99e90983479))
+* **parsing:** remove lines after csv parsing if they are empty or have EOF character ([eff6978](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/eff6978d356127c19d126f8a9d25171e0fb3aaaf))
+* persist form questions and taint form on changes ([11b1b86](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/11b1b86d9d69c00d47bdee9d6a61357a1af50077))
+* reset form on back-navigation ([54a1d92](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/54a1d92aa24380347a004292703549ea730b3728))
+* **validation:** add missing validation and error messages in game schema ([b8bb2ab](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/b8bb2abb4d6fc775c2223c177d80172145fc9c20))
+
+
+### Performance Improvements
+
+* **api:** fetch questions for game directly ([016160c](https://github.com/ZeitOnline/svelte-superforms-backoffice/commit/016160ccd23744b2fe81ede3f013817bece56dde))
+
 ## [1.6.0](https://github.com/ZeitOnline/svelte-superforms-backoffice/compare/v1.5.0...v1.6.0) (2024-09-06)
 
 
