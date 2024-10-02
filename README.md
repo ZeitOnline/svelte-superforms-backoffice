@@ -33,6 +33,26 @@
 
 Following the modus operandi of other games, it was decided that eckchen needed a new admin interface where people could easily update information regarding the games. The project is managed by the team Engagement and Games. 
 
+## What needs to be changed for a new game?
+
+Since we started with `eckchen`, you will see many pieces of code that have to do with that game, like the `schemas` for zod or the elements in the ui, like the ones you will find in `GameTable.svelte`.
+
+Here you will see a list of the files that you will surely need to edit:
+
+```md
+src
+├── lib
+│   ├── error-messages.ts // the error messages for the form validation
+│   ├── queries.ts // all the queries that will be used with the postqres
+├── components
+│   ├── GameTable.svelte // the main component used for Create and Edit 
+│   ├── Header.svelte // you will need to replace the EckchenLogo.svelte 
+│   ├── ... // other components probably will need some change
+├── schemas
+│   ├── generate-game.ts // define all the schemas for the forms (validation, types, etc.)
+└── app.html // change the name of the game
+```
+
 ## Requirements
 
 - Node.js
