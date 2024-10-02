@@ -80,9 +80,28 @@ Check the main task on [Jira](https://zeit-online.atlassian.net/browse/ZO-5839) 
 - [x] POST game (works but the id generation is manually done instead of through the db). Here we have the problem that when we submit the game, we are sending one only request to create the game and the questions (not yet the game_state). Since we cannot create the questions without the game_id, that is why we do the id generation manually. However, we might need to refactor to do 2 requests.
 - [x] POST questions
 - [x] Validation is required (for the moment, we can create games without questions)
-- [ ] PATCH game and questions do not work as expected (they are creating instead of UPSERT) and you need to update the page to make it work.
+- [x] PATCH game and questions do not work as expected (they are creating instead of UPSERT) and you need to update the page to make it work.
 - [x] We have used superform in NewGameView.svelte in two forms. Do we need it also when updating game and deleting?
 - [ ] DELETE game with CASCADE of the game_question and game_state
 - [ ] Tests for the different views need to be written.
 - [x] beforeleave message (when clicking back in theb browser oder zueruck in the buttons so that user does not lose information if there was)
 - [ ] adr (pr started)
+
+## Test To Dos
+
+### unit
+- [ ] csv upload
+- [ ] serializeRow()
+- [ ] addCustomDate()
+- [ ] onUpdate (form.name and form.release_date - for create and edit)
+- [ ] createGame (game and game_question[])
+- [ ] editGame (game and game_question[])
+- [ ] deleteGame
+
+stretch:
+- [ ] tainted warning message 
+- [ ] search in the dashboard
+
+### e2e
+- [ ] create flow (do we need it?)
+- [ ] flow with tainted warning message (confirm())
