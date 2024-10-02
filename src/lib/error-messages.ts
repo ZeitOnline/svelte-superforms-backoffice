@@ -18,6 +18,7 @@ export const ERRORS = {
             EMPTY: 'Das Veröffentlichungsdatum darf nicht leer sein.',
         },
         QUESTIONS: {
+            DUPLICATED_ID_OR_DIRECTION: 'Die Kombination aus Nummer und Direction muss einzigartig sein.',
             NR: {
                 EMPTY: 'Die Nummer darf nicht leer sein.',
                 MIN: 'Nr. muss größer als 0 sein.',

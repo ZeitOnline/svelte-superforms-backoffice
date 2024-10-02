@@ -128,36 +128,41 @@ export const deleteGame = async (id: number) => {
 
 
 /**
- * Updates or create a game by its id.
- * @param id the id of the game to be updated or created
- * @param data the data to be updated or created
- * @returns the updated or created game
+ * Updates a game by its id.
+ * @param id - the id of the game to be updated
+ * @param data - the data to be updated
+ * @returns the updated game
  */
-export const updateGame = async (game: GameComplete) => {
-    // TODO: update the questions as well, here we receive only the previous ones
-
-    // const questions = await getAllQuestionsByGameId(game.id!);
+export const updateGame = async (id: number, data: GameComplete) => {
     try {
-        if (game.questions && game.questions.length > 0) {
-            // 1 - update all the questions 
-            await upsertData('game_question', game.questions);
+        const response = await fetch(`${BASE_URL}/game?id=eq.${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update game with id: ${id}. Status: ${response.status}`);
         }
-        
-        console.log("adding the new game...", game);
-        // 2 - update the game itself
-        // await upsertData('game', game);
-        
+
+        const updatedGame = await response.json();
+        return updatedGame;
+
     } catch (error) {
         console.error("Failed to update the game", error);
+        throw error;
     }
-        return game;
-}
+};
 
 /**
  * Upsert data to a database
  * @param table - the table name
  * @param data - the data to be upserted
  */
+// TODO: make this work :)
 const upsertData = async (table: string, data: any) => {
     console.log('this is the table: ', table);
     console.log('this is the data: ', data);
@@ -185,6 +190,11 @@ const upsertData = async (table: string, data: any) => {
     });
 }
 
+/**
+ * Create a game.
+ * @param data the data to be created
+ * @returns the created game
+ */
 export async function createGame(data: Game): Promise<GameComplete[]> {
 	const game = await fetch(`${BASE_URL}/game`, {
 		method: 'POST',
@@ -197,14 +207,47 @@ export async function createGame(data: Game): Promise<GameComplete[]> {
 	return await game.json();
 }
 
+/**
+ * Updates game questions.
+ * @param questions the questions to be updated
+ * @returns the status of the update
+ */
+export async function updateGameQuestions(questions: QuestionComplete[]): Promise<Response[]> {
+    
+    const updateQuestions = questions.map(async question => {
+        const response = await fetch(`${BASE_URL}/game_question?id=eq.${question.id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            },
+            body: JSON.stringify(question)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update question with id: ${question.id}`);
+        }
+        return response;
+    });
+
+    const responses = await Promise.all(updateQuestions);
+
+    return responses;
+}
+
+/**
+ * Create game questions.
+ * @param data the data for the game questions
+ * @returns the created game questions
+ */
 export async function createGameQuestions(data: Game): Promise<Response> {
     const { questions } = data;
-    const game = await fetch(`${BASE_URL}/game_question`, {
+    const gameQuestions = await fetch(`${BASE_URL}/game_question`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(questions)
     });
-    return game;
+    return gameQuestions;
 }
