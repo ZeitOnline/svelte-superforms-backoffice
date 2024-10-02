@@ -1,40 +1,47 @@
 <script lang="ts">
 	import ViewWrapper from '$components/ViewWrapper.svelte';
-	import type { GameComplete } from '$types';
+	import type { BeginningOptions, GameComplete, QuestionComplete } from '$types';
 	import { type ViewStateStore } from '../stores/view-state-store.svelte';
-	import ViewNavigation from '$components/ViewNavigation.svelte';
-	import EditGameTable from '$components/EditGameTable.svelte';
+	import GameTable from '$components/GameTable.svelte';
+	import type { PageData } from '../routes/$types';
+	import { getAllQuestionsByGameId } from '$lib/queries';
+	import { onMount } from 'svelte';
 
-	let { store, games }: { store: ViewStateStore; games: GameComplete[] } = $props();
+	let { store, data }: { store: ViewStateStore; data: PageData } = $props();
 
-	const handleBackToDashboard = () => {
-		store.updateSelectedGameId(-1);
-		store.updateView('dashboard');
-	};
+	let resultsDataBody: string[][] = $state([]);
+	let beginning_option: BeginningOptions = $state('edit');
 
-	const game = games.find((game: GameComplete) => game.id === store.selectedGameId);
-	if (!game) {
-		store.updateSelectedGameId(-1);
-		store.updateView('dashboard');
+	const game = data.games.find((game: GameComplete) => game.id === store.selectedGameId);
+
+	async function populateResultBodyForGame(id: number) {
+		const questions = await getAllQuestionsByGameId(id);
+		game.questions = questions;
+		resultsDataBody = questions.map((question: QuestionComplete) => {
+			return [
+				String(question.nr),
+				String(question.question),
+				String(question.answer),
+				String(question.xc),
+				String(question.yc),
+				String(question.direction),
+				String(question.description)
+			];
+		});
 	}
-	
+
+	onMount(async () => {
+		if (!game) {
+			store.updateSelectedGameId(-1);
+			store.updateView('dashboard');
+		} else {
+			await populateResultBodyForGame(game.id);
+		}
+	});
 </script>
 
 <ViewWrapper>
-	{#if game === undefined}
-		<ViewNavigation
-			viewName="Game Not Found"
-			mainAction={handleBackToDashboard}
-			mainActionText="Zurück"
-		/>
-	{:else}
-		<ViewNavigation
-			viewName={`Spiel ${game.name} bearbeiten`}
-			mainAction={handleBackToDashboard}
-			mainActionText="Zurück"
-		/>
-
-		<EditGameTable {game} {store} />
+	{#if resultsDataBody.length > 0}
+		<GameTable {data} {game} {store} bind:beginning_option bind:resultsDataBody />
 	{/if}
 </ViewWrapper>
-

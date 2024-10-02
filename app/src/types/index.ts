@@ -51,3 +51,5 @@ export enum Orientation {
     HORIZONTAL = "h",
     VERTICAL = "v",
 }
+
+export type BeginningOptions = 'scratch' | 'csv' | 'edit' | null;
