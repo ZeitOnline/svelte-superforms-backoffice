@@ -6,7 +6,7 @@ import type { Game, GameComplete, QuestionComplete } from "$types";
  * @author @witsch
  * @remarks For any questions or issues related to this URL, please contact @witsch.
  */
-const BASE_URL = '/api';
+const BASE_URL = '/eckchen/api';
 
 /**
  * Get all games from the backend.
