@@ -27,7 +27,7 @@
 			store.updateView('dashboard');
 			store.updateSelectedGameId(-1);
 
-			window.location.href = '/';
+			window.location.reload();
 		}, 3500);
 	};
 

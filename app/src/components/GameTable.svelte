@@ -138,7 +138,7 @@
 					}
 				});
 				setTimeout(() => {
-					window.location.href = '/';
+					window.location.reload();
 				}, 1000);
 			}
 		},
