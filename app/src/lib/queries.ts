@@ -6,7 +6,7 @@ import type { Game, GameComplete, QuestionComplete } from "$types";
  * @author @witsch
  * @remarks For any questions or issues related to this URL, please contact @witsch.
  */
-const BASE_URL = 'https://admin.spiele.devel.zeit.de/eckchen';
+const BASE_URL = '/eckchen/api';
 
 /**
  * Get all games from the backend.
@@ -31,7 +31,7 @@ export const getNextAvailableDateForGame = async () => {
     const data = await response.json();
 
     // if latest available date is in the past, return today's date
-    let isDateInThePast = data[0].release_date < new Date().toISOString().split('T')[0];
+    const isDateInThePast = data[0].release_date < new Date().toISOString().split('T')[0];
     if (isDateInThePast) {
         return new Date().toISOString().split('T')[0];
     }
