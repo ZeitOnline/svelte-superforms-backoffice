@@ -4,6 +4,10 @@ import {svelteTesting} from '@testing-library/svelte/vite'
 
 export default defineConfig({
   plugins: [sveltekit(), svelteTesting()],
+  build: {
+    manifest: true,
+    outDir: 'build',
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./vitest-setup.js'],
