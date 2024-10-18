@@ -222,7 +222,7 @@
 			<tr>
 				<th class="text-nowrap">Name des Spiels</th>
 				<th>ID</th>
-				<th>Datum</th>
+				<th>Veröffentlichungsdatum</th>
 				<th>Aktiv</th>
 				<th class="text-right">Aktionen</th>
 			</tr>
