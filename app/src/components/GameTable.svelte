@@ -25,6 +25,7 @@
 	import { saveGameFormSchema } from '../schemas/generate-game';
 	import { onMount } from 'svelte';
 	import type { ViewStateStore } from '$stores/view-state-store.svelte';
+	import { APP_MESSAGES } from '$lib/app-messages';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -155,12 +156,12 @@
 	function addRow() {
 		let defaultRow = [
 			'1',
-			'Example Question',
-			'Example Answer',
+			'Beispiel Frage',
+			'Beispiel Antwort',
 			'1',
 			'1',
 			Orientation.HORIZONTAL,
-			'I am so poor I cannot even pay attention'
+			'Ich bin so arm, ich habe nur X und Y'
 		];
 		// console.log('Adding new row:', defaultRow);
 		resultsDataBody.push(defaultRow);
@@ -184,7 +185,7 @@
 	// Function to remove the last row
 	function removeRow(index: number) {
 		if (
-			confirm(`Are you sure you want to remove the ${index + 1}. row?`) &&
+			confirm(`Bist du dir sicher, dass du die Reihe ${index + 1} löschen möchtest?`) &&
 			$form.questions.length > 0
 		) {
 			$form.questions.splice(index, 1);
@@ -256,7 +257,7 @@
 
 	function handleBackToDashboard(): void {
 		if (isTainted()) {
-			if (confirm('Are you sure you want to leave this page?')) {
+			if (confirm(APP_MESSAGES.LEAVE_PAGE)) {
 				// console.log('user decided to leave GameTable');
 				resetAll();
 			} else {
@@ -314,7 +315,7 @@
 	<div
 		class="w-full flex flex-col sm:flex-row sm:items-center justify-between py-z-ds-24 gap-z-ds-4"
 	>
-		<label class="text-md font-bold" for="release_date">Date:</label>
+		<label class="text-md font-bold" for="release_date">Veröffentlichungsdatum:</label>
 		<div class="relative">
 			<input
 				class="border py-z-ds-8 w-full sm:w-[250px] px-z-ds-12 border-black text-md"

@@ -8,6 +8,7 @@
 	import { generateGameSchema } from '../schemas/generate-game';
 	import { ERRORS } from '$lib/error-messages';
 	import type { BeginningOptions } from '$types';
+	import { APP_MESSAGES } from '$lib/app-messages';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -123,7 +124,7 @@
 
 	function handleBackToDashboard(): void {
 		if (isTainted()) {
-			if (confirm('Are you sure you want to leave this page?')) {
+			if (confirm(APP_MESSAGES.LEAVE_PAGE)) {
 				console.log('user decided to leave GenerateGameTable');
 				resetAll();
 			} else {
@@ -189,7 +190,7 @@
 
 	{#if $form.csv}
 		<div class="flex flex-col items-center my-12 mx-auto w-full justify-center">
-			<button class="z-ds-button"> Submitten </button>
+			<button class="z-ds-button">Absenden</button>
 		</div>
 	{/if}
 </form>
