@@ -5,3 +5,5 @@ export { default as SearchIcon } from './SearchIcon.svelte';
 export { default as ErrorIcon } from './HasErrorIcon.svelte';
 export { default as UploadIcon } from './UploadIcon.svelte';
 export { default as DeleteIcon } from './DeleteIcon.svelte';
+export { default as CloseIcon } from './CloseIcon.svelte';
+export { default as EyeIcon } from './EyeIcon.svelte';
