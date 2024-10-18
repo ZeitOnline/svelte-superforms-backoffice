@@ -49,6 +49,9 @@ export default {
         'z-ds-color-focus': {
           100: "var(--z-ds-color-focus-100)",
         },
+        'z-ds-color-success': {
+          100: "var(--z-ds-color-background-success)",
+        },
         'z-ds-color-border': {
           70: "var(--z-ds-color-border-70)",
           100: "var(--z-ds-color-border-100)",

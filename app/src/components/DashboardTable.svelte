@@ -8,6 +8,7 @@
 	import TableFilters from './TableFilters.svelte';
 	import TableSearch from './TableSearch.svelte';
 	import TablePagination from './TablePagination.svelte';
+	import { CloseIcon, TickIcon } from './icons';
 
 	const ITEMS_PER_PAGE = 10;
 
@@ -23,7 +24,7 @@
 		za: false,
 		dateAsc: false,
 		dateDesc: true,
-		active: false,
+		active: true,
 		notActive: false,
 	});
 
@@ -168,18 +169,18 @@
 		</div>
 		<div class="flex flex-col gap-2">
 			<button
-				class="filter-button"
+				class="filter-button text-z-ds-color-success-100"
 				class:active={filters.active}
 				onclick={() => toggleFilter('active')}
 			>
-				✅
+				<TickIcon extraClasses="text-z-ds-color-success-100" />
 			</button>
 			<button
 				class="filter-button"
 				class:active={filters.notActive}
 				onclick={() => toggleFilter('notActive')}
 			>
-				❌
+				<CloseIcon extraClasses="text-z-ds-color-error-70" />
 			</button>
 		</div>
 	</div>
@@ -231,7 +232,12 @@
 								debouncedSearchTerm
 							)}</td
 						>
-						<td>{item.active ? '✅' : '❌'}</td>
+						<td>
+							{#if item.active}
+								<TickIcon extraClasses="text-z-ds-color-success-100 w-8 h-8" />
+							{:else}
+								<CloseIcon extraClasses="text-z-ds-color-error-70 w-8 h-8" />
+							{/if}
 						<td>
 							<div class="flex items-center justify-end gap-z-ds-4">
 								<button
