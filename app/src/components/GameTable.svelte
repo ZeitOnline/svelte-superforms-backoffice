@@ -340,7 +340,7 @@
 	<div class="w-full flex items-center justify-between my-z-ds-16">
 		<label class="text-md font-bold" for="published">Aktiv:</label>
 		<input
-			class="accent-black border py-z-ds-8 px-z-ds-12 border-black text-md"
+			class="accent-black border py-z-ds-8 px-z-ds-12 border-black text-md w-5 h-5"
 			name="published"
 			id="published"
 			type="checkbox"
@@ -359,12 +359,12 @@
 			<thead>
 				<tr>
 					<th>Nr</th>
-					<th>Question</th>
-					<th>Answer</th>
+					<th>Frage</th>
+					<th>Antwort</th>
 					<th>X</th>
 					<th>Y</th>
-					<th>Direction</th>
-					<th>Description</th>
+					<th>Dir.</th>
+					<th>Beschreibung</th>
 					{#if beginning_option !== 'edit' && !game}
 						<th class="!border-0">
 							<button
@@ -385,21 +385,24 @@
 					>
 						<td>
 							<input
+								name="nr"
 								type="number"
 								class="w-full bg-transparent"
 								aria-invalid={$questionErrors?.[i]?.nr ? 'true' : undefined}
 								bind:value={$questionValues[i].nr}
 							/>
 						</td>
-						<td>
+						<td class="w-[220px]">
 							<textarea
+								name="question"
 								class="w-full bg-transparent"
 								aria-invalid={$questionErrors?.[i]?.question ? 'true' : undefined}
 								bind:value={$questionValues[i].question}
 							></textarea>
 						</td>
-						<td>
+						<td class="w-[150px]">
 							<textarea
+								name="answer"
 								class="w-full bg-transparent"
 								aria-invalid={$questionErrors?.[i]?.answer ? 'true' : undefined}
 								bind:value={$questionValues[i].answer}
@@ -407,6 +410,7 @@
 						</td>
 						<td>
 							<input
+								name="xc"
 								type="number"
 								class="w-full bg-transparent"
 								aria-invalid={$questionErrors?.[i]?.xc ? 'true' : undefined}
@@ -415,6 +419,7 @@
 						</td>
 						<td>
 							<input
+								name="yc"
 								type="number"
 								class="w-full bg-transparent"
 								aria-invalid={$questionErrors?.[i]?.yc ? 'true' : undefined}
@@ -423,14 +428,16 @@
 						</td>
 						<td>
 							<input
+								name="direction"
 								class="w-full bg-transparent"
 								aria-invalid={$questionErrors?.[i]?.direction ? 'true' : undefined}
 								bind:value={$questionValues[i].direction}
 							/>
 						</td>
 
-						<td>
+						<td class="w-[220px]">
 							<textarea
+								name="description"
 								class="w-full bg-transparent"
 								aria-invalid={$questionErrors?.[i]?.description ? 'true' : undefined}
 								bind:value={$questionValues[i].description}
