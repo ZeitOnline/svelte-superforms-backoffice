@@ -8,7 +8,7 @@
 	import TableFilters from './TableFilters.svelte';
 	import TableSearch from './TableSearch.svelte';
 	import TablePagination from './TablePagination.svelte';
-	import { CloseIcon, TickIcon } from './icons';
+	import { CloseIcon, EyeIcon, TickIcon } from './icons';
 
 	const ITEMS_PER_PAGE = 10;
 
@@ -75,6 +75,13 @@
 	let paginatedItems = $derived(
 		filteredBySearchItems().slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 	);
+
+	let twentyLatestActiveGames = $derived(() => {
+		return items
+			.filter((item) => item.active)
+			.sort((a, b) => new Date(b.release_date).getTime() - new Date(a.release_date).getTime())
+			.slice(0, 20);
+	});
 
 	const handleEditGame = (id: number) => {
 		store.updateView('edit-game');
@@ -222,7 +229,8 @@
 		</thead>
 		<tbody>
 			{#if paginatedItems.length > 0}
-				{#each paginatedItems as item (item.id)}
+				{#each paginatedItems as item, index (item.id)}
+					{@const isOneOfTwentyLatestActiveGames = twentyLatestActiveGames().some((game) => game.id === item.id)}
 					<tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
 						<td>{@html highlightMatch(item.name, debouncedSearchTerm)}</td>
 						<td>{@html highlightMatch(item.id, debouncedSearchTerm)}</td>
@@ -233,10 +241,17 @@
 							)}</td
 						>
 						<td>
+							
 							{#if item.active}
-								<TickIcon extraClasses="text-z-ds-color-success-100 w-8 h-8" />
+							<div class="flex items-center gap-z-ds-4">
+
+								<TickIcon extraClasses="text-z-ds-color-success-100 w-7 h-7" />
+								{#if isOneOfTwentyLatestActiveGames }
+									<EyeIcon extraClasses="text-black w-7 h-7" />
+								{/if}
+							</div>
 							{:else}
-								<CloseIcon extraClasses="text-z-ds-color-error-70 w-8 h-8" />
+								<CloseIcon extraClasses="text-z-ds-color-error-70 w-7 h-7" />
 							{/if}
 						<td>
 							<div class="flex items-center justify-end gap-z-ds-4">
