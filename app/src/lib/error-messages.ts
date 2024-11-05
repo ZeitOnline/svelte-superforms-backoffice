@@ -10,12 +10,15 @@ export const ERRORS = {
     },
     EMPTY: 'Darf nicht leer sein.',
     GAME: {
+        FAILED_TO_ADD: '⚠️ Fehler beim Hinzufügen des Spiels, bitte versuchen Sie es erneut.',
         NAME: {
             EMPTY: 'Der Name darf nicht leer sein.',
             UNIQUE: 'Der Name muss eindeutig sein.',
+            TAKEN: 'Der Name ist bereits vergeben.',
         },
         RELEASE_DATE: {
             EMPTY: 'Das Veröffentlichungsdatum darf nicht leer sein.',
+            TAKEN: 'Das Veröffentlichungsdatum ist bereits vergeben.',
         },
         QUESTIONS: {
             DUPLICATED_ID_OR_DIRECTION: 'Die Kombination aus Nummer und Direction muss einzigartig sein.',

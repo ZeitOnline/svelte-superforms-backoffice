@@ -39,7 +39,7 @@
 	<div class="flex flex-col items-center gap-z-ds-14 py-z-ds-32">
 		{#if game !== undefined}
 			<div>
-				{@html APP_MESSAGES.DELETE_GAME.replace('{name}', game.name)}
+				{@html APP_MESSAGES.GAME.DELETE.replace('{name}', game.name)}
 			</div>
 			<div class="flex justify-end gap-z-ds-8">
 				<button class="z-ds-button z-ds-button-outline" onclick={handleBackToDashboard}
