@@ -2,6 +2,7 @@
     "conventionalCommits.scopes": [
         "validation",
         "api",
-        "parsing"
+        "parsing",
+        "wording"
     ]
 }

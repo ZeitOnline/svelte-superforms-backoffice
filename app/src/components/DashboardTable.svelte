@@ -164,14 +164,14 @@
 				class:active={filters.dateAsc}
 				onclick={() => toggleFilter('dateAsc')}
 			>
-				Date Ascending
+				aufsteigendes Datum
 			</button>
 			<button
 				class="filter-button"
 				class:active={filters.dateDesc}
 				onclick={() => toggleFilter('dateDesc')}
 			>
-				Date Descending
+				absteigendes Datum
 			</button>
 		</div>
 		<div class="flex flex-col gap-2">
