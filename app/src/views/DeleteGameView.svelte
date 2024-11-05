@@ -4,6 +4,7 @@
 	import { toast } from '@zerodevx/svelte-toast';
 	import { type ViewStateStore } from '../stores/view-state-store.svelte';
 	import { deleteGame } from '$lib/queries';
+	import { APP_MESSAGES } from '$lib/app-messages';
 
 	let { store, games }: { store: ViewStateStore; games: GameComplete[] } = $props();
 
@@ -13,7 +14,7 @@
 	};
 
 	const handleDeleteFromList = async (id: number) => {
-		toast.push('Deleting game...', {
+		toast.push('Spiel wird gelöscht...', {
             duration: 3000,
 			theme: {
 				'--toastBackground': '#333',
@@ -38,13 +39,13 @@
 	<div class="flex flex-col items-center gap-z-ds-14 py-z-ds-32">
 		{#if game !== undefined}
 			<div>
-				Are you sure you want to delete the game <strong>{game.name}</strong>?
+				{@html APP_MESSAGES.DELETE_GAME.replace('{name}', game.name)}
 			</div>
 			<div class="flex justify-end gap-z-ds-8">
 				<button class="z-ds-button z-ds-button-outline" onclick={handleBackToDashboard}
-					>Cancel</button
+					>Abbrechen</button
 				>
-				<button class="z-ds-button" onclick={() => handleDeleteFromList(game.id)}>Delete</button>
+				<button class="z-ds-button" onclick={() => handleDeleteFromList(game.id)}>Löschen</button>
 			</div>
 		{/if}
 	</div>
