@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { extraClasses }: { extraClasses?: string } = $props();
+	let { extraClasses, title }: { extraClasses?: string, title?: string } = $props();
 </script>
 
 <svg
@@ -11,5 +11,8 @@
 	viewBox="0 0 18 18"
 	fill="none"
 >
+	{#if title}
+		<title>{title}</title>
+	{/if}
 	<path d="M15 5L7 13L3 9" stroke="currentColor" stroke-width="1.5" />
 </svg>

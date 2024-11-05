@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { extraClasses }: { extraClasses?: string } = $props();
+	let { extraClasses, title }: { extraClasses?: string, title?: string } = $props();
 </script>
 
 <svg
@@ -12,6 +12,10 @@
 	viewBox="0 0 18 18"
 	fill="none"
 >
+	{#if title}	
+		<title>{title}</title>
+	{/if}
+
 	<path
 		fill-rule="evenodd"
 		clip-rule="evenodd"

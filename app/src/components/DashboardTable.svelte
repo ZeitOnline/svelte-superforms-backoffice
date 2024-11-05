@@ -245,9 +245,9 @@
 							{#if item.active}
 							<div class="flex items-center gap-z-ds-4">
 
-								<TickIcon extraClasses="text-z-ds-color-success-100 w-7 h-7" />
+								<TickIcon extraClasses="text-z-ds-color-success-100 w-7 h-7" title="In der Datenbank aktiv" />
 								{#if isOneOfTwentyLatestActiveGames }
-									<EyeIcon extraClasses="text-black w-7 h-7" />
+									<EyeIcon extraClasses="text-black w-7 h-7" title="Aktuell im Eckchen-Spiel sichtbar" />
 								{/if}
 							</div>
 							{:else}
