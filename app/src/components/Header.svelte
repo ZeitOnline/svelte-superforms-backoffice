@@ -7,7 +7,7 @@
 	// let { store }: { store: ViewStateStore } = $props();
 
 	function handleLogOut() {
-		toast.push('Logged out successfully', {
+		toast.push('Erfolgreich abgemeldet', {
 			theme: {
 				'--toastBackground': '#292929',
 				'--toastColor': '#fff'

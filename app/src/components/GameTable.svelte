@@ -26,6 +26,7 @@
 	import { onMount } from 'svelte';
 	import type { ViewStateStore } from '$stores/view-state-store.svelte';
 	import { APP_MESSAGES } from '$lib/app-messages';
+	import { ERRORS } from '$lib/error-messages';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -60,24 +61,24 @@
 
 					if (game.name !== $form.name) {
 						if (data.games.some((game: any) => game.name === $form.name)) {
-							setError(form, 'name', 'This name is already taken');
+							setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
 						}
 					}
 					
 					if (game.release_date !== $form.release_date) {
 						if (data.games.some((game: any) => game.release_date === $form.release_date)) {
-							setError(form, 'release_date', 'There is already a game on this day');
+							setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
 						}
 					}
 					
 				} else {
 					
 					if (data.games.some((game: any) => game.name === $form.name)) {
-						setError(form, 'name', 'This name is already taken');
+						setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
 					}
 	
 					if (data.games.some((game: any) => game.release_date === $form.release_date)) {
-						setError(form, 'release_date', 'There is already a game on this day');
+						setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
 					}
 				}
 
@@ -122,7 +123,7 @@
 			} catch (error) {
 				// TODO: Error handling for conflict 409/500 etc
 				console.error('Error adding game:', error);
-				toast.push('⚠️ Failed to add the game. Please try again.', {
+				toast.push(ERRORS.GAME.FAILED_TO_ADD, {
 					duration: 3000,
 					theme: {
 						'--toastBackground': '#e74c3c'
@@ -132,7 +133,7 @@
 		},
 		onUpdated({ form }) {
 			if (form.valid) {
-				toast.push('⭐️ Game amazingly added! Redirecting to main dashboard...', {
+				toast.push(APP_MESSAGES.GAME.ADDED_SUCCESS, {
 					duration: 1000,
 					theme: {
 						'--toastBackground': '#292929'

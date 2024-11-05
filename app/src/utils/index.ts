@@ -5,7 +5,7 @@
  */
 export const transformedPublishedData = (publishedAt: string) => {
 	const date = new Date(publishedAt);
-	return date.toLocaleDateString('en-US', {
+	return date.toLocaleDateString('de-DE', {
 		year: 'numeric',
 		month: 'long',
 		day: 'numeric'
@@ -19,7 +19,7 @@ export const transformedPublishedData = (publishedAt: string) => {
  */
 export const transformedPublishedDataWithTime = (publishedAt: string) => {
 	const date = new Date(publishedAt);
-	return date.toLocaleDateString('en-US', {
+	return date.toLocaleDateString('de-DE', {
 		year: 'numeric',
 		month: 'long',
 		day: 'numeric',
