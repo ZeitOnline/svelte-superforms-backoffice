@@ -394,7 +394,7 @@
 								bind:value={$questionValues[i].nr}
 							/>
 						</td>
-						<td class="w-[220px]">
+						<td class="w-[260px]">
 							<textarea
 								name="question"
 								class="w-full bg-transparent"
