@@ -93,7 +93,6 @@
 						name: $form.name,
 						release_date: $form.release_date,
 						active: $form.published,
-						
 					};
 
 					await updateGame(game.id, finalEditedGame);
@@ -164,7 +163,6 @@
 			Orientation.HORIZONTAL,
 			'Ich bin so arm, ich habe nur X und Y'
 		];
-		// console.log('Adding new row:', defaultRow);
 		resultsDataBody.push(defaultRow);
 		// $form.questions.push(serializeRow(defaultRow));
 		const newQuestions = [...$form.questions, serializeRow(defaultRow)];
@@ -204,6 +202,9 @@
 			}
 			if (game.release_date) {
 				$form.release_date = game.release_date;
+			}
+			if (game.active) {
+				$form.published = game.active;
 			}
 		}
 
