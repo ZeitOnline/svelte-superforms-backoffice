@@ -180,13 +180,13 @@
 				{:else if $form.csv}
 					<p>Ausgewählte Datei: {$form.csv.name}</p>
 				{:else}
-					<span> Dragg und dropp eine CSV-Datei hier. Max 100kb.</span>
+					<span>Eine CSV-Datei hierhin ziehen. Max 100kb.</span>
 				{/if}
 			</span>
 		</label>
 	</div>
 
-	{#if $errors.csv}<span class="border-red-500 border text-red-500 my-5 px-2 py-1 text-sm">Error: {$errors.csv}</span>{/if}
+	{#if $errors.csv}<span class="border-red-500 border text-red-500 my-5 px-2 py-1 text-sm">Fehler: {$errors.csv}</span>{/if}
 
 	{#if $form.csv}
 		<div class="flex flex-col items-center my-12 mx-auto w-full justify-center">
