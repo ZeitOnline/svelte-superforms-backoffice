@@ -164,9 +164,7 @@
 			Orientation.HORIZONTAL,
 			'Ich bin so arm, ich habe nur X und Y'
 		];
-		// console.log('Adding new row:', defaultRow);
 		resultsDataBody.push(defaultRow);
-		// $form.questions.push(serializeRow(defaultRow));
 		const newQuestions = [...$form.questions, serializeRow(defaultRow)];
 		$form.questions = newQuestions; // Reassign to trigger reactivity
 	}

@@ -20,61 +20,61 @@
 		beginning_option: BeginningOptions;
 	} = $props();
 
-	const { form, errors, enhance, isTainted, reset } = superForm(
-		data.generateGameForm,
-		{
-			resetForm: false,
-			validators: zodClient(generateGameSchema),
-			SPA: true,
-			taintedMessage: true,
-			onChange(event) {
-				if (dev) {
-					if (event.target) {
-						// Form input event
-						console.log(event.path, 'was changed with', event.target, 'in form', event.formElement);
-					} else {
-						// Programmatic event
-						console.log('Fields updated:', event.paths);
-					}
+	const { form, errors, enhance, isTainted, reset } = superForm(data.generateGameForm, {
+		resetForm: false,
+		validators: zodClient(generateGameSchema),
+		SPA: true,
+		taintedMessage: true,
+		invalidateAll: false,
+		onChange(event) {
+			if (dev) {
+				if (event.target) {
+					// Form input event
+					console.log(event.path, 'was changed with', event.target, 'in form', event.formElement);
+				} else {
+					// Programmatic event
+					console.log('Fields updated:', event.paths);
 				}
+			}
 
-				if ($form.csv) {
-					isDragging = false;
-				}
-			},
-			onUpdate({ form }) {
-				if (form.valid) {
-					Papa.parse(form.data.csv, {
-						skipEmptyLines: true,
-						// header: true,
-						complete: function (results) {
-							const fieldSize = (results.data[0] as any).length;
+			if ($form.csv) {
+				isDragging = false;
+			}
+		},
+		onUpdate({ form }) {
+			if (form.valid) {
+				Papa.parse(form.data.csv, {
+					skipEmptyLines: true,
+					// header: true,
+					complete: function (results) {
+						const fieldSize = (results.data[0] as any).length;
 
-							if (fieldSize !== 7) {
-								setError(form, 'csv', ERRORS.CSV.NUMBER_OF_COLUMNS);
-								return;
-							}
-
-							const body = results.data.slice(1) as string[][];
-
-							if (!body) {
-								setError(form, 'csv', ERRORS.CSV.EMPTY);
-								return;
-							}
-
-							// filter row if all cells are empty
-							const emptyRow = body.findIndex((row) => row.every((cell) => cell === '' || cell === '\x1A'));
-                            if (emptyRow !== -1) {
-                                body.splice(emptyRow, 1);
-                            }
-
-							resultsDataBody.push(...body);
+						if (fieldSize !== 7) {
+							setError(form, 'csv', ERRORS.CSV.NUMBER_OF_COLUMNS);
+							return;
 						}
-					});
-				}
-			},
+
+						const body = results.data.slice(1) as string[][];
+
+						if (!body) {
+							setError(form, 'csv', ERRORS.CSV.EMPTY);
+							return;
+						}
+
+						// filter row if all cells are empty
+						const emptyRow = body.findIndex((row) =>
+							row.every((cell) => cell === '' || cell === '\x1A')
+						);
+						if (emptyRow !== -1) {
+							body.splice(emptyRow, 1);
+						}
+
+						resultsDataBody.push(...body);
+					}
+				});
+			}
 		}
-	);
+	});
 
 	let isDragging = $state(false);
 	let fileInput = $state<HTMLInputElement | null>(null);
@@ -186,7 +186,9 @@
 		</label>
 	</div>
 
-	{#if $errors.csv}<span class="border-red-500 border text-red-500 my-5 px-2 py-1 text-sm">Fehler: {$errors.csv}</span>{/if}
+	{#if $errors.csv}<span class="border-red-500 border text-red-500 my-5 px-2 py-1 text-sm"
+			>Fehler: {$errors.csv}</span
+		>{/if}
 
 	{#if $form.csv}
 		<div class="flex flex-col items-center my-12 mx-auto w-full justify-center">
