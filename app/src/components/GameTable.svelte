@@ -164,7 +164,6 @@
 			'Ich bin so arm, ich habe nur X und Y'
 		];
 		resultsDataBody.push(defaultRow);
-		// $form.questions.push(serializeRow(defaultRow));
 		const newQuestions = [...$form.questions, serializeRow(defaultRow)];
 		$form.questions = newQuestions; // Reassign to trigger reactivity
 	}
