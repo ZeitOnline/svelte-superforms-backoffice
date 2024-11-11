@@ -186,9 +186,11 @@
 		</label>
 	</div>
 
-	{#if $errors.csv}<span class="border-red-500 border text-red-500 my-5 px-2 py-1 text-sm"
-			>Fehler: {$errors.csv}</span
-		>{/if}
+	{#if $errors.csv}
+		<span class="border-red-500 border text-red-500 my-5 px-2 py-1 text-sm">
+			Fehler: {$errors.csv}
+		</span>
+	{/if}
 
 	{#if $form.csv}
 		<div class="flex flex-col items-center my-12 mx-auto w-full justify-center">
