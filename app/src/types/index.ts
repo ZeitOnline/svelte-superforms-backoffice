@@ -19,6 +19,12 @@ export type Game = {
     questions?: Question[];
 }
 
+export type ToastType = {
+	id: string;
+	title: string;
+	message: string;
+};
+
 export type Question = {    
     game_id?: number;
     nr: number;
