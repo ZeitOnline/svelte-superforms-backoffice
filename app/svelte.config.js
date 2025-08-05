@@ -13,6 +13,7 @@ const config = {
 			$views: './src/views',
 			$types: './src/types',
 			$stores: './src/stores',
+			$data: './src/data',
 		},
 		// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
 		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
@@ -23,9 +24,6 @@ const config = {
 			precompress: false,
 			envPrefix: '',
 		}),
-	},
-	compilerOptions: {
-		accessors: process.env.TEST ? true : false,
 	},
 };
 

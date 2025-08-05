@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { formFieldProxy, superForm, arrayProxy, setError } from 'sveltekit-superforms';
 	import type { PageData } from '../routes/$types';
-	import { toast } from '@zerodevx/svelte-toast';
 	import Separator from './Separator.svelte';
 	import { blur } from 'svelte/transition';
 	import IconHandler from './icons/IconHandler.svelte';
@@ -43,7 +42,7 @@
 		store: ViewStateStore;
 	} = $props();
 
-	const toastManager = getToastState()
+	const toastManager = getToastState();
 	let isSubmitted = false;
 
 	const superform = superForm(data.saveGameForm, {
@@ -54,32 +53,29 @@
 		async onUpdate({ form }) {
 			try {
 				const finalData = {
-					name: $form.name,
-					release_date: $form.release_date,
-					active: $form.published
+					name: form.data.name,
+					release_date: form.data.release_date,
+					active: form.data.published
 				};
-				
-				if (beginning_option === "edit" && game) {
 
-					if (game.name !== $form.name) {
-						if (data.games.some((game: any) => game.name === $form.name)) {
+				if (beginning_option === 'edit' && game) {
+					if (game.name !== form.data.name) {
+						if (data.games.some((game: any) => game.name === form.data.name)) {
 							setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
 						}
 					}
-					
-					if (game.release_date !== $form.release_date) {
-						if (data.games.some((game: any) => game.release_date === $form.release_date)) {
+
+					if (game.release_date !== form.data.release_date) {
+						if (data.games.some((game: any) => game.release_date === form.data.release_date)) {
 							setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
 						}
 					}
-					
 				} else {
-					
-					if (data.games.some((game: any) => game.name === $form.name)) {
+					if (data.games.some((game: any) => game.name === form.data.name)) {
 						setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
 					}
-	
-					if (data.games.some((game: any) => game.release_date === $form.release_date)) {
+
+					if (data.games.some((game: any) => game.release_date === form.data.release_date)) {
 						setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
 					}
 				}
@@ -92,27 +88,26 @@
 				if (beginning_option === 'edit' && game) {
 					const finalEditedGame = {
 						id: game.id,
-						name: $form.name,
-						release_date: $form.release_date,
-						active: $form.published,
+						name: form.data.name,
+						release_date: form.data.release_date,
+						active: form.data.published
 					};
 
 					await updateGame(game.id, finalEditedGame);
 
-					const editedQuestions = $form.questions as QuestionComplete[]
+					const editedQuestions = form.data.questions as QuestionComplete[];
 
 					editedQuestions.forEach((question, index) => {
 						question.game_id = game.id; // Ensure the game_id is correctly assigned
-						// @ts-ignore 
+						// @ts-ignore
 						question.id = game.questions[index].id; // Ensure the question id is correctly assigned
 					});
 
 					await updateGameQuestions(editedQuestions);
-
 				} else {
 					const newGameArray = await createGame(finalData);
 					const newGame = newGameArray[0];
-					newGame.questions = $form.questions;
+					newGame.questions = form.data.questions;
 					newGame.questions.map((question) => {
 						question.game_id = newGame.id;
 					});
@@ -124,26 +119,27 @@
 			} catch (error) {
 				// TODO: Error handling for conflict 409/500 etc
 				console.error('Error adding game:', error);
-				toastManager.add(ERRORS.GAME.FAILED_TO_ADD, '')
+				toastManager.add(ERRORS.GAME.FAILED_TO_ADD, '');
 			}
 		},
-		onUpdated({ form }) {
-			if (form.valid) {
+
+		onResult({ result }) {
+			if (result.status === 200) {
+				isSubmitted = true;
 				toastManager.add(APP_MESSAGES.GAME.ADDED_SUCCESS, '');
 
 				setTimeout(() => {
 					window.location.reload();
 				}, 1000);
 			}
-		},
-		onResult({ result }) {
-			// console.log('onResult:', result);
-			isSubmitted = true;
 		}
 	});
 	const { form, errors, enhance, isTainted, reset } = superform;
 	const { value } = formFieldProxy(superform, 'name');
-	const { values: questionValues, valueErrors: questionErrors } = arrayProxy(superform, 'questions');
+	const { values: questionValues, valueErrors: questionErrors } = arrayProxy(
+		superform,
+		'questions'
+	);
 
 	// Function to add a new row
 	function addRow() {
@@ -298,7 +294,10 @@
 					in:blur
 					class="text-red-500 invalid flex items-center gap-z-ds-4 text-xs sm:max-w-[250px] mt-2"
 				>
-					<IconHandler iconName="error" extraClasses="min-w-4 min-h-4 w-4 h-4 text-z-ds-color-accent-100" />
+					<IconHandler
+						iconName="error"
+						extraClasses="min-w-4 min-h-4 w-4 h-4 text-z-ds-color-accent-100"
+					/>
 					<span class="text-xs">{$errors.name}</span>
 				</div>
 			{/if}
@@ -324,7 +323,10 @@
 					in:blur
 					class="text-red-500 invalid flex items-center gap-z-ds-4 text-xs sm:max-w-[250px] mt-2"
 				>
-					<IconHandler iconName="error" extraClasses="min-w-4 min-h-4 w-4 h-4 text-z-ds-color-accent-100" />
+					<IconHandler
+						iconName="error"
+						extraClasses="min-w-4 min-h-4 w-4 h-4 text-z-ds-color-accent-100"
+					/>
 					<span class="text-xs">{$errors.release_date}</span>
 				</div>
 			{/if}
