@@ -1,7 +1,6 @@
 <script lang="ts">
 	import ViewWrapper from '$components/ViewWrapper.svelte';
 	import type { GameComplete } from '$types';
-	import { toast } from '@zerodevx/svelte-toast';
 	import { type ViewStateStore } from '../stores/view-state-store.svelte';
 	import { deleteGame } from '$lib/queries';
 	import { APP_MESSAGES } from '$lib/app-messages';

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { formFieldProxy, superForm, arrayProxy, setError } from 'sveltekit-superforms';
 	import type { PageData } from '../routes/$types';
-	import { toast } from '@zerodevx/svelte-toast';
 	import Separator from './Separator.svelte';
 	import { blur } from 'svelte/transition';
 	import IconHandler from './icons/IconHandler.svelte';
