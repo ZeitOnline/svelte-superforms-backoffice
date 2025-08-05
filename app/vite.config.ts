@@ -6,8 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit(), svelteTesting()],
 	build: {
-		manifest: true,
-		outDir: 'build'
+		manifest: true
 	},
 	test: {
 		environment: 'jsdom',

@@ -1,8 +1,13 @@
 import { getByRole, render } from '@testing-library/svelte';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { MOCK_GAMES } from '../../data/mock';
 
-import App from '$components/App.svelte';
+vi.mock('$lib/queries', () => ({
+    getAllGames: vi.fn().mockResolvedValue(MOCK_GAMES)
+}));
+
 import { getAllGames } from '$lib/queries';
+import App from '$components/App.svelte';
 
 const fakeData = {
     generateGameForm: {
@@ -50,7 +55,7 @@ describe('App', () => {
 
         if (tbody) {
             const rows = tbody.children;
-            expect(rows.length).toBe(10);
+            expect(rows.length).toBe(2);
         }
     });
 });
