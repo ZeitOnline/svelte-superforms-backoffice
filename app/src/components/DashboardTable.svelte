@@ -25,7 +25,7 @@
 		dateAsc: false,
 		dateDesc: true,
 		active: true,
-		notActive: false,
+		notActive: false
 	});
 
 	let filteredByOptionsItems = $derived(() => {
@@ -62,7 +62,7 @@
 
 		return filteredByOptionsItems().filter((item) => {
 			return (
-				item.name.toLowerCase().includes(term) || 
+				item.name.toLowerCase().includes(term) ||
 				item.id.toString().includes(term) ||
 				transformedPublishedData(item.release_date).toLowerCase().includes(term)
 			);
@@ -109,7 +109,7 @@
 			dateAsc: false,
 			dateDesc: true,
 			active: false,
-			notActive: false,
+			notActive: false
 		};
 		currentPage = 1;
 	}
@@ -140,11 +140,11 @@
 	}
 </script>
 
-<TableSearch 
-	bind:searchTerm 
-	idSearch="dashboard-games" 
-	ariaLabel="Nach Spiele suchen" 
-	ariaControls="search-results-table" 
+<TableSearch
+	bind:searchTerm
+	idSearch="dashboard-games"
+	ariaLabel="Nach Spiele suchen"
+	ariaControls="search-results-table"
 />
 
 <!-- Filter Options  -->
@@ -230,7 +230,9 @@
 		<tbody>
 			{#if paginatedItems.length > 0}
 				{#each paginatedItems as item, index (item.id)}
-					{@const isOneOfTwentyLatestActiveGames = twentyLatestActiveGames().some((game) => game.id === item.id)}
+					{@const isOneOfTwentyLatestActiveGames = twentyLatestActiveGames().some(
+						(game) => game.id === item.id
+					)}
 					<tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
 						<td>{@html highlightMatch(item.name, debouncedSearchTerm)}</td>
 						<td>{@html highlightMatch(item.id, debouncedSearchTerm)}</td>
@@ -241,19 +243,23 @@
 							)}</td
 						>
 						<td>
-							
 							{#if item.active}
-							<div class="flex items-center gap-z-ds-4">
-
-								<TickIcon extraClasses="text-z-ds-color-success-100 w-7 h-7" title="In der Datenbank aktiv" />
-								{#if isOneOfTwentyLatestActiveGames }
-									<EyeIcon extraClasses="text-black w-7 h-7" title="Aktuell im Eckchen-Spiel sichtbar" />
-								{/if}
-							</div>
+								<div class="flex items-center gap-z-ds-4">
+									<TickIcon
+										extraClasses="text-z-ds-color-success-100 w-7 h-7"
+										title="In der Datenbank aktiv"
+									/>
+									{#if isOneOfTwentyLatestActiveGames}
+										<EyeIcon
+											extraClasses="text-black w-7 h-7"
+											title="Aktuell im Eckchen-Spiel sichtbar"
+										/>
+									{/if}
+								</div>
 							{:else}
 								<CloseIcon extraClasses="text-z-ds-color-error-70 w-7 h-7" />
 							{/if}
-						<td>
+						</td><td>
 							<div class="flex items-center justify-end gap-z-ds-4">
 								<button
 									aria-label="Spiel bearbeiten"
@@ -285,6 +291,8 @@
 <TablePagination bind:currentPage {totalPages} />
 
 <style lang="postcss">
+	@reference "../app.css";
+
 	.filter-button {
 		@apply bg-white text-xs px-2 py-1 rounded-md cursor-pointer border border-black hover:bg-gray-200 focus:bg-gray-200;
 	}
