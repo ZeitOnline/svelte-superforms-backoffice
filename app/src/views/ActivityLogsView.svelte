@@ -1,9 +1,8 @@
 <script lang="ts">
-	import DashboardTable from '$components/DashboardTable.svelte';
 	import LogsTable from '$components/LogsTable.svelte';
 	import ViewNavigation from '$components/ViewNavigation.svelte';
 	import ViewWrapper from '$components/ViewWrapper.svelte';
-	import type { Game, Log } from '$types';
+	import type { Log } from '$types';
 	import type { ViewStateStore } from '../stores/view-state-store.svelte';
 
 	let { store }: { store: ViewStateStore } = $props();

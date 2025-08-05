@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { dataToBind = $bindable() }: { dataToBind: any } = $props();
+	let { dataToBind = $bindable() }: { dataToBind: string | number | boolean | null | undefined } = $props();
 </script>
 
 <td>

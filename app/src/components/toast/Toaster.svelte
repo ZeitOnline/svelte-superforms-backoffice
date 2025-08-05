@@ -6,7 +6,7 @@
 </script>
 
 <div class="toaster">
-	{#each toastState.toasts as toast, index}
+	{#each toastState.toasts as toast, index (index)}
 		<Toast {toast} total={toastState.toasts.length} {index} />
 	{/each}
 </div>

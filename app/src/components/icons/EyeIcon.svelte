@@ -12,7 +12,7 @@
 	viewBox="0 0 18 18"
 	fill="none"
 >
-	{#if title}	
+	{#if title}
 		<title>{title}</title>
 	{/if}
 

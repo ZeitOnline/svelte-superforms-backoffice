@@ -21,7 +21,7 @@
 	$effect(() => {
 		window.addEventListener('resize', adjustPosition);
 
-		popoverRef?.addEventListener('toggle', (event: any) => {
+		popoverRef?.addEventListener('toggle', (event: ToggleEvent) => {
 			if (event.newState === 'open') {
 				adjustPosition();
 				isPopoverOpen = true;
@@ -31,7 +31,7 @@
 		});
 
 		return () => {
-			popoverRef?.removeEventListener('toggle', (event: any) => {
+			popoverRef?.removeEventListener('toggle', (event: ToggleEvent) => {
 				if (event.newState === 'open') {
 					adjustPosition();
 					isPopoverOpen = true;

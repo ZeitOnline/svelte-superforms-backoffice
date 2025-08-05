@@ -16,6 +16,7 @@
 	import {
 		Orientation,
 		type BeginningOptions,
+		type Game,
 		type GameComplete,
 		type Question,
 		type QuestionComplete
@@ -60,22 +61,22 @@
 
 				if (beginning_option === 'edit' && game) {
 					if (game.name !== form.data.name) {
-						if (data.games.some((game: any) => game.name === form.data.name)) {
+						if (data.games.some((game: Game) => game.name === form.data.name)) {
 							setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
 						}
 					}
 
 					if (game.release_date !== form.data.release_date) {
-						if (data.games.some((game: any) => game.release_date === form.data.release_date)) {
+						if (data.games.some((game: Game) => game.release_date === form.data.release_date)) {
 							setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
 						}
 					}
 				} else {
-					if (data.games.some((game: any) => game.name === form.data.name)) {
+					if (data.games.some((game: Game) => game.name === form.data.name)) {
 						setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
 					}
 
-					if (data.games.some((game: any) => game.release_date === form.data.release_date)) {
+					if (data.games.some((game: Game) => game.release_date === form.data.release_date)) {
 						setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
 					}
 				}
@@ -99,8 +100,12 @@
 
 					editedQuestions.forEach((question, index) => {
 						question.game_id = game.id; // Ensure the game_id is correctly assigned
-						// @ts-ignore
-						question.id = game.questions[index].id; // Ensure the question id is correctly assigned
+
+						if (game.questions && game.questions[index]) {
+							// @ts-expect-error // TODO: let's talk about this
+							question.id = game.questions[index].id ; // Ensure the question id is correctly assigned
+						}
+
 					});
 
 					await updateGameQuestions(editedQuestions);
@@ -157,7 +162,7 @@
 		$form.questions = newQuestions; // Reassign to trigger reactivity
 	}
 
-	function serializeRow(row: any[]): Question {
+	function serializeRow(row: string[] | number[]): Question {
 		return {
 			nr: Number(row[0]),
 			question: String(row[1]),
@@ -375,7 +380,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each $questionValues as _, i}
+				{#each $questionValues as _, i (i)}
 					<tr
 						in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
 						out:blur={{ duration: 300, delay: 0, easing: cubicInOut }}
@@ -475,7 +480,7 @@
 				class="flex flex-col justify-center list-inside list-disc max-w-[300px]"
 				aria-labelledby="error-heading"
 			>
-				{#each $questionErrors as _i, i}
+				{#each $questionErrors as _, i (i)}
 					{#if $questionErrors?.[i]?.nr}
 						<li class="px-2 text-sm">
 							[R: {i + 1}] - {$questionErrors?.[i]?.nr}

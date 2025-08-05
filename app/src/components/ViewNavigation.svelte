@@ -1,5 +1,5 @@
 <script lang="ts">
-    let { viewName, mainAction, mainActionText } = $props<{ viewName: string; mainAction: () => void, 
+    let { viewName, mainAction, mainActionText } = $props<{ viewName: string; mainAction: () => void,
     mainActionText: string }>();
 </script>
 

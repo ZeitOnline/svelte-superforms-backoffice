@@ -4,12 +4,12 @@ import { svelteTesting } from '@testing-library/svelte/vite';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit(), svelteTesting()],
-	build: {
-		manifest: true
-	},
-	test: {
-		environment: 'jsdom',
-		setupFiles: ['./vitest-setup.js']
-	}
+  plugins: [tailwindcss(), sveltekit(), svelteTesting()],
+  build: {
+    manifest: true,
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./vitest-setup.js'],
+  },
 });

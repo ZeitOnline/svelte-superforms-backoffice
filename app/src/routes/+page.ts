@@ -5,7 +5,7 @@ import { getAllGames } from '$lib/queries';
 
 export const ssr = false;
 
-export const load = (async () => {
+export const load = async () => {
   // The two forms are handled here
   const generateGameForm = await superValidate(zod(generateGameSchema));
   const saveGameForm = await superValidate(zod(saveGameFormSchema));
@@ -13,5 +13,5 @@ export const load = (async () => {
   // The games are loaded here from the db
   const games = await getAllGames();
 
-  return { generateGameForm, saveGameForm, games }
-});
+  return { generateGameForm, saveGameForm, games };
+};

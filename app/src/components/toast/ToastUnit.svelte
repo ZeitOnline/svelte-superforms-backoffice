@@ -14,8 +14,8 @@
 	const toastState = getToastState();
 </script>
 
-<div 
-	in:fly={{ y: 20, duration: 300 }} 
+<div
+	in:fly={{ y: 20, duration: 300 }}
 	out:fade={{ duration: 200 }}
 	class="toast"
 	style="
