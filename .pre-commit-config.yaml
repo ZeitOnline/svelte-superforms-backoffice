@@ -1,0 +1,43 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: check-ast
+  - id: check-merge-conflict
+  - id: check-yaml
+    args:
+    - "--allow-multiple-documents"
+  - id: debug-statements
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+    exclude: \.test\.js\.snap$
+- repo: https://github.com/pre-commit/mirrors-prettier
+  rev: v3.1.0 # Use the sha or tag you want to point at
+  hooks:
+    - id: prettier
+      types_or: [scss, javascript, svelte]
+      additional_dependencies:
+      - prettier@3.4.2
+      - prettier-plugin-svelte@3.3.2
+      args:
+      - "--ignore-path=./.prettierignore"
+      - "--config=./.prettierrc"
+- repo: https://github.com/pre-commit/mirrors-eslint
+  rev: v9.32.0
+  hooks:
+    - id: eslint
+      files: \.(js|svelte)$
+      types: [file]
+      additional_dependencies:
+      - eslint@9.17.0
+      - svelte@5.17.3
+      - eslint-config-prettier@9.1.0
+      - eslint-plugin-svelte@2.46.1
+- repo: https://github.com/compilerla/conventional-pre-commit
+  rev: v4.2.0
+  hooks:
+    - id: conventional-pre-commit
+      stages: [commit-msg]
+      args: ["--verbose"]
