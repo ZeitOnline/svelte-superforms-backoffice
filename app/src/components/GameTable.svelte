@@ -27,6 +27,7 @@
 	import type { ViewStateStore } from '$stores/view-state-store.svelte';
 	import { APP_MESSAGES } from '$lib/app-messages';
 	import { ERRORS } from '$lib/error-messages';
+	import { getToastState } from '$lib/toast-state.svelte';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -42,6 +43,7 @@
 		store: ViewStateStore;
 	} = $props();
 
+	const toastManager = getToastState()
 	let isSubmitted = false;
 
 	const superform = superForm(data.saveGameForm, {
@@ -122,22 +124,13 @@
 			} catch (error) {
 				// TODO: Error handling for conflict 409/500 etc
 				console.error('Error adding game:', error);
-				toast.push(ERRORS.GAME.FAILED_TO_ADD, {
-					duration: 3000,
-					theme: {
-						'--toastBackground': '#e74c3c'
-					}
-				});
+				toastManager.add(ERRORS.GAME.FAILED_TO_ADD, '')
 			}
 		},
 		onUpdated({ form }) {
 			if (form.valid) {
-				toast.push(APP_MESSAGES.GAME.ADDED_SUCCESS, {
-					duration: 1000,
-					theme: {
-						'--toastBackground': '#292929'
-					}
-				});
+				toastManager.add(APP_MESSAGES.GAME.ADDED_SUCCESS, '');
+
 				setTimeout(() => {
 					window.location.reload();
 				}, 1000);
@@ -303,10 +296,10 @@
 			{#if $errors.name}
 				<div
 					in:blur
-					class="text-red-500 invalid flex items-center gap-z-ds-4 absolute -bottom-6 left-0 text-xs"
+					class="text-red-500 invalid flex items-center gap-z-ds-4 text-xs sm:max-w-[250px] mt-2"
 				>
-					<IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
-					<span class="text-nowrap text-xs">{$errors.name}</span>
+					<IconHandler iconName="error" extraClasses="min-w-4 min-h-4 w-4 h-4 text-z-ds-color-accent-100" />
+					<span class="text-xs">{$errors.name}</span>
 				</div>
 			{/if}
 		</div>
@@ -329,10 +322,10 @@
 			{#if $errors.release_date}
 				<div
 					in:blur
-					class="text-red-500 invalid flex items-center gap-z-ds-4 absolute -bottom-6 left-0 text-xs"
+					class="text-red-500 invalid flex items-center gap-z-ds-4 text-xs sm:max-w-[250px] mt-2"
 				>
-					<IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
-					<span class="text-nowrap text-xs">{$errors.release_date}</span>
+					<IconHandler iconName="error" extraClasses="min-w-4 min-h-4 w-4 h-4 text-z-ds-color-accent-100" />
+					<span class="text-xs">{$errors.release_date}</span>
 				</div>
 			{/if}
 		</div>

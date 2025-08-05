@@ -5,8 +5,10 @@
 	import { type ViewStateStore } from '../stores/view-state-store.svelte';
 	import { deleteGame } from '$lib/queries';
 	import { APP_MESSAGES } from '$lib/app-messages';
+	import { getToastState } from '$lib/toast-state.svelte';
 
 	let { store, games }: { store: ViewStateStore; games: GameComplete[] } = $props();
+	const toastManager = getToastState()
 
 	const handleBackToDashboard = () => {
 		store.updateView('dashboard');
@@ -14,13 +16,7 @@
 	};
 
 	const handleDeleteFromList = async (id: number) => {
-		toast.push('Spiel wird gelöscht...', {
-            duration: 3000,
-			theme: {
-				'--toastBackground': '#333',
-				'--toastColor': '#fff'
-			}
-		});
+		toastManager.add('Spiel wird gelöscht', `Bitte warten Sie einen Moment, bis die Aktion abgeschlossen ist.`);
 
 		await deleteGame(id);
 

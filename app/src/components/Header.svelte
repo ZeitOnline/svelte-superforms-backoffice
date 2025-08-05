@@ -1,18 +1,12 @@
 <script lang="ts">
-	import { toast } from '@zerodevx/svelte-toast';
 	import EckchenLogo from './EckchenLogo.svelte';
 	import ZeitSpieleLogo from './ZeitSpieleLogo.svelte';
-	// import type { ViewStateStore } from '../stores/view-state-store.svelte';
-
-	// let { store }: { store: ViewStateStore } = $props();
+	import { getToastState } from '$lib/toast-state.svelte';
+	
+	const toastManager = getToastState()
 
 	function handleLogOut() {
-		toast.push('Erfolgreich abgemeldet', {
-			theme: {
-				'--toastBackground': '#292929',
-				'--toastColor': '#fff'
-			}
-		});
+		toastManager.add('Erfolgreich abgemeldet', 'Sie wurden erfolgreich abgemeldet.');
 	}
 </script>
 
