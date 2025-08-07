@@ -7,15 +7,18 @@ import type { Game, GameComplete, QuestionComplete } from '$types';
  * @author @witsch
  * @remarks For any questions or issues related to this URL, please contact @witsch.
  */
-const BASE_URL = '/eckchen/api';
+const BASE_URL = '/api/eckchen';
 
 /**
  * Get all games from the backend.
  * @returns all games
  */
 export const getAllGames = async () => {
-  const response = MOCK_GAMES;
-  return response as GameComplete[];
+      const response = await fetch(
+        `${BASE_URL}/game`
+    );
+    const data = await response.json();
+    return data
 };
 
 /**
