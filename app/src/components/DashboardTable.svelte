@@ -229,7 +229,7 @@
 		</thead>
 		<tbody>
 			{#if paginatedItems.length > 0}
-				{#each paginatedItems as item, index (item.id)}
+				{#each paginatedItems as item (item.id)}
 					{@const isOneOfTwentyLatestActiveGames = twentyLatestActiveGames().some(
 						(game) => game.id === item.id
 					)}

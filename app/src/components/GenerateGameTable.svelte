@@ -47,7 +47,8 @@
 					skipEmptyLines: true,
 					// header: true,
 					complete: function (results) {
-						const fieldSize = (results.data[0] as any).length;
+						const data = results.data as unknown[][];
+						const fieldSize = data[0]?.length;
 
 						if (fieldSize !== 7) {
 							setError(form, 'csv', ERRORS.CSV.NUMBER_OF_COLUMNS);
@@ -161,7 +162,7 @@
 			oninput={(e) => ($form.csv = e.currentTarget.files?.item(0) as File)}
 		/>
 		<label
-			class="text-sm w-fit -mt-14 flex flex-col justify-center text-center items-center font-bold gap-2 peer-focus:outline peer-focus:outline-offset-2 peer-focus:outline-2 peer-focus:outline-blue-500"
+			class="text-sm w-fit -mt-14 flex flex-col justify-center text-center items-center font-bold gap-2 peer-focus:outline-offset-2 peer-focus:outline-2 peer-focus:outline-blue-500"
 			for="csv"
 			aria-live="polite"
 			aria-atomic="true"
@@ -170,9 +171,9 @@
 		>
 			<span
 				class={`
-				${isDragging ? 'bg-gray-200' : 'bg-white'} 
+				${isDragging ? 'bg-gray-200' : 'bg-white'}
 				${$form.csv ? 'bg-white' : ''}
-				
+
 				border border-black px-5 py-4 group-hover:bg-gray-200 group-focus:bg-gray-200`}
 			>
 				{#if isDragging}

@@ -1,43 +1,48 @@
-import type { Game, GameComplete, QuestionComplete } from "$types";
+import type { Game, GameComplete, QuestionComplete } from '$types';
+
+/**
+ * Mock configuration to skip the deletion of game_state.
+ * We do not have game_state in the mock data.
+ */
+export const SHOULD_DELETE_STATE = false;
+
 
 /**
  * Url to the backend cluster.
- * 
+ *
  * @author @witsch
  * @remarks For any questions or issues related to this URL, please contact @witsch.
  */
-const BASE_URL = '/eckchen/api';
+const BASE_URL = '/api/eckchen';
 
 /**
  * Get all games from the backend.
  * @returns all games
  */
 export const getAllGames = async () => {
-    const response = await fetch(
-        `${BASE_URL}/game`
-    );
-    const data = await response.json();
-    return data
-}
+  const response = await fetch(`${BASE_URL}/game`);
+  const data = await response.json();
+  return data;
+};
 
 /**
  * Get the next available date for a game.
  * @returns the next available date for a game in string format
  */
 export const getNextAvailableDateForGame = async () => {
-    const response = await fetch(
-        `${BASE_URL}/game?select=release_date&order=release_date.desc&limit=1`
-    );
-    const data = await response.json();
+  const response = await fetch(
+    `${BASE_URL}/game?select=release_date&order=release_date.desc&limit=1`,
+  );
+  const data = await response.json();
 
-    // if latest available date is in the past, return today's date
-    const isDateInThePast = data[0].release_date < new Date().toISOString().split('T')[0];
-    if (isDateInThePast) {
-        return new Date().toISOString().split('T')[0];
-    }
+  // if latest available date is in the past, return today's date
+  const isDateInThePast = data[0].release_date < new Date().toISOString().split('T')[0];
+  if (isDateInThePast) {
+    return new Date().toISOString().split('T')[0];
+  }
 
-    return data[0].release_date;
-}
+  return data[0].release_date;
+};
 
 /**
  * Get all the questions from a game by its id.
@@ -45,12 +50,10 @@ export const getNextAvailableDateForGame = async () => {
  * @returns all the questions from the game
  */
 export const getAllQuestionsByGameId = async (id: number) => {
-    const response = await fetch(
-        `${BASE_URL}/game_question?game_id=eq.${id}`
-    );
-    const data = await response.json();
-    return data as QuestionComplete[];
-}
+  const response = await fetch(`${BASE_URL}/game_question?game_id=eq.${id}`);
+  const data = await response.json();
+  return data as QuestionComplete[];
+};
 
 /**
  * deletes a game by its id along with all the questions associated with it and the game_state.
@@ -58,74 +61,85 @@ export const getAllQuestionsByGameId = async (id: number) => {
  * @returns the status of the deletion
  */
 export const deleteGame = async (id: number) => {
-    // We need to do 3 things here:
-    // 1 - delete the questions associated with the game
-    // 2 - delete the game state 
-    // 3 - delete the game itself
+  // We need to do 3 things here:
+  // 1 - delete the questions associated with the game
+  // 2 - delete the game state
+  // 3 - delete the game itself
 
-    // TODO: this needs to be done in CASCADE in the backend
-    console.log("we want to delete the game with the id: ", id);
+  // TODO: this needs to be done in CASCADE in the backend
+  console.log('we want to delete the game with the id: ', id);
 
+  // Step 1 - Delete the questions associated with the game
+  const questions = await getAllQuestionsByGameId(id);
 
-    // Step 1 - Delete the questions associated with the game
-    const questions = await getAllQuestionsByGameId(id);
+  if (questions.length > 0) {
+    // Batch delete questions associated with the game
+    const questionIds = questions.map(question => question.id);
 
-    if (questions.length > 0) {
-        // Batch delete questions associated with the game
-        const questionIds = questions.map(question => question.id);
-
-        const responseQuestion = await fetch(`${BASE_URL}/game_question?id=in.(${questionIds.join(',')})`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!responseQuestion.ok) {
-            throw new Error(`Failed to delete the questions for game with id: ${id}. Status: ${responseQuestion.status}`);
-        }
-
-        console.log(`Deleted ${questions.length} questions associated with game id: ${id}`);
-    }
-
-    // Step 2: Fetch and delete related entries in the game_state table
-    const responseGameState = await fetch(`${BASE_URL}/game_state?game_id=eq.${id}`, {
+    const responseQuestion = await fetch(
+      `${BASE_URL}/game_question?id=in.(${questionIds.join(',')})`,
+      {
         method: 'DELETE',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
+      },
+    );
+
+    if (!responseQuestion.ok) {
+      throw new Error(
+        `Failed to delete the questions for game with id: ${id}. Status: ${responseQuestion.status}`,
+      );
+    }
+
+    console.log(`Deleted ${questions.length} questions associated with game id: ${id}`);
+  }
+
+  if (SHOULD_DELETE_STATE) {
+    // Step 2: Fetch and delete related entries in the game_state table
+    const responseGameState = await fetch(`${BASE_URL}/game_state?game_id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!responseGameState.ok) {
-        const errorMessage = await responseGameState.text();
-        console.error(`Failed to delete game_state entries for game with id: ${id}. Status: ${responseGameState.status}. Error: ${errorMessage}`);
-        throw new Error(`Failed to delete game_state entries for game with id: ${id}. Status: ${responseGameState.status}. Error: ${errorMessage}`);
+      const errorMessage = await responseGameState.text();
+      console.error(
+        `Failed to delete game_state entries for game with id: ${id}. Status: ${responseGameState.status}. Error: ${errorMessage}`,
+      );
+      throw new Error(
+        `Failed to delete game_state entries for game with id: ${id}. Status: ${responseGameState.status}. Error: ${errorMessage}`,
+      );
     }
-
     console.log(`Deleted game_state entries associated with game id: ${id}`);
+  }
 
+  // Step 3 - Delete the game itself
+  // Before deleting the game, check if there are other related resources
+  console.log(`Attempting to delete the game with id: ${id}`);
 
-    // Step 3 - Delete the game itself
-    // Before deleting the game, check if there are other related resources
-    console.log(`Attempting to delete the game with id: ${id}`);
+  const responseGame = await fetch(`${BASE_URL}/game?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 
-    const responseGame = await fetch(`${BASE_URL}/game?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
+  if (!responseGame.ok) {
+    const errorMessage = await responseGame.text(); // Get more detailed error message if available
+    console.error(
+      `Failed to delete the game with id: ${id}. Status: ${responseGame.status}. Error: ${errorMessage}`,
+    );
+    throw new Error(
+      `Failed to delete the game with id: ${id}. Status: ${responseGame.status}. Error: ${errorMessage}`,
+    );
+  }
 
-    if (!responseGame.ok) {
-        const errorMessage = await responseGame.text(); // Get more detailed error message if available
-        console.error(`Failed to delete the game with id: ${id}. Status: ${responseGame.status}. Error: ${errorMessage}`);
-        throw new Error(`Failed to delete the game with id: ${id}. Status: ${responseGame.status}. Error: ${errorMessage}`);
-    }
-
-    console.log(`Successfully deleted game with id: ${id}`);
-    return responseGame.statusText;
-}
-
+  console.log(`Successfully deleted game with id: ${id}`);
+  return responseGame.statusText;
+};
 
 /**
  * Updates a game by its id.
@@ -134,61 +148,27 @@ export const deleteGame = async (id: number) => {
  * @returns the updated game
  */
 export const updateGame = async (id: number, data: GameComplete) => {
-    try {
-        const response = await fetch(`${BASE_URL}/game?id=eq.${id}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-            },
-            body: JSON.stringify(data)
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to update game with id: ${id}. Status: ${response.status}`);
-        }
-
-        const updatedGame = await response.json();
-        return updatedGame;
-
-    } catch (error) {
-        console.error("Failed to update the game", error);
-        throw error;
-    }
-};
-
-/**
- * Upsert data to a database
- * @param table - the table name
- * @param data - the data to be upserted
- */
-// TODO: make this work :)
-const upsertData = async (table: string, data: any) => {
-    console.log('this is the table: ', table);
-    console.log('this is the data: ', data);
-
-    if (table == "game") {
-        // we need to remove the questions from the game data
-        const questions = data.questions;
-        delete data.questions;
-        console.log('this is the data without questions: ', data);
-
-        // we need to update the questions separately
-        if (questions.length > 0) {
-            // upsertData('game_question', questions);
-        }
-    }
-
-
-    await fetch(`${BASE_URL}/${table}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Prefer': 'resolution=merge-duplicates'
-        },
-        body: JSON.stringify(data)
+  try {
+    const response = await fetch(`${BASE_URL}/game?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify(data),
     });
-}
+
+    if (!response.ok) {
+      throw new Error(`Failed to update game with id: ${id}. Status: ${response.status}`);
+    }
+
+    const updatedGame = await response.json();
+    return updatedGame;
+  } catch (error) {
+    console.error('Failed to update the game', error);
+    throw error;
+  }
+};
 
 /**
  * Create a game.
@@ -196,15 +176,15 @@ const upsertData = async (table: string, data: any) => {
  * @returns the created game
  */
 export async function createGame(data: Game): Promise<GameComplete[]> {
-	const game = await fetch(`${BASE_URL}/game`, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'Prefer': 'return=representation' 
-		},
-		body: JSON.stringify(data)
-	});
-	return await game.json();
+  const game = await fetch(`${BASE_URL}/game`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify(data),
+  });
+  return await game.json();
 }
 
 /**
@@ -213,26 +193,25 @@ export async function createGame(data: Game): Promise<GameComplete[]> {
  * @returns the status of the update
  */
 export async function updateGameQuestions(questions: QuestionComplete[]): Promise<Response[]> {
-    
-    const updateQuestions = questions.map(async question => {
-        const response = await fetch(`${BASE_URL}/game_question?id=eq.${question.id}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-            },
-            body: JSON.stringify(question)
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to update question with id: ${question.id}`);
-        }
-        return response;
+  const updateQuestions = questions.map(async question => {
+    const response = await fetch(`${BASE_URL}/game_question?id=eq.${question.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify(question),
     });
 
-    const responses = await Promise.all(updateQuestions);
+    if (!response.ok) {
+      throw new Error(`Failed to update question with id: ${question.id}`);
+    }
+    return response;
+  });
 
-    return responses;
+  const responses = await Promise.all(updateQuestions);
+
+  return responses;
 }
 
 /**
@@ -241,13 +220,13 @@ export async function updateGameQuestions(questions: QuestionComplete[]): Promis
  * @returns the created game questions
  */
 export async function createGameQuestions(data: Game): Promise<Response> {
-    const { questions } = data;
-    const gameQuestions = await fetch(`${BASE_URL}/game_question`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(questions)
-    });
-    return gameQuestions;
+  const { questions } = data;
+  const gameQuestions = await fetch(`${BASE_URL}/game_question`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(questions),
+  });
+  return gameQuestions;
 }

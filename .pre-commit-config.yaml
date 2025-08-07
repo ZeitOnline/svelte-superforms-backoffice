@@ -1,0 +1,58 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: check-ast
+  - id: check-merge-conflict
+  - id: check-yaml
+    args:
+    - "--allow-multiple-documents"
+  - id: debug-statements
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+    exclude: \.test\.js\.snap$
+- repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+  rev: '3.2.1'
+  hooks:
+  - id: editorconfig-checker
+    alias: ec
+- repo: https://github.com/pre-commit/mirrors-prettier
+  rev: v3.1.0
+  hooks:
+    - id: prettier
+      types_or: [scss, javascript, svelte]
+      additional_dependencies:
+        - prettier@3.5.3
+        - prettier-plugin-svelte@3.4.0
+      args:
+        - "--config=./app/.prettierrc"
+- repo: https://github.com/pre-commit/mirrors-eslint
+  rev: v9.32.0
+  hooks:
+    - id: eslint
+      files: \.(js|svelte)$
+      types: [file]
+      pass_filenames: false
+      args:
+      - "--ignore-pattern=**/app/.prettierignore"
+      - "--config=./app/eslint.config.js"
+      - "--ignore-pattern=**/app/build/**"
+      - "--ignore-pattern=**/app/.svelte-kit/**"
+      - "--ignore-pattern=**/docs/**"
+      additional_dependencies:
+      - eslint@9.30.0
+      - svelte@5.35.4
+      - "@vitest/eslint-plugin@1.2.4"
+      - eslint-plugin-vitest@0.5.4
+      - eslint-plugin-svelte@3.9.2
+      - typescript-eslint@8.36.0
+      - "@zeitonline/eslint-config@2.0.0-alpha.1"
+      entry: ./run_eslint.sh
+- repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+  rev: v9.22.0
+  hooks:
+    - id: commitlint
+      stages: [commit-msg]
+      additional_dependencies: ['@commitlint/config-conventional']

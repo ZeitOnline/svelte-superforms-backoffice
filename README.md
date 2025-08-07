@@ -31,7 +31,7 @@
 
 ## Description of the project
 
-Following the modus operandi of other games, it was decided that eckchen needed a new admin interface where people could easily update information regarding the games. The project is managed by the team Engagement and Games. 
+Following the modus operandi of other games, it was decided that eckchen needed a new admin interface where people could easily update information regarding the games. The project is managed by the team Engagement and Games.
 
 ## What needs to be changed for a new game?
 
@@ -45,8 +45,8 @@ src
 │   ├── error-messages.ts // the error messages for the form validation
 │   ├── queries.ts // all the queries that will be used with the postqres
 ├── components
-│   ├── GameTable.svelte // the main component used for Create and Edit 
-│   ├── Header.svelte // you will need to replace the EckchenLogo.svelte 
+│   ├── GameTable.svelte // the main component used for Create and Edit
+│   ├── Header.svelte // you will need to replace the EckchenLogo.svelte
 │   ├── ... // other components probably will need some change
 ├── schemas
 │   ├── generate-game.ts // define all the schemas for the forms (validation, types, etc.)
@@ -99,7 +99,7 @@ Check the main task on [Jira](https://zeit-online.atlassian.net/browse/ZO-5839) 
 - [ ] deleteGame
 
 stretch:
-- [ ] tainted warning message 
+- [ ] tainted warning message
 - [ ] search in the dashboard
 
 ### e2e

@@ -29,7 +29,7 @@
 						<td>{item.game_id}</td>
 						<td>
                             <div class={`flex items-center gap-z-ds-4`}>
-                                {item.action.toUpperCase()}         
+                                {item.action.toUpperCase()}
                             </div>
                         </td>
 						<td>{item.detail}</td>

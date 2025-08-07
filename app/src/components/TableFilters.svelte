@@ -6,12 +6,12 @@
 		idButtonOpener,
 		popoverOpener,
 		popoverContent
-	}: 
-    { 
+	}:
+    {
         resetAllFilters: () => void;
-        idButtonOpener: string; 
-        popoverOpener: () => ReturnType<import("svelte").Snippet>; 
-        popoverContent: () => ReturnType<import("svelte").Snippet> 
+        idButtonOpener: string;
+        popoverOpener: () => ReturnType<import("svelte").Snippet>;
+        popoverContent: () => ReturnType<import("svelte").Snippet>
     } = $props();
 </script>
 

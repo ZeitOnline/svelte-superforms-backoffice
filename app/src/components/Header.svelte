@@ -2,7 +2,7 @@
 	import EckchenLogo from './EckchenLogo.svelte';
 	import ZeitSpieleLogo from './ZeitSpieleLogo.svelte';
 	import { getToastState } from '$lib/toast-state.svelte';
-	
+
 	const toastManager = getToastState()
 
 	function handleLogOut() {

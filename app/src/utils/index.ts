@@ -4,12 +4,12 @@
  * @returns
  */
 export const transformedPublishedData = (publishedAt: string) => {
-	const date = new Date(publishedAt);
-	return date.toLocaleDateString('de-DE', {
-		year: 'numeric',
-		month: 'long',
-		day: 'numeric'
-	});
+  const date = new Date(publishedAt);
+  return date.toLocaleDateString('de-DE', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 };
 
 /**
@@ -18,15 +18,15 @@ export const transformedPublishedData = (publishedAt: string) => {
  * @returns
  */
 export const transformedPublishedDataWithTime = (publishedAt: string) => {
-	const date = new Date(publishedAt);
-	return date.toLocaleDateString('de-DE', {
-		year: 'numeric',
-		month: 'long',
-		day: 'numeric',
-		hour: 'numeric',
-		minute: 'numeric'
-	});
-}
+  const date = new Date(publishedAt);
+  return date.toLocaleDateString('de-DE', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+  });
+};
 
 /**
  * This function is used to debounce the function call
@@ -34,13 +34,13 @@ export const transformedPublishedDataWithTime = (publishedAt: string) => {
  * @param wait  debounce time
  * @returns
  */
-export const debounce = (callback: Function, wait = 300) => {
-	let timeout: ReturnType<typeof setTimeout>;
-	return (...args: any[]) => {
-		clearTimeout(timeout);
-		timeout = setTimeout(() => callback(...args), wait);
-	};
-};
+export function debounce<T extends (...args: string[]) => void>(callback: T, wait = 300) {
+  let timeout: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>): void => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => callback(...args), wait);
+  };
+}
 
 /**
  * This function is used to highlight the matched text
@@ -49,13 +49,13 @@ export const debounce = (callback: Function, wait = 300) => {
  * @returns
  */
 export function highlightMatch(text: string | number, term: string): string {
-	const textStr = text.toString();
-	const parts: string[] = textStr.split(new RegExp(`(${term})`, 'gi'));
-	return parts
-		.map((part: string, index: number) =>
-			part.toLowerCase() === term.toLowerCase()
-				? `<span class="bg-yellow-300">${part}</span>`
-				: part
-		)
-		.join('');
+  const textStr = text.toString();
+  const parts: string[] = textStr.split(new RegExp(`(${term})`, 'gi'));
+  return parts
+    .map((part: string) =>
+      part.toLowerCase() === term.toLowerCase()
+        ? `<span class="bg-yellow-300">${part}</span>`
+        : part,
+    )
+    .join('');
 }
