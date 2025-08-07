@@ -22,7 +22,7 @@ services:
 
   # PostgREST API for Eckchen schema
   postgrest_eckchen:
-    image: postgrest/postgrest:v12.0.2
+    image: postgrest/postgrest:v12.2.12@sha256:5f4ce744539bbba786b4e24dbbd95bdb2a956dcf568c5374995a0ff4a68f5bd2
     container_name: postgrest_eckchen
     environment:
       PGRST_DB_URI: postgres://postgres:postgres@postgres:5432/main
@@ -42,7 +42,7 @@ services:
 
   # PostgREST API for Wortiger schema
   postgrest_wortiger:
-    image: postgrest/postgrest:v12.0.2
+    image: postgrest/postgrest:v12.2.12@sha256:5f4ce744539bbba786b4e24dbbd95bdb2a956dcf568c5374995a0ff4a68f5bd2
     container_name: postgrest_wortiger
     environment:
       PGRST_DB_URI: postgres://postgres:postgres@postgres:5432/main
