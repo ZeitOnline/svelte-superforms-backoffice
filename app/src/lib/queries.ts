@@ -1,5 +1,11 @@
-import { MOCK_GAMES } from '$data/mock';
 import type { Game, GameComplete, QuestionComplete } from '$types';
+
+/**
+ * Mock configuration to skip the deletion of game_state.
+ * We do not have game_state in the mock data.
+ */
+export const SHOULD_DELETE_STATE = false;
+
 
 /**
  * Url to the backend cluster.
@@ -14,11 +20,9 @@ const BASE_URL = '/api/eckchen';
  * @returns all games
  */
 export const getAllGames = async () => {
-      const response = await fetch(
-        `${BASE_URL}/game`
-    );
-    const data = await response.json();
-    return data
+  const response = await fetch(`${BASE_URL}/game`);
+  const data = await response.json();
+  return data;
 };
 
 /**
@@ -91,25 +95,26 @@ export const deleteGame = async (id: number) => {
     console.log(`Deleted ${questions.length} questions associated with game id: ${id}`);
   }
 
-  // Step 2: Fetch and delete related entries in the game_state table
-  const responseGameState = await fetch(`${BASE_URL}/game_state?game_id=eq.${id}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  if (SHOULD_DELETE_STATE) {
+    // Step 2: Fetch and delete related entries in the game_state table
+    const responseGameState = await fetch(`${BASE_URL}/game_state?game_id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  if (!responseGameState.ok) {
-    const errorMessage = await responseGameState.text();
-    console.error(
-      `Failed to delete game_state entries for game with id: ${id}. Status: ${responseGameState.status}. Error: ${errorMessage}`,
-    );
-    throw new Error(
-      `Failed to delete game_state entries for game with id: ${id}. Status: ${responseGameState.status}. Error: ${errorMessage}`,
-    );
+    if (!responseGameState.ok) {
+      const errorMessage = await responseGameState.text();
+      console.error(
+        `Failed to delete game_state entries for game with id: ${id}. Status: ${responseGameState.status}. Error: ${errorMessage}`,
+      );
+      throw new Error(
+        `Failed to delete game_state entries for game with id: ${id}. Status: ${responseGameState.status}. Error: ${errorMessage}`,
+      );
+    }
+    console.log(`Deleted game_state entries associated with game id: ${id}`);
   }
-
-  console.log(`Deleted game_state entries associated with game id: ${id}`);
 
   // Step 3 - Delete the game itself
   // Before deleting the game, check if there are other related resources
