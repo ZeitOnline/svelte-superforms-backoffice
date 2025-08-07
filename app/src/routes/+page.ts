@@ -7,6 +7,7 @@ export const ssr = false;
 
 export const load = async () => {
   // The two forms are handled here
+  // TODO: handle here the right game form schema
   const generateGameForm = await superValidate(zod(generateGameSchema));
   const saveGameForm = await superValidate(zod(saveGameFormSchema));
 

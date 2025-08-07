@@ -1,4 +1,5 @@
 import type { Game, GameComplete, QuestionComplete } from '$types';
+import { CURRENT_GAME_CONFIG } from '../config/games.config';
 
 /**
  * Mock configuration to skip the deletion of game_state.
@@ -6,21 +7,21 @@ import type { Game, GameComplete, QuestionComplete } from '$types';
  */
 export const SHOULD_DELETE_STATE = false;
 
-
 /**
  * Url to the backend cluster.
  *
  * @author @witsch
  * @remarks For any questions or issues related to this URL, please contact @witsch.
  */
-const BASE_URL = '/api/eckchen';
+const BASE_URL = CURRENT_GAME_CONFIG.apiBase;
+const API_ENDPOINT = CURRENT_GAME_CONFIG.apiEndpoint;
 
 /**
  * Get all games from the backend.
  * @returns all games
  */
 export const getAllGames = async () => {
-  const response = await fetch(`${BASE_URL}/game`);
+  const response = await fetch(`${BASE_URL}/${API_ENDPOINT}`);
   const data = await response.json();
   return data;
 };
@@ -31,7 +32,7 @@ export const getAllGames = async () => {
  */
 export const getNextAvailableDateForGame = async () => {
   const response = await fetch(
-    `${BASE_URL}/game?select=release_date&order=release_date.desc&limit=1`,
+    `${BASE_URL}/${API_ENDPOINT}?select=release_date&order=release_date.desc&limit=1`,
   );
   const data = await response.json();
 

@@ -10,6 +10,8 @@
 
 	let store: ViewStateStore = viewStateStore();
 	let { data }: { data: PageData } = $props();
+
+	console.log('App.svelte', { data, store });
 </script>
 
 <Header />

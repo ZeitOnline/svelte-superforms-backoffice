@@ -9,6 +9,7 @@
 	import TableSearch from './TableSearch.svelte';
 	import TablePagination from './TablePagination.svelte';
 	import { CloseIcon, EyeIcon, TickIcon } from './icons';
+    import { CURRENT_GAME_CONFIG } from '../config/games.config';
 
 	const ITEMS_PER_PAGE = 10;
 
@@ -250,10 +251,14 @@
 										title="In der Datenbank aktiv"
 									/>
 									{#if isOneOfTwentyLatestActiveGames}
-										<EyeIcon
-											extraClasses="text-black w-7 h-7"
-											title="Aktuell im Eckchen-Spiel sichtbar"
-										/>
+										<a
+											title={`Das Spiel mit ID ${item.id} im ${CURRENT_GAME_CONFIG.label} anschauen`}
+											target="_blank" rel="nofollow noopener" href={`${CURRENT_GAME_CONFIG.productionUrl}/#${item.id}`}>
+											<EyeIcon
+												extraClasses="text-black w-7 h-7"
+												title="Aktuell im Eckchen-Spiel sichtbar"
+											/>
+										</a>
 									{/if}
 								</div>
 							{:else}
