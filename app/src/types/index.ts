@@ -106,6 +106,6 @@ export type GameConfig = {
   };
   table: {
     columns: TableColumn[];
-    hasSpecialActiveView?: boolean; // For the eye icon in Eckchen
+    hasLiveView?: boolean; // For the eye icon in Eckchen
   };
 };

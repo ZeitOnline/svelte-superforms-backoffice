@@ -92,7 +92,7 @@
 
 	// Only for Eckchen - twenty latest active games for the eye icon
 	let twentyLatestActiveGames = $derived(() => {
-		if (!CURRENT_GAME_CONFIG.table.hasSpecialActiveView) return [];
+		if (!CURRENT_GAME_CONFIG.table.hasLiveView) return [];
 
 		return items
 			.filter((item) => isGameActive(item))
@@ -261,7 +261,7 @@
 		<tbody>
 			{#if paginatedItems.length > 0}
 				{#each paginatedItems as item (item.id)}
-					{@const isOneOfTwentyLatestActiveGames = CURRENT_GAME_CONFIG.table.hasSpecialActiveView &&
+					{@const isOneOfTwentyLatestActiveGames = CURRENT_GAME_CONFIG.table.hasLiveView &&
 						twentyLatestActiveGames().some((game) => game.id === item.id)}
 
 					<tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
@@ -273,7 +273,7 @@
 									{#if isGameActive(item)}
 										<div class="flex items-center gap-z-ds-4">
 											<TickIcon
-												extraClasses="text-z-ds-color-success-100 w-7 h-7"
+												extraClasses="text-z-ds-color-success-100 w-5 h-5"
 												title="In der Datenbank aktiv"
 											/>
 											{#if isOneOfTwentyLatestActiveGames}
@@ -284,7 +284,7 @@
 													href={`${CURRENT_GAME_CONFIG.productionUrl}/#${item.id}`}
 												>
 													<EyeIcon
-														extraClasses="text-black w-7 h-7"
+														extraClasses="text-black w-5 h-5"
 														title="Aktuell im Eckchen-Spiel sichtbar"
 													/>
 												</a>

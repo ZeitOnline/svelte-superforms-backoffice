@@ -25,7 +25,7 @@ export const GAMES: Record<GameId, GameConfig> = {
     },
     ui: { icon: '🧩', themeColor: '#1e88e5' },
     table: {
-      hasSpecialActiveView: true,
+      hasLiveView: true,
       columns: [
         {
           key: 'name',
@@ -70,7 +70,7 @@ export const GAMES: Record<GameId, GameConfig> = {
     },
     ui: { icon: '🐯', themeColor: '#43a047' },
     table: {
-      hasSpecialActiveView: false,
+      hasLiveView: true,
       columns: [
         {
           key: 'level',
