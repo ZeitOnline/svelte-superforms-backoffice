@@ -16,8 +16,8 @@
 	import {
 		Orientation,
 		type BeginningOptions,
-		type Game,
 		type GameComplete,
+		type GameEckchen,
 		type Question,
 		type QuestionComplete
 	} from '$types';
@@ -28,6 +28,7 @@
 	import { APP_MESSAGES } from '$lib/app-messages';
 	import { ERRORS } from '$lib/error-messages';
 	import { getToastState } from '$lib/toast-state.svelte';
+    import { isEckchenGame } from '../utils';
 
 	let {
 		resultsDataBody = $bindable(),
@@ -60,23 +61,25 @@
 				};
 
 				if (beginning_option === 'edit' && game) {
-					if (game.name !== form.data.name) {
-						if (data.games.some((game: Game) => game.name === form.data.name)) {
-							setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
+					if (isEckchenGame(game)) {
+						if (game.name !== form.data.name) {
+							if (data.games.some((game: GameEckchen) => game.name === form.data.name)) {
+								setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
+							}
 						}
 					}
 
 					if (game.release_date !== form.data.release_date) {
-						if (data.games.some((game: Game) => game.release_date === form.data.release_date)) {
+						if (data.games.some((game: GameComplete) => game.release_date === form.data.release_date)) {
 							setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
 						}
 					}
 				} else {
-					if (data.games.some((game: Game) => game.name === form.data.name)) {
+					if (data.games.some((game: GameEckchen) => game.name === form.data.name)) {
 						setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
 					}
 
-					if (data.games.some((game: Game) => game.release_date === form.data.release_date)) {
+					if (data.games.some((game: GameComplete) => game.release_date === form.data.release_date)) {
 						setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
 					}
 				}
@@ -96,26 +99,32 @@
 
 					await updateGame(game.id, finalEditedGame);
 
-					const editedQuestions = form.data.questions as QuestionComplete[];
+					if (isEckchenGame(game)) {
+						const editedQuestions = form.data.questions as QuestionComplete[];
 
-					editedQuestions.forEach((question, index) => {
-						question.game_id = game.id; // Ensure the game_id is correctly assigned
+						editedQuestions.forEach((question, index) => {
+							question.game_id = game.id; // Ensure the game_id is correctly assigned
 
-						if (game.questions && game.questions[index]) {
-							// @ts-expect-error // TODO: let's talk about this
-							question.id = game.questions[index].id ; // Ensure the question id is correctly assigned
-						}
+							if (game.questions && game.questions[index]) {
+								// @ts-expect-error // TODO: let's talk about this
+								question.id = game.questions[index].id ; // Ensure the question id is correctly assigned
+							}
 
-					});
+						});
 
-					await updateGameQuestions(editedQuestions);
+						await updateGameQuestions(editedQuestions);
+					}
+
+
 				} else {
 					const newGameArray = await createGame(finalData);
 					const newGame = newGameArray[0];
-					newGame.questions = form.data.questions;
-					newGame.questions.map((question) => {
-						question.game_id = newGame.id;
-					});
+					if (isEckchenGame(newGame)) {
+						newGame.questions = form.data.questions;
+						newGame.questions.map((question) => {
+							question.game_id = newGame.id;
+						});
+					}
 					const resp = await createGameQuestions(newGame);
 					if (!resp.ok) {
 						throw new Error('Failed to add questions');
@@ -190,8 +199,10 @@
 			addRow();
 		}
 		if (game) {
-			if (game.name) {
-				$value = game.name;
+			if (isEckchenGame(game)) {
+				if (game.name) {
+					$value = game.name;
+				}
 			}
 			if (game.release_date) {
 				$form.release_date = game.release_date;
@@ -266,7 +277,7 @@
 
 {#if beginning_option === 'edit' && game}
 	<ViewNavigation
-		viewName={`Spiel ${game.name} bearbeiten`}
+		viewName={`Spiel bearbeiten`}
 		mainAction={handleBackToDashboard}
 		mainActionText="Zurück"
 	/>

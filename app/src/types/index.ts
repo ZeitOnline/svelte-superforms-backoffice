@@ -1,3 +1,5 @@
+import type z from 'zod';
+
 /**
  * These are the possible views in the app
  */
@@ -17,13 +19,20 @@ export type IconOption =
   | 'delete';
 
 /**
- * This is how I game looks like
+ * This is how games look like - matching actual API data structure
  */
-export type Game = {
+export type GameEckchen = {
   name: string;
   release_date: string;
-  active: boolean;
+  active?: boolean; // Optional since it might not be in all API responses
   questions?: Question[];
+};
+
+export type GameWortiger = {
+  level: number;
+  release_date: string;
+  solution: string;
+  active?: boolean; // Optional since it might not be in all API responses
 };
 
 export type ToastType = {
@@ -43,9 +52,13 @@ export type Question = {
   description: string;
 };
 
-export type GameComplete = Game & {
-  id: number;
-};
+export type GameComplete =
+  | (GameEckchen & {
+      id: number;
+    })
+  | (GameWortiger & {
+      id: number;
+    });
 
 export type QuestionComplete = Question & {
   id: number;
@@ -66,3 +79,33 @@ export enum Orientation {
 }
 
 export type BeginningOptions = 'scratch' | 'csv' | 'edit' | null;
+
+export type TableColumn = {
+  key: string;
+  label: string;
+  getValue: (game: GameComplete) => string | number;
+  getDisplayValue?: (game: GameComplete) => string;
+  searchable?: boolean;
+  sortable?: boolean;
+};
+
+export type GameConfig = {
+  label: string;
+  apiBase: string;
+  productionUrl: string;
+  apiEndpoint: string;
+  schemas: {
+    generateGameSchema: z.ZodTypeAny;
+    saveGameFormSchema: z.ZodTypeAny;
+    saveGameArraySchema?: z.ZodTypeAny;
+    saveGameSchema?: z.ZodTypeAny;
+  };
+  ui: {
+    icon: string;
+    themeColor: string;
+  };
+  table: {
+    columns: TableColumn[];
+    hasSpecialActiveView?: boolean; // For the eye icon in Eckchen
+  };
+};

@@ -4,7 +4,6 @@
 	import BreakpointsDebug from '$components/BreakpointsDebug.svelte';
 	import Toaster from '$components/toast/Toaster.svelte';
 	import { setToastState } from '$lib/toast-state.svelte';
-    import { CURRENT_GAME_CONFIG } from '../config/games.config';
 
     setToastState();
 </script>

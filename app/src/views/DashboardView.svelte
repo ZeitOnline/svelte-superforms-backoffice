@@ -1,5 +1,5 @@
 <script lang="ts">
-	import DashboardTable from '$components/DashboardTable.svelte';
+    import GenericDashboardTable from '$components/GenericDashboardTable.svelte';
 	import ViewNavigation from '$components/ViewNavigation.svelte';
 	import ViewWrapper from '$components/ViewWrapper.svelte';
 	import type { GameComplete } from '$types';
@@ -19,5 +19,5 @@
 		mainActionText="Neues Spiel erstellen"
 	/>
 
-	<DashboardTable {store} {games} />
+	<GenericDashboardTable {store} {games} />
 </ViewWrapper>

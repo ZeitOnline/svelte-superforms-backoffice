@@ -1,5 +1,6 @@
 <script lang="ts">
-	import PopOver from "./PopOver.svelte";
+    import PopOver from "$components/PopOver.svelte";
+
 
     let {
         resetAllFilters,
