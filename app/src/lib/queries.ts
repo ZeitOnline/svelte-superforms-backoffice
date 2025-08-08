@@ -1,4 +1,5 @@
 import type { Game, GameComplete, QuestionComplete } from '$types';
+import { CURRENT_GAME_CONFIG } from '../config/games.config';
 
 /**
  * Mock configuration to skip the deletion of game_state.
@@ -6,21 +7,21 @@ import type { Game, GameComplete, QuestionComplete } from '$types';
  */
 export const SHOULD_DELETE_STATE = false;
 
-
 /**
  * Url to the backend cluster.
  *
  * @author @witsch
  * @remarks For any questions or issues related to this URL, please contact @witsch.
  */
-const BASE_URL = '/api/eckchen';
+const BASE_URL = CURRENT_GAME_CONFIG.apiBase;
+const API_ENDPOINT = CURRENT_GAME_CONFIG.apiEndpoint;
 
 /**
  * Get all games from the backend.
  * @returns all games
  */
 export const getAllGames = async () => {
-  const response = await fetch(`${BASE_URL}/game`);
+  const response = await fetch(`${BASE_URL}/${API_ENDPOINT}`);
   const data = await response.json();
   return data;
 };
@@ -31,7 +32,7 @@ export const getAllGames = async () => {
  */
 export const getNextAvailableDateForGame = async () => {
   const response = await fetch(
-    `${BASE_URL}/game?select=release_date&order=release_date.desc&limit=1`,
+    `${BASE_URL}/${API_ENDPOINT}?select=release_date&order=release_date.desc&limit=1`,
   );
   const data = await response.json();
 
@@ -61,6 +62,16 @@ export const getAllQuestionsByGameId = async (id: number) => {
  * @returns the status of the deletion
  */
 export const deleteGame = async (id: number) => {
+  if (CURRENT_GAME_CONFIG.label === 'Eckchen') {
+    return deleteEckchenGame(id);
+  } else if (CURRENT_GAME_CONFIG.label === 'Wortiger') {
+    return deleteWortigerGame(id);
+  } else {
+    throw new Error(`Unsupported game type: ${CURRENT_GAME_CONFIG.label}`);
+  }
+};
+
+export const deleteEckchenGame = async (id: number) => {
   // We need to do 3 things here:
   // 1 - delete the questions associated with the game
   // 2 - delete the game state
@@ -139,6 +150,37 @@ export const deleteGame = async (id: number) => {
 
   console.log(`Successfully deleted game with id: ${id}`);
   return responseGame.statusText;
+};
+
+export const deleteWortigerGame = async (id: number) => {
+  console.log('Deleting Wortiger game with id:', id);
+
+  try {
+    // Wortiger games are simpler - just delete the game record itself
+    // No associated questions or game_state to worry about
+    const response = await fetch(`${BASE_URL}/${API_ENDPOINT}?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      console.error(
+        `Failed to delete Wortiger game with id: ${id}. Status: ${response.status}. Error: ${errorMessage}`,
+      );
+      throw new Error(
+        `Failed to delete Wortiger game with id: ${id}. Status: ${response.status}. Error: ${errorMessage}`,
+      );
+    }
+
+    console.log(`Successfully deleted Wortiger game with id: ${id}`);
+    return response.statusText;
+  } catch (error) {
+    console.error('Error deleting Wortiger game:', error);
+    throw error;
+  }
 };
 
 /**

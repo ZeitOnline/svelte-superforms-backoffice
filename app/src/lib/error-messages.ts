@@ -40,4 +40,9 @@ export const ERRORS = {
       DESCRIPTION: 'Die Beschreibung darf nicht leer sein.',
     },
   },
+  WORTIGER: {
+    WORD_TOO_SHORT: 'Das Wort ist nicht lang genug.',
+    WORD_TOO_LONG: 'Das Wort ist zu lang.',
+    DUPLICATE_WORDS: 'Die Wörter müssen eindeutig sein.',
+  },
 };
