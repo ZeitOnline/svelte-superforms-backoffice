@@ -3,7 +3,7 @@ import type z from 'zod';
 /**
  * These are the possible views in the app
  */
-export type View = 'dashboard' | 'new-game' | 'edit-game' | 'delete-game' | 'activity-logs';
+export type View = 'dashboard' | 'new-game' | 'edit-game' | 'delete-game';
 
 /**
  * These are the possible icons in the app (used for the logs for example)
