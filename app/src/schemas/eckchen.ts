@@ -44,3 +44,7 @@ export const saveEckchenGameFormSchema = z.object({
   published: z.boolean().default(false),
   questions: saveEckchenGameArraySchema,
 });
+
+// Export the inferred types
+export type SaveEckchenGameFormSchema = z.infer<typeof saveEckchenGameFormSchema>;
+export type GenerateEckchenGameSchema = z.infer<typeof generateEckchenGameSchema>;
