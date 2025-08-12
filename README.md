@@ -6,7 +6,7 @@
 
 <div>
 
-# Eckchen Admin Interface
+# Game Admin Interface
 
 <img style="margin-block: 20px;" src="./static/favicon-eckchen.png" alt="Logo Eckchen" width="50" />
 </div>
