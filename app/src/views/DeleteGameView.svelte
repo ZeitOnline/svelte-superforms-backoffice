@@ -1,13 +1,13 @@
 <script lang="ts">
 	import ViewWrapper from '$components/ViewWrapper.svelte';
-	import type { GameComplete } from '$types';
+	import type { GameComplete, GameType } from '$types';
 	import { type ViewStateStore } from '../stores/view-state-store.svelte';
 	import { deleteGame } from '$lib/queries';
 	import { APP_MESSAGES } from '$lib/app-messages';
 	import { getToastState } from '$lib/toast-state.svelte';
     import { isEckchenGame, isWortigerGame } from '../utils';
 
-	let { store, games }: { store: ViewStateStore; games: GameComplete[] } = $props();
+	let { store, games, gameName }: { store: ViewStateStore; games: GameComplete[], gameName: GameType } = $props();
 	const toastManager = getToastState();
 
 	const handleBackToDashboard = () => {
@@ -22,7 +22,10 @@
 		}
 
 		try {
-			await deleteGame(id);
+			if (gameName !== 'eckchen' && gameName !== 'wortiger') {
+				throw new Error('Game type is not defined');
+			}
+			await deleteGame(gameName, id);
 
 			setTimeout(() => {
 				store.updateView('dashboard');
