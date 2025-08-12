@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { superForm, setError, type SuperValidated } from 'sveltekit-superforms';
 	import Papa from 'papaparse';
-	import type { PageData } from '../routes/$types';
 	import { dev } from '$app/environment';
 	import ViewNavigation from './ViewNavigation.svelte';
 	import { zodClient } from 'sveltekit-superforms/adapters';
