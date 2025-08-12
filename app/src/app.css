@@ -27,3 +27,103 @@ select[aria-invalid='true'] {
   border: 2px solid var(--z-ds-color-accent-100);
   background-color: var(--z-ds-general-white-100);
 }
+
+select {
+  font-size: 1rem;
+  appearance: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-block: 0.4em;
+  padding-inline-end: 2em;
+  background: white url('/assets/chevron.svg') right 10px center / 20px no-repeat;
+
+  @supports (appearance: base-select) {
+    background-image: none;
+    padding-inline: 10px;
+
+    &::picker-icon {
+      content: '';
+      transition: rotate 0.2s ease-in-out;
+      width: 24px;
+      height: 24px;
+      background-image: url('/chevron.svg');
+      padding-left: 0;
+      transform-origin: center;
+    }
+
+    &,
+    &::picker(select) {
+      appearance: base-select;
+    }
+
+    &:open::picker-icon {
+      rotate: 180deg;
+    }
+
+    &::picker(select) {
+      padding: 0;
+      margin-top: 5px;
+      border: 1px solid black;
+      background: white;
+      font-weight: 400;
+      opacity: 0;
+      height: 0;
+      overflow: clip;
+      transition:
+        height 0.25s ease-out,
+        opacity 0.25s ease-out,
+        overlay 0.25s,
+        display 0.25s;
+      transition-behavior: allow-discrete;
+    }
+
+    &:open::picker(select) {
+      opacity: 1;
+      height: calc-size(auto, size);
+      overflow: auto;
+
+      @starting-style {
+        opacity: 0;
+        height: 0;
+      }
+    }
+  }
+}
+
+option {
+  padding: 6px 10px;
+  border-top: 1px solid black;
+  font-size: 14px !important;
+  cursor: pointer;
+  transition-property: color, background;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-out;
+
+  &:where(:focus-visible) {
+    outline-offset: -2px !important;
+  }
+
+  &:where(:hover, :focus, :active) {
+    background: lightgray;
+  }
+
+  &:checked {
+    background: lightgray;
+    color: black;
+    font-weight: bold;
+  }
+
+  &::checkmark {
+    /* display: none; */
+    content: '';
+    width: 24px;
+    height: 24px;
+    scale: 0.8;
+    background: url('/check.svg') no-repeat center;
+  }
+
+  &:first-child {
+    border: 0;
+  }
+}
