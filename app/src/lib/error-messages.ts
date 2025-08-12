@@ -16,6 +16,9 @@ export const ERRORS = {
       UNIQUE: 'Der Name muss eindeutig sein.',
       TAKEN: 'Der Name ist bereits vergeben.',
     },
+    LEVEL: {
+      REQUIRED: 'Das Level darf nicht leer sein.',
+    },
     RELEASE_DATE: {
       EMPTY: 'Das Veröffentlichungsdatum darf nicht leer sein.',
       TAKEN: 'Das Veröffentlichungsdatum ist bereits vergeben.',
@@ -44,5 +47,9 @@ export const ERRORS = {
     WORD_TOO_SHORT: 'Das Wort ist nicht lang genug.',
     WORD_TOO_LONG: 'Das Wort ist zu lang.',
     DUPLICATE_WORDS: 'Die Wörter müssen eindeutig sein.',
+    SOLUTION: {
+      REQUIRED: 'Die Lösung darf nicht leer sein.',
+      TAKEN: 'Diese Lösung ist bereits vergeben.',
+    },
   },
 };

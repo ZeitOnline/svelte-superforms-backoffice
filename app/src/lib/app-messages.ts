@@ -8,5 +8,6 @@ export const APP_MESSAGES = {
     DELETE_WORTIGER:
       'Bist du dir sicher, dass du das Spiel mit der Lösung <strong>{solution}</strong> löschen möchtest?',
     ADDED_SUCCESS: '⭐️ Spiel erfolgreich hinzugefügt. Leite zum Dashboard weiter...',
+    EDITED_SUCCESS: '⭐️ Spiel erfolgreich bearbeitet. Leite zum Dashboard weiter...',
   },
 };

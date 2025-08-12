@@ -1,6 +1,12 @@
 import type z from 'zod';
 
 /**
+ * This is the type for the game types used in the app
+ * It can be extended with more game types in the future
+ */
+export type GameType = 'eckchen' | 'wortiger';
+
+/**
  * These are the possible views in the app
  */
 export type View = 'dashboard' | 'new-game' | 'edit-game' | 'delete-game';
@@ -28,11 +34,19 @@ export type GameEckchen = {
   questions?: Question[];
 };
 
+export type GameEckchenComplete = GameEckchen & {
+  id: number; // ID is required for the complete game type
+};
+
 export type GameWortiger = {
   level: number;
   release_date: string;
   solution: string;
   active?: boolean; // Optional since it might not be in all API responses
+};
+
+export type GameWortigerComplete = GameWortiger & {
+  id: number; // ID is required for the complete game type
 };
 
 export type ToastType = {
@@ -52,13 +66,7 @@ export type Question = {
   description: string;
 };
 
-export type GameComplete =
-  | (GameEckchen & {
-      id: number;
-    })
-  | (GameWortiger & {
-      id: number;
-    });
+export type GameComplete = GameEckchenComplete | GameWortigerComplete;
 
 export type QuestionComplete = Question & {
   id: number;
@@ -108,4 +116,17 @@ export type GameConfig = {
     columns: TableColumn[];
     hasLiveView?: boolean; // For the eye icon in Eckchen
   };
+  form: {
+    fields: FormField[];
+    hasQuestionsTable?: boolean; // Whether this game type has a questions table
+  };
+};
+
+export type FormField = {
+  key: string;
+  label: string;
+  type: 'text' | 'number' | 'date' | 'checkbox' | 'textarea';
+  placeholder?: string;
+  required?: boolean;
+  validation?: Record<string, unknown>; // For custom validation rules
 };

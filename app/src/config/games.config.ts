@@ -1,4 +1,4 @@
-import type { GameConfig, GameEckchen, GameWortiger } from '$types';
+import type { GameConfig, GameEckchenComplete, GameType, GameWortigerComplete } from '$types';
 import { transformedPublishedData, isGameActive } from '$utils';
 import {
   generateEckchenGameSchema,
@@ -6,12 +6,9 @@ import {
   saveEckchenGameFormSchema,
   saveEckchenGameSchema,
 } from '../schemas/eckchen';
-import { generateWortigerGameSchema, saveWortigerGameSchema } from '../schemas/wortiger';
+import { generateWortigerGameSchema, saveWortigerGameFormSchema } from '../schemas/wortiger';
 
-type GameId = 'eckchen' | 'wortiger';
-
-export const CURRENT_GAME: GameId = 'wortiger';
-export const GAMES: Record<GameId, GameConfig> = {
+export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   eckchen: {
     label: 'Eckchen',
     apiBase: '/api/eckchen',
@@ -30,7 +27,7 @@ export const GAMES: Record<GameId, GameConfig> = {
         {
           key: 'name',
           label: 'Name des Spiels',
-          getValue: game => (game as GameEckchen & { id: number }).name,
+          getValue: game => (game as GameEckchenComplete).name,
           searchable: true,
           sortable: true,
         },
@@ -58,6 +55,30 @@ export const GAMES: Record<GameId, GameConfig> = {
         },
       ],
     },
+    form: {
+      hasQuestionsTable: true,
+      fields: [
+        {
+          key: 'name',
+          label: 'Name',
+          type: 'text',
+          placeholder: 'GameXXXX',
+          required: true,
+        },
+        {
+          key: 'release_date',
+          label: 'Veröffentlichungsdatum',
+          type: 'date',
+          required: true,
+        },
+        {
+          key: 'published',
+          label: 'Aktiv',
+          type: 'checkbox',
+          required: false,
+        },
+      ],
+    },
   },
   wortiger: {
     label: 'Wortiger',
@@ -66,7 +87,7 @@ export const GAMES: Record<GameId, GameConfig> = {
     productionUrl: 'https://spiele.zeit.de/wortiger',
     schemas: {
       generateGameSchema: generateWortigerGameSchema,
-      saveGameFormSchema: saveWortigerGameSchema,
+      saveGameFormSchema: saveWortigerGameFormSchema,
     },
     ui: { icon: '🐯', themeColor: '#43a047' },
     table: {
@@ -75,7 +96,7 @@ export const GAMES: Record<GameId, GameConfig> = {
         {
           key: 'level',
           label: 'Level des Spiels',
-          getValue: game => (game as GameWortiger & { id: number }).level,
+          getValue: game => (game as GameWortigerComplete).level,
           searchable: true,
           sortable: true,
         },
@@ -97,7 +118,7 @@ export const GAMES: Record<GameId, GameConfig> = {
         {
           key: 'solution',
           label: 'Lösung',
-          getValue: game => (game as GameWortiger & { id: number }).solution || '',
+          getValue: game => (game as GameWortigerComplete).solution || '',
           searchable: true,
           sortable: true,
         },
@@ -110,11 +131,36 @@ export const GAMES: Record<GameId, GameConfig> = {
         },
       ],
     },
+    form: {
+      hasQuestionsTable: false,
+      fields: [
+        {
+          key: 'level',
+          label: 'Level',
+          type: 'number',
+          placeholder: '1',
+          required: true,
+        },
+        {
+          key: 'release_date',
+          label: 'Veröffentlichungsdatum',
+          type: 'date',
+          required: true,
+        },
+        {
+          key: 'solution',
+          label: 'Lösung',
+          type: 'text',
+          placeholder: 'Lösung eingeben',
+          required: true,
+        },
+        {
+          key: 'published',
+          label: 'Aktiv',
+          type: 'checkbox',
+          required: false,
+        },
+      ],
+    },
   },
 };
-
-/**
- * This is temporal until we do it with the routes.
- */
-
-export const CURRENT_GAME_CONFIG = GAMES[CURRENT_GAME];
