@@ -1,25 +1,34 @@
 <script lang="ts">
-	import type { PageData } from '../routes/$types';
-	import { DashboardView, DeleteGameView, EditGameView, NewGameView }  from '$views';
-	import { viewStateStore, type ViewStateStore } from '$stores/view-state-store.svelte';
-	import Header from './Header.svelte';
+  import { DashboardView, DeleteGameView, EditGameView, NewGameView } from '$views';
+  import { viewStateStore, type ViewStateStore } from '$stores/view-state-store.svelte';
+  import { onMount } from 'svelte';
+  import { page } from '$app/state';
+    import type { GameType } from '$types';
 
-	let store: ViewStateStore = viewStateStore();
-	let { data }: { data: PageData } = $props();
+  let store: ViewStateStore = viewStateStore();
+  let gameName = $state<GameType>();
 
-	// console.log('App.svelte', { data, store });
+  onMount(() => {
+    if (page.route.id === '/eckchen') {
+      gameName = 'eckchen';
+    } else if (page.route.id === '/wortiger') {
+      gameName = 'wortiger';
+    }
+  });
+
+  let { data } = $props();
 </script>
 
-<Header />
-
-{#if store.view == 'new-game'}
-	<NewGameView {store} {data} />
+{#if !gameName}
+  <p>Loading...</p>
+{:else if store.view == 'new-game'}
+  <NewGameView {store} {data} {gameName} />
 {:else if store.view == 'dashboard'}
-	<DashboardView {store} games={data.games} />
+  <DashboardView {store} games={data.games} {gameName} />
 {:else if store.view == 'edit-game'}
-	<EditGameView {store} {data} />
+  <EditGameView {store} {data} {gameName} />
 {:else if store.view == 'delete-game'}
-	<DeleteGameView {store} games={data.games} />
+  <DeleteGameView {store} games={data.games} {gameName} />
 {:else}
-	<DashboardView {store} games={data.games} />
+  <DashboardView {store} games={data.games} {gameName} />
 {/if}

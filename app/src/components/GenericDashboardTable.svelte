@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { GameComplete, TableColumn } from '$types';
+	import type { GameComplete, GameType, TableColumn } from '$types';
 	import { cubicInOut } from 'svelte/easing';
 	import type { ViewStateStore } from '$stores/view-state-store.svelte';
 	import { debounce, highlightMatch, searchInGame, isGameActive } from '$utils';
@@ -7,14 +7,26 @@
 	import IconHandler from './icons/IconHandler.svelte';
 	import { TableFilters, TableSearch, TablePagination } from './table';
 	import { CloseIcon, EyeIcon, TickIcon } from './icons';
-	import { CURRENT_GAME_CONFIG } from '../config/games.config';
+    import { afterNavigate } from '$app/navigation';
+    import { page } from '$app/state';
+    import { CONFIG_GAMES } from '../config/games.config';
 
 	const ITEMS_PER_PAGE = 10;
 
-	let { store, games }: { store: ViewStateStore; games: GameComplete[] } = $props();
+	let { store, games, gameName }: { store: ViewStateStore; games: GameComplete[], gameName: GameType } = $props();
 
+	let currentGameConfig = $state(CONFIG_GAMES[gameName]);
 	let searchTerm = $state('');
 	let debouncedSearchTerm = $state('');
+
+	afterNavigate(() => {
+		if (page.route.id === '/wortiger') {
+			currentGameConfig = CONFIG_GAMES["wortiger"];
+		} else if (page.route.id === '/eckchen') {
+			currentGameConfig = CONFIG_GAMES["eckchen"];
+		}
+
+	})
 
 	let items = $state(games);
 
@@ -35,7 +47,7 @@
 		// console.log('Filters:', filters);
 
 		// Name/Level sorting (first sortable column)
-		const firstColumn = CURRENT_GAME_CONFIG.table.columns.find((col: TableColumn) => col.sortable);
+		const firstColumn = currentGameConfig.table.columns.find((col: TableColumn) => col.sortable);
 		if (firstColumn) {
 			if (filters.az) {
 				filteredItems.sort((a, b) => {
@@ -79,7 +91,7 @@
 	// Generic search logic using the configuration
 	let filteredBySearchItems = $derived(() => {
 		return filteredByOptionsItems().filter((item) =>
-			searchInGame(item, debouncedSearchTerm, CURRENT_GAME_CONFIG.table.columns)
+			searchInGame(item, debouncedSearchTerm, currentGameConfig.table.columns)
 		);
 	});
 
@@ -92,7 +104,7 @@
 
 	// Only for Eckchen - twenty latest active games for the eye icon
 	let twentyLatestActiveGames = $derived(() => {
-		if (!CURRENT_GAME_CONFIG.table.hasLiveView) return [];
+		if (!currentGameConfig.table.hasLiveView) return [];
 
 		return items
 			.filter((item) => isGameActive(item))
@@ -157,7 +169,7 @@
 	}
 
 	// Helper function to render cell content with highlighting
-	function renderCellContent(game: GameComplete, column: TableColumn): string {
+	function renderCellContent(game: GameComplete, column: TableColumn): string | number  {
 		const value = column.getValue(game);
 		const displayValue = column.getDisplayValue ? column.getDisplayValue(game) : value;
 
@@ -165,7 +177,9 @@
 			return displayValue.toString();
 		}
 
-		return highlightMatch(displayValue, debouncedSearchTerm);
+		if (!value) return displayValue;
+
+		return highlightMatch(displayValue, debouncedSearchTerm) as string;
 	}
 </script>
 
@@ -250,7 +264,7 @@
 		<thead>
 			<tr>
 				<!-- Generate headers dynamically from configuration -->
-				{#each CURRENT_GAME_CONFIG.table.columns as column, index (index)}
+				{#each currentGameConfig.table.columns as column, index (index)}
 					<th class={column.key === 'name' || column.key === 'level' ? 'text-nowrap' : ''}>
 						{column.label}
 					</th>
@@ -261,12 +275,12 @@
 		<tbody>
 			{#if paginatedItems.length > 0}
 				{#each paginatedItems as item (item.id)}
-					{@const isOneOfTwentyLatestActiveGames = CURRENT_GAME_CONFIG.table.hasLiveView &&
+					{@const isOneOfTwentyLatestActiveGames = currentGameConfig.table.hasLiveView &&
 						twentyLatestActiveGames().some((game) => game.id === item.id)}
 
 					<tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
 						<!-- Generate cells dynamically from configuration -->
-						{#each CURRENT_GAME_CONFIG.table.columns as column, index (index)}
+						{#each currentGameConfig.table.columns as column, index (index)}
 							<td>
 								{#if column.key === 'active'}
 									<!-- Special handling for active column -->
@@ -278,10 +292,10 @@
 											/>
 											{#if isOneOfTwentyLatestActiveGames}
 												<a
-													title={`Das Spiel mit ID ${item.id} im ${CURRENT_GAME_CONFIG.label} anschauen`}
+													title={`Das Spiel mit ID ${item.id} im ${currentGameConfig.label} anschauen`}
 													target="_blank"
 													rel="nofollow noopener"
-													href={`${CURRENT_GAME_CONFIG.productionUrl}/#${item.id}`}
+													href={`${currentGameConfig.productionUrl}/#${item.id}`}
 												>
 													<EyeIcon
 														extraClasses="text-black w-5 h-5"
@@ -326,7 +340,7 @@
 				{/each}
 			{:else}
 				<tr>
-					<td colspan={CURRENT_GAME_CONFIG.table.columns.length + 1} class="text-center py-z-ds-8">
+					<td colspan={currentGameConfig.table.columns.length + 1} class="text-center py-z-ds-8">
 						No data found
 					</td>
 				</tr>

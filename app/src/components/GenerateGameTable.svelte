@@ -5,7 +5,7 @@
 	import { dev } from '$app/environment';
 	import ViewNavigation from './ViewNavigation.svelte';
 	import { zodClient } from 'sveltekit-superforms/adapters';
-	import { generateGameSchema } from '../schemas/generate-game';
+	import { generateEckchenGameSchema } from '../schemas/eckchen';
 	import { ERRORS } from '$lib/error-messages';
 	import type { BeginningOptions } from '$types';
 	import { APP_MESSAGES } from '$lib/app-messages';
@@ -22,7 +22,7 @@
 
 	const { form, errors, enhance, isTainted, reset } = superForm(data.generateGameForm, {
 		resetForm: false,
-		validators: zodClient(generateGameSchema),
+		validators: zodClient(generateEckchenGameSchema),
 		SPA: true,
 		taintedMessage: true,
 		invalidateAll: false,
