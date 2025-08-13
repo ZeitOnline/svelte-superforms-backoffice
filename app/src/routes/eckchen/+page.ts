@@ -3,12 +3,8 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { getAllGames } from '$lib/queries';
 
 import type { GameComplete } from '$types';
-import {
-  generateEckchenGameSchema,
-  saveEckchenGameFormSchema,
-  type GenerateEckchenGameSchema,
-  type SaveEckchenGameFormSchema,
-} from '../../schemas/eckchen';
+import type { GenerateEckchenGameSchema, SaveEckchenGameFormSchema } from '$schemas/eckchen';
+import { CONFIG_GAMES } from '$config/games.config';
 
 export const ssr = false;
 
@@ -22,8 +18,12 @@ export const load = async (): Promise<{
   games: GameComplete[];
 }> => {
   // The two forms are handled here based on current game configuration
-  const generateGameForm: GenerateGameForm = await superValidate(zod(generateEckchenGameSchema));
-  const saveGameForm: SaveGameForm = await superValidate(zod(saveEckchenGameFormSchema));
+  const generateGameForm = (await superValidate(
+    zod(CONFIG_GAMES['eckchen'].schemas.generateGameSchema),
+  )) as GenerateGameForm;
+  const saveGameForm = (await superValidate(
+    zod(CONFIG_GAMES['eckchen'].schemas.saveGameFormSchema),
+  )) as SaveGameForm;
 
   const games = await getAllGames({ gameName: 'eckchen' });
 

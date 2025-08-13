@@ -15,22 +15,28 @@
   import { APP_MESSAGES } from '$lib/app-messages';
   import { ERRORS } from '$lib/error-messages';
   import { getToastState } from '$lib/toast-state.svelte';
-  import { saveEckchenGameFormSchema, type SaveEckchenGameFormSchema } from '../schemas/eckchen';
-  import { isEckchenGame } from '../utils';
-  import { createGameQuestions, DEFAULT_ECKCHEN_QUESTION, serializeRow, updateGameQuestions } from '$lib/games/eckchen';
+  import { type SaveEckchenGameFormSchema } from '$schemas/eckchen';
+  import { isEckchenGame } from '$utils';
+  import {
+    createGameQuestions,
+    DEFAULT_ECKCHEN_QUESTION,
+    serializeRow,
+    updateGameQuestions,
+  } from '$lib/games/eckchen';
+  import { CONFIG_GAMES } from '$config/games.config';
 
   type DataProps = {
-	games: GameEckchenComplete[];
-	generateGameForm: SuperValidated<SaveEckchenGameFormSchema>;
-	saveGameForm: SuperValidated<SaveEckchenGameFormSchema>;
+    games: GameEckchenComplete[];
+    generateGameForm: SuperValidated<SaveEckchenGameFormSchema>;
+    saveGameForm: SuperValidated<SaveEckchenGameFormSchema>;
   };
 
   type EckchenGameFormProps = {
-	resultsDataBody: string[][];
-	data: DataProps;
-	game?: GameEckchenComplete;
-	beginning_option: BeginningOptions;
-	store: ViewStateStore;
+    resultsDataBody: string[][];
+    data: DataProps;
+    game?: GameEckchenComplete;
+    beginning_option: BeginningOptions;
+    store: ViewStateStore;
   };
 
   let {
@@ -50,7 +56,7 @@
   const eckchenForm = data.saveGameForm as SuperValidated<SaveEckchenGameFormSchema>;
 
   const superform = superForm(eckchenForm, {
-    validators: zodClient(saveEckchenGameFormSchema),
+    validators: zodClient(CONFIG_GAMES['eckchen'].schemas.saveGameFormSchema),
     SPA: true,
     resetForm: false,
     taintedMessage: isSubmitted ? false : true,
@@ -73,7 +79,7 @@
             }
           }
           if (game.release_date !== form.data.release_date) {
-            if (data.games.some((g) => g.release_date === form.data.release_date)) {
+            if (data.games.some(g => g.release_date === form.data.release_date)) {
               setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
               return;
             }
@@ -84,7 +90,7 @@
             setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
             return;
           }
-          if (data.games.some((g) => g.release_date === form.data.release_date)) {
+          if (data.games.some(g => g.release_date === form.data.release_date)) {
             setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
             return;
           }
@@ -101,7 +107,7 @@
             ...finalData,
           } as GameComplete;
 
-          await updateGame("eckchen", game.id, finalEditedGame);
+          await updateGame('eckchen', game.id, finalEditedGame);
 
           // Handle questions for Eckchen games
           const editedQuestions = form.data.questions as QuestionComplete[];
@@ -113,7 +119,7 @@
           });
           await updateGameQuestions(editedQuestions);
 
-		   // Success
+          // Success
           isSubmitted = true;
           toastManager.add(APP_MESSAGES.GAME.EDITED_SUCCESS, '');
 
@@ -123,7 +129,10 @@
         } else {
           // Create new Eckchen game
           console.log('Creating Eckchen game:', finalData);
-          const newGameArray = await createGame({ gameName: 'eckchen', data: finalData as GameComplete });
+          const newGameArray = await createGame({
+            gameName: 'eckchen',
+            data: finalData as GameComplete,
+          });
           const newGame = newGameArray[0] as GameEckchenComplete;
 
           // Handle questions for Eckchen games

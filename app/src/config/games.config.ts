@@ -1,12 +1,8 @@
 import type { GameConfig, GameEckchenComplete, GameType, GameWortigerComplete } from '$types';
 import { transformedPublishedData, isGameActive } from '$utils';
-import {
-  generateEckchenGameSchema,
-  saveEckchenGameArraySchema,
-  saveEckchenGameFormSchema,
-  saveEckchenGameSchema,
-} from '../schemas/eckchen';
-import { generateWortigerGameSchema, saveWortigerGameFormSchema } from '../schemas/wortiger';
+// Schemas for the games
+import { generateEckchenGameSchema, saveEckchenGameFormSchema } from '$schemas/eckchen';
+import { generateWortigerGameSchema, saveWortigerGameFormSchema } from '$schemas/wortiger';
 
 export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   eckchen: {
@@ -17,8 +13,6 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
     schemas: {
       generateGameSchema: generateEckchenGameSchema,
       saveGameFormSchema: saveEckchenGameFormSchema,
-      saveGameArraySchema: saveEckchenGameArraySchema,
-      saveGameSchema: saveEckchenGameSchema,
     },
     ui: { icon: '🧩', themeColor: '#1e88e5' },
     table: {

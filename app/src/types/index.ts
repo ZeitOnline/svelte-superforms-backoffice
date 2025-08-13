@@ -105,8 +105,6 @@ export type GameConfig = {
   schemas: {
     generateGameSchema: z.ZodTypeAny;
     saveGameFormSchema: z.ZodTypeAny;
-    saveGameArraySchema?: z.ZodTypeAny;
-    saveGameSchema?: z.ZodTypeAny;
   };
   ui: {
     icon: string;

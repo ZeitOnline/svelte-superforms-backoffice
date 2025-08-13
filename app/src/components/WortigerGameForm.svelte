@@ -17,8 +17,8 @@
 	import { APP_MESSAGES } from '$lib/app-messages';
 	import { ERRORS } from '$lib/error-messages';
 	import { getToastState } from '$lib/toast-state.svelte';
-	import { saveWortigerGameFormSchema, type SaveWortigerGameFormSchema } from '../schemas/wortiger';
-	import { isWortigerGame } from '../utils';
+	import { saveWortigerGameFormSchema, type SaveWortigerGameFormSchema } from '$schemas/wortiger';
+	import { isWortigerGame } from '$utils';
 
 	type DataProps = {
 		games: GameWortiger[];
