@@ -1,3 +1,5 @@
+import type { GameComplete, GameEckchen, GameWortiger, TableColumn } from '$types';
+
 /**
  *  This function is used to transform the published date
  * @param publishedAt
@@ -58,4 +60,65 @@ export function highlightMatch(text: string | number, term: string): string {
         : part,
     )
     .join('');
+}
+
+/**
+ * Generic search function that works with any game type and column configuration
+ */
+export function searchInGame(
+  game: GameComplete,
+  term: string,
+  searchableColumns: TableColumn[],
+): boolean {
+  if (!term) return true;
+
+  const lowerTerm = term.toLowerCase();
+
+  return searchableColumns.some(column => {
+    if (!column.searchable) return false;
+
+    const value = column.getValue(game);
+    const displayValue = column.getDisplayValue ? column.getDisplayValue(game) : value;
+
+    return (
+      value.toString().toLowerCase().includes(lowerTerm) ||
+      displayValue.toString().toLowerCase().includes(lowerTerm)
+    );
+  });
+}
+
+// Type guards for discriminating unions based on actual properties
+export function isEckchenGame(game: GameComplete): game is GameEckchen & { id: number } {
+  return 'name' in game && typeof (game as GameEckchen & { id: number }).name === 'string';
+}
+
+export function isWortigerGame(game: GameComplete): game is GameWortiger & { id: number } {
+  return 'level' in game && typeof (game as GameWortiger & { id: number }).level === 'number';
+}
+
+// Helper functions to work with games regardless of their type
+export function getGameDisplayName(game: GameComplete): string {
+  if (isEckchenGame(game)) {
+    return game.name;
+  } else if (isWortigerGame(game)) {
+    return `Level ${game.level}`;
+  }
+  // Fallback - this should never happen with proper discriminated unions
+  return `Game ${(game as { id: number }).id}`;
+}
+
+// Helper to safely check if a game is active (with fallback for missing field)
+export function isGameActive(game: GameComplete): boolean {
+  return game.active ?? true; // Default to true if active field is missing
+}
+
+// Helper function to get searchable text for any game type
+export function getGameSearchableText(game: GameComplete): string[] {
+  const common = [game.id.toString(), game.release_date];
+
+  if (isEckchenGame(game)) {
+    return [...common, game.name];
+  } else {
+    return [...common, game.level.toString(), game.solution || ''];
+  }
 }

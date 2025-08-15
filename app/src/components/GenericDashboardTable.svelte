@@ -1,21 +1,32 @@
 <script lang="ts">
-	import type { GameComplete } from '$types';
+	import type { GameComplete, GameType, TableColumn } from '$types';
 	import { cubicInOut } from 'svelte/easing';
 	import type { ViewStateStore } from '$stores/view-state-store.svelte';
-	import { debounce, highlightMatch, transformedPublishedData } from '../utils';
+	import { debounce, highlightMatch, searchInGame, isGameActive } from '$utils';
 	import { blur } from 'svelte/transition';
 	import IconHandler from './icons/IconHandler.svelte';
-	import TableFilters from './TableFilters.svelte';
-	import TableSearch from './TableSearch.svelte';
-	import TablePagination from './TablePagination.svelte';
+	import { TableFilters, TableSearch, TablePagination } from './table';
 	import { CloseIcon, EyeIcon, TickIcon } from './icons';
+    import { afterNavigate } from '$app/navigation';
+    import { page } from '$app/state';
+    import { CONFIG_GAMES } from '../config/games.config';
 
 	const ITEMS_PER_PAGE = 10;
 
-	let { store, games }: { store: ViewStateStore; games: GameComplete[] } = $props();
+	let { store, games, gameName }: { store: ViewStateStore; games: GameComplete[], gameName: GameType } = $props();
 
+	let currentGameConfig = $state(CONFIG_GAMES[gameName]);
 	let searchTerm = $state('');
 	let debouncedSearchTerm = $state('');
+
+	afterNavigate(() => {
+		if (page.route.id === '/wortiger') {
+			currentGameConfig = CONFIG_GAMES["wortiger"];
+		} else if (page.route.id === '/eckchen') {
+			currentGameConfig = CONFIG_GAMES["eckchen"];
+		}
+
+	})
 
 	let items = $state(games);
 
@@ -24,20 +35,36 @@
 		za: false,
 		dateAsc: false,
 		dateDesc: true,
-		active: true,
+		active: false,
 		notActive: false
 	});
 
+	// Generic sorting logic
 	let filteredByOptionsItems = $derived(() => {
 		let filteredItems = [...items];
 
-		// Example: Apply filtering logic based on your filter states
-		if (filters.az) {
-			filteredItems.sort((a, b) => a.name.localeCompare(b.name));
-		} else if (filters.za) {
-			filteredItems.sort((a, b) => b.name.localeCompare(a.name));
+		// console.log('Initial items:', filteredItems.length);
+		// console.log('Filters:', filters);
+
+		// Name/Level sorting (first sortable column)
+		const firstColumn = currentGameConfig.table.columns.find((col: TableColumn) => col.sortable);
+		if (firstColumn) {
+			if (filters.az) {
+				filteredItems.sort((a, b) => {
+					const aVal = firstColumn.getValue(a).toString();
+					const bVal = firstColumn.getValue(b).toString();
+					return aVal.localeCompare(bVal);
+				});
+			} else if (filters.za) {
+				filteredItems.sort((a, b) => {
+					const aVal = firstColumn.getValue(a).toString();
+					const bVal = firstColumn.getValue(b).toString();
+					return bVal.localeCompare(aVal);
+				});
+			}
 		}
 
+		// Date sorting
 		if (filters.dateAsc) {
 			filteredItems.sort(
 				(a, b) => new Date(a.release_date).getTime() - new Date(b.release_date).getTime()
@@ -48,25 +75,24 @@
 			);
 		}
 
+		// Active status filtering
 		if (filters.active) {
-			filteredItems = filteredItems.filter((item) => item.active);
+			filteredItems = filteredItems.filter((item) => isGameActive(item));
+			// console.log('After active filter:', filteredItems.length);
 		} else if (filters.notActive) {
-			filteredItems = filteredItems.filter((item) => !item.active);
+			filteredItems = filteredItems.filter((item) => !isGameActive(item));
+			// console.log('After notActive filter:', filteredItems.length);
 		}
 
+		// console.log('Final filtered items:', filteredItems.length);
 		return filteredItems;
 	});
 
+	// Generic search logic using the configuration
 	let filteredBySearchItems = $derived(() => {
-		const term = debouncedSearchTerm.toLowerCase();
-
-		return filteredByOptionsItems().filter((item) => {
-			return (
-				item.name.toLowerCase().includes(term) ||
-				item.id.toString().includes(term) ||
-				transformedPublishedData(item.release_date).toLowerCase().includes(term)
-			);
-		});
+		return filteredByOptionsItems().filter((item) =>
+			searchInGame(item, debouncedSearchTerm, currentGameConfig.table.columns)
+		);
 	});
 
 	let currentPage: number = $state(1);
@@ -76,9 +102,12 @@
 		filteredBySearchItems().slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
 	);
 
+	// Only for Eckchen - twenty latest active games for the eye icon
 	let twentyLatestActiveGames = $derived(() => {
+		if (!currentGameConfig.table.hasLiveView) return [];
+
 		return items
-			.filter((item) => item.active)
+			.filter((item) => isGameActive(item))
 			.sort((a, b) => new Date(b.release_date).getTime() - new Date(a.release_date).getTime())
 			.slice(0, 20);
 	});
@@ -137,6 +166,20 @@
 			filters.notActive = !filters.notActive;
 			if (filters.notActive) filters.active = false;
 		}
+	}
+
+	// Helper function to render cell content with highlighting
+	function renderCellContent(game: GameComplete, column: TableColumn): string | number  {
+		const value = column.getValue(game);
+		const displayValue = column.getDisplayValue ? column.getDisplayValue(game) : value;
+
+		if (!column.searchable) {
+			return displayValue.toString();
+		}
+
+		if (!value) return displayValue;
+
+		return highlightMatch(displayValue, debouncedSearchTerm) as string;
 	}
 </script>
 
@@ -220,46 +263,62 @@
 	>
 		<thead>
 			<tr>
-				<th class="text-nowrap">Name des Spiels</th>
-				<th>ID</th>
-				<th>Veröffentlichungsdatum</th>
-				<th>Aktiv</th>
+				<!-- Generate headers dynamically from configuration -->
+				{#each currentGameConfig.table.columns as column, index (index)}
+					<th class={column.key === 'name' || column.key === 'level' ? 'text-nowrap' : ''}>
+						{column.label}
+					</th>
+				{/each}
 				<th class="text-right">Aktionen</th>
 			</tr>
 		</thead>
 		<tbody>
 			{#if paginatedItems.length > 0}
 				{#each paginatedItems as item (item.id)}
-					{@const isOneOfTwentyLatestActiveGames = twentyLatestActiveGames().some(
-						(game) => game.id === item.id
-					)}
+					{@const isOneOfTwentyLatestActiveGames = currentGameConfig.table.hasLiveView &&
+						twentyLatestActiveGames().some((game) => game.id === item.id)}
+
 					<tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
-						<td>{@html highlightMatch(item.name, debouncedSearchTerm)}</td>
-						<td>{@html highlightMatch(item.id, debouncedSearchTerm)}</td>
-						<td
-							>{@html highlightMatch(
-								transformedPublishedData(item.release_date),
-								debouncedSearchTerm
-							)}</td
-						>
-						<td>
-							{#if item.active}
-								<div class="flex items-center gap-z-ds-4">
-									<TickIcon
-										extraClasses="text-z-ds-color-success-100 w-7 h-7"
-										title="In der Datenbank aktiv"
-									/>
-									{#if isOneOfTwentyLatestActiveGames}
-										<EyeIcon
-											extraClasses="text-black w-7 h-7"
-											title="Aktuell im Eckchen-Spiel sichtbar"
-										/>
+						<!-- Generate cells dynamically from configuration -->
+						{#each currentGameConfig.table.columns as column, index (index)}
+							<td>
+								{#if column.key === 'active'}
+									<!-- Special handling for active column -->
+									{#if isGameActive(item)}
+										<div class="flex items-center gap-z-ds-4">
+											<TickIcon
+												extraClasses="text-z-ds-color-success-100 w-5 h-5"
+												title="In der Datenbank aktiv"
+											/>
+											{#if isOneOfTwentyLatestActiveGames}
+												<a
+													title={`Das Spiel mit ID ${item.id} im ${currentGameConfig.label} anschauen`}
+													target="_blank"
+													rel="nofollow noopener"
+													href={`${currentGameConfig.productionUrl}/#${item.id}`}
+												>
+													<EyeIcon
+														extraClasses="text-black w-5 h-5"
+														title="Aktuell im Eckchen-Spiel sichtbar"
+													/>
+												</a>
+											{/if}
+										</div>
+									{:else}
+										<CloseIcon extraClasses="text-z-ds-color-error-70 w-7 h-7" />
 									{/if}
-								</div>
-							{:else}
-								<CloseIcon extraClasses="text-z-ds-color-error-70 w-7 h-7" />
-							{/if}
-						</td><td>
+								{:else if column.key === 'solution' && !column.getValue(item)}
+									<!-- Special handling for missing solution -->
+									<span class="text-z-ds-color-error-70">Keine Lösung</span>
+								{:else}
+									<!-- Regular cell content -->
+									{@html renderCellContent(item, column)}
+								{/if}
+							</td>
+						{/each}
+
+						<!-- Actions column -->
+						<td>
 							<div class="flex items-center justify-end gap-z-ds-4">
 								<button
 									aria-label="Spiel bearbeiten"
@@ -281,7 +340,9 @@
 				{/each}
 			{:else}
 				<tr>
-					<td colspan="5" class="text-center py-z-ds-8">No data found</td>
+					<td colspan={currentGameConfig.table.columns.length + 1} class="text-center py-z-ds-8">
+						No data found
+					</td>
 				</tr>
 			{/if}
 		</tbody>

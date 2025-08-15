@@ -36,6 +36,7 @@ export default [
       'svelte/no-at-html-tags': 'off',
       'svelte/no-unused-svelte-ignore': 'warn',
       'svelte/require-each-key': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {

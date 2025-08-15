@@ -7,7 +7,7 @@
 
 <div class="toaster">
 	{#each toastState.toasts as toast, index (index)}
-		<Toast {toast} total={toastState.toasts.length} {index} />
+		<Toast {toast} total={toastState.toasts.length} index={index + 1} />
 	{/each}
 </div>
 

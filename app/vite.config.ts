@@ -12,4 +12,16 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest-setup.js'],
   },
+  server: {
+    proxy: {
+      '/api/eckchen': {
+        target: 'http://localhost:3001',
+        rewrite: path => path.replace(/^\/api\/eckchen/, ''),
+      },
+      '/api/wortiger': {
+        target: 'http://localhost:3002',
+        rewrite: path => path.replace(/^\/api\/wortiger/, ''),
+      },
+    },
+  },
 });

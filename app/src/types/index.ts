@@ -1,7 +1,15 @@
+import type z from 'zod';
+
+/**
+ * This is the type for the game types used in the app
+ * It can be extended with more game types in the future
+ */
+export type GameType = 'eckchen' | 'wortiger';
+
 /**
  * These are the possible views in the app
  */
-export type View = 'dashboard' | 'new-game' | 'edit-game' | 'delete-game' | 'activity-logs';
+export type View = 'dashboard' | 'new-game' | 'edit-game' | 'delete-game';
 
 /**
  * These are the possible icons in the app (used for the logs for example)
@@ -17,13 +25,28 @@ export type IconOption =
   | 'delete';
 
 /**
- * This is how I game looks like
+ * This is how games look like - matching actual API data structure
  */
-export type Game = {
+export type GameEckchen = {
   name: string;
   release_date: string;
-  active: boolean;
+  active?: boolean; // Optional since it might not be in all API responses
   questions?: Question[];
+};
+
+export type GameEckchenComplete = GameEckchen & {
+  id: number; // ID is required for the complete game type
+};
+
+export type GameWortiger = {
+  level: number;
+  release_date: string;
+  solution: string;
+  active?: boolean; // Optional since it might not be in all API responses
+};
+
+export type GameWortigerComplete = GameWortiger & {
+  id: number; // ID is required for the complete game type
 };
 
 export type ToastType = {
@@ -43,9 +66,7 @@ export type Question = {
   description: string;
 };
 
-export type GameComplete = Game & {
-  id: number;
-};
+export type GameComplete = GameEckchenComplete | GameWortigerComplete;
 
 export type QuestionComplete = Question & {
   id: number;
@@ -66,3 +87,44 @@ export enum Orientation {
 }
 
 export type BeginningOptions = 'scratch' | 'csv' | 'edit' | null;
+
+export type TableColumn = {
+  key: string;
+  label: string;
+  getValue: (game: GameComplete) => string | number;
+  getDisplayValue?: (game: GameComplete) => string;
+  searchable?: boolean;
+  sortable?: boolean;
+};
+
+export type GameConfig = {
+  label: string;
+  apiBase: string;
+  productionUrl: string;
+  apiEndpoint: string;
+  schemas: {
+    generateGameSchema: z.ZodTypeAny;
+    saveGameFormSchema: z.ZodTypeAny;
+  };
+  ui: {
+    icon: string;
+    themeColor: string;
+  };
+  table: {
+    columns: TableColumn[];
+    hasLiveView?: boolean; // For the eye icon in Eckchen
+  };
+  form: {
+    fields: FormField[];
+    hasQuestionsTable?: boolean; // Whether this game type has a questions table
+  };
+};
+
+export type FormField = {
+  key: string;
+  label: string;
+  type: 'text' | 'number' | 'date' | 'checkbox' | 'textarea';
+  placeholder?: string;
+  required?: boolean;
+  validation?: Record<string, unknown>; // For custom validation rules
+};
