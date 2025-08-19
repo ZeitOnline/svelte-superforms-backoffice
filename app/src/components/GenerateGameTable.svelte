@@ -1,28 +1,36 @@
 <script lang="ts">
-	import { superForm, setError } from 'sveltekit-superforms';
+	import { superForm, setError, type SuperValidated } from 'sveltekit-superforms';
 	import Papa from 'papaparse';
-	import type { PageData } from '../routes/$types';
 	import { dev } from '$app/environment';
 	import ViewNavigation from './ViewNavigation.svelte';
 	import { zodClient } from 'sveltekit-superforms/adapters';
-	import { generateGameSchema } from '../schemas/generate-game';
+	import { generateEckchenGameSchema } from '../schemas/eckchen';
 	import { ERRORS } from '$lib/error-messages';
-	import type { BeginningOptions } from '$types';
+	import type { BeginningOptions, GameType } from '$types';
 	import { APP_MESSAGES } from '$lib/app-messages';
 
+	type DataProps = {
+		generateGameForm: SuperValidated<{
+			csv: File;
+		}>;
+	}
+
 	let {
+		gameName,
 		resultsDataBody = $bindable(),
 		data,
 		beginning_option = $bindable()
 	}: {
+		gameName: GameType;
 		resultsDataBody: string[][];
-		data: PageData;
+		data: DataProps;
 		beginning_option: BeginningOptions;
 	} = $props();
 
+	// TODO: this is working only for eckchen for now
 	const { form, errors, enhance, isTainted, reset } = superForm(data.generateGameForm, {
 		resetForm: false,
-		validators: zodClient(generateGameSchema),
+		validators: zodClient(generateEckchenGameSchema),
 		SPA: true,
 		taintedMessage: true,
 		invalidateAll: false,
@@ -141,6 +149,7 @@
 	viewName="Neues Spiel erstellen"
 	mainAction={handleBackToDashboard}
 	mainActionText="Zurück"
+	{gameName}
 />
 
 <form

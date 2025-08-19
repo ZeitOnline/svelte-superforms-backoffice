@@ -2,14 +2,14 @@ import { ERRORS } from '$lib/error-messages';
 import { Orientation } from '$types';
 import { z } from 'zod';
 
-export const generateGameSchema = z.object({
+export const generateEckchenGameSchema = z.object({
   csv: z
     .instanceof(File, { message: ERRORS.CSV.NO_FILE })
     .refine(f => f.size < 100_000, ERRORS.CSV.SIZE)
     .refine(f => f.type === 'text/csv', ERRORS.CSV.TYPE),
 });
 
-export const saveGameSchema = z.object({
+export const saveEckchenGameSchema = z.object({
   nr: z
     .number({ message: ERRORS.GAME.QUESTIONS.NR.EMPTY })
     .min(1, { message: ERRORS.GAME.QUESTIONS.NR.MIN }),
@@ -27,7 +27,7 @@ export const saveGameSchema = z.object({
   description: z.string().min(1, { message: ERRORS.GAME.QUESTIONS.DESCRIPTION }),
 });
 
-export const saveGameArraySchema = z.array(saveGameSchema).refine(
+export const saveEckchenGameArraySchema = z.array(saveEckchenGameSchema).refine(
   questions => {
     const pairs = questions.map(({ nr, direction }) => `${nr}-${direction}`);
     const uniquePairs = new Set(pairs);
@@ -36,11 +36,15 @@ export const saveGameArraySchema = z.array(saveGameSchema).refine(
   { message: ERRORS.GAME.QUESTIONS.DUPLICATED_ID_OR_DIRECTION },
 );
 
-export const saveGameFormSchema = z.object({
+export const saveEckchenGameFormSchema = z.object({
   name: z.string().trim().min(1, {
     message: ERRORS.GAME.NAME.EMPTY,
   }),
   release_date: z.string().date().min(1, { message: ERRORS.GAME.RELEASE_DATE.EMPTY }),
   published: z.boolean().default(false),
-  questions: saveGameArraySchema,
+  questions: saveEckchenGameArraySchema,
 });
+
+// Export the inferred types
+export type SaveEckchenGameFormSchema = z.infer<typeof saveEckchenGameFormSchema>;
+export type GenerateEckchenGameSchema = z.infer<typeof generateEckchenGameSchema>;
