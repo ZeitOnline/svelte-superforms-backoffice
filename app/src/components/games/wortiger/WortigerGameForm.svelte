@@ -3,13 +3,13 @@
 	import { superForm, setError } from 'sveltekit-superforms';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import { blur } from 'svelte/transition';
-	import IconHandler from './icons/IconHandler.svelte';
+	import IconHandler from '../../icons/IconHandler.svelte';
 	import {
 		createGame,
 		getNextAvailableDateForGame,
 		updateGame
 	} from '$lib/queries';
-	import ViewNavigation from './ViewNavigation.svelte';
+	import ViewNavigation from '../../ViewNavigation.svelte';
 	import type { BeginningOptions } from '$types';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { onMount } from 'svelte';
@@ -58,7 +58,7 @@
 					level: form.data.level,
 					solution: form.data.solution,
 					release_date: form.data.release_date,
-					active: form.data.published
+					// active: form.data.published
 				};
 
 				// Validation logic
@@ -121,6 +121,8 @@
 					if ('active' in createData) {
 						delete createData.active;
 					}
+
+					// console.log('data', createData)
 					await createGame({ gameName: "wortiger", data: createData as GameComplete });
 
                     // Success
@@ -150,7 +152,7 @@
 			$form.level = game.level;
 			$form.solution = game.solution;
 			$form.release_date = game.release_date;
-			$form.published = game.active || false;
+			// $form.published = game.active || false;
 		}
 
 		// Set default date if empty
@@ -294,20 +296,6 @@
 					<span class="text-xs">{$errors.release_date}</span>
 				</div>
 			{/if}
-		</div>
-	</div>
-
-	<!-- Published Field -->
-	<div class="w-full flex flex-col sm:flex-row sm:items-center justify-between pb-z-ds-24 relative gap-z-ds-4">
-		<label class="text-md font-bold" for="published">Veröffentlicht:</label>
-		<div class="relative">
-			<input
-				class="accent-black border py-z-ds-8 px-z-ds-12 border-black text-md w-5 h-5"
-				name="published"
-				id="published"
-				type="checkbox"
-				bind:checked={$form.published}
-			/>
 		</div>
 	</div>
 

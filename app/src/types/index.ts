@@ -1,3 +1,4 @@
+import type { SuperValidated } from 'sveltekit-superforms';
 import type z from 'zod';
 
 /**
@@ -48,6 +49,13 @@ export type GameWortiger = {
 export type GameWortigerComplete = GameWortiger & {
   id: number; // ID is required for the complete game type
 };
+
+export type DataProps = {
+  generateGameForm: SuperValidated<{
+    csv: File;
+  }>;
+}
+
 
 export type ToastType = {
   id: string;

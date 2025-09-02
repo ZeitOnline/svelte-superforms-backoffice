@@ -14,7 +14,6 @@ export const saveWortigerGameFormSchema = z
     level: z.number().min(1, { message: ERRORS.GAME.LEVEL.REQUIRED }).default(1),
     release_date: z.string().date().min(1, { message: ERRORS.GAME.RELEASE_DATE.EMPTY }),
     solution: z.string().min(1, { message: ERRORS.WORTIGER.SOLUTION.REQUIRED }),
-    published: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     const levelToLength: Record<number, number> = MAP_LEVEL_CHARACTERS;

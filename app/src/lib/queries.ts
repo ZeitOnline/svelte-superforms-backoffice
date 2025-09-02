@@ -94,6 +94,52 @@ export async function createGame({
 }
 
 /**
+ * Bulk insert games using PostgREST (JSON array).
+ * Returns the inserted rows (Prefer: return=representation).
+ * Optionally pass on_conflict columns if you want upsert.
+ */
+export async function createGamesBulk({
+  gameName,
+  rows,
+  onConflict // e.g. 'release_date,level'
+}: {
+  gameName: GameType;
+  rows: Array<Partial<GameComplete> & Record<string, unknown>>;
+  onConflict?: string;
+}) {
+  const base = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].apiEndpoint}`;
+  const url = onConflict ? `${base}?on_conflict=${encodeURIComponent(onConflict)}` : base;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // Use `resolution=merge-duplicates` to upsert instead of insert-only
+      // Remove it if you want pure inserts that error on duplicates.
+      Prefer: onConflict
+        ? 'resolution=merge-duplicates,return=representation'
+        : 'return=representation'
+    },
+    body: JSON.stringify(rows)
+  });
+
+  if (!res.ok) {
+    // PostgREST returns JSON error body — surface it
+    let details = '';
+    try {
+      const err = await res.json();
+      details = err?.message || JSON.stringify(err);
+    } catch {
+      details = 'Unknown error';
+    }
+    throw new Error(`Bulk insert failed (${res.status}): ${details}`);
+  }
+
+  return res.json();
+}
+
+
+/**
  * Get the next available date for a game.
  * @returns the next available date for a game in string format
  */

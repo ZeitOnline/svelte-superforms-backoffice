@@ -10,6 +10,8 @@
 	function handleNewGameView() {
 		store.updateView('new-game');
 	}
+
+	// console.log('The games in the dashboard:', games)
 </script>
 
 <ViewWrapper>

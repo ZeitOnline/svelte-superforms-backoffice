@@ -2,12 +2,12 @@
   import type { GameComplete, GameEckchenComplete, QuestionComplete } from '$types';
   import { superForm, arrayProxy, setError, formFieldProxy } from 'sveltekit-superforms';
   import type { SuperValidated } from 'sveltekit-superforms';
-  import Separator from './Separator.svelte';
+  import Separator from '../../Separator.svelte';
   import { blur } from 'svelte/transition';
-  import IconHandler from './icons/IconHandler.svelte';
+  import IconHandler from '../../icons/IconHandler.svelte';
   import { cubicInOut } from 'svelte/easing';
   import { createGame, getNextAvailableDateForGame, updateGame } from '$lib/queries';
-  import ViewNavigation from './ViewNavigation.svelte';
+  import ViewNavigation from '../../ViewNavigation.svelte';
   import type { BeginningOptions } from '$types';
   import { zodClient } from 'sveltekit-superforms/adapters';
   import { onMount } from 'svelte';

@@ -43,10 +43,6 @@
 	let filteredByOptionsItems = $derived(() => {
 		let filteredItems = [...items];
 
-		// console.log('Initial items:', filteredItems.length);
-		// console.log('Filters:', filters);
-
-		// Name/Level sorting (first sortable column)
 		const firstColumn = currentGameConfig.table.columns.find((col: TableColumn) => col.sortable);
 		if (firstColumn) {
 			if (filters.az) {
