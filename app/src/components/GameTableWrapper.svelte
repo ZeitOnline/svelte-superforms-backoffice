@@ -1,10 +1,9 @@
 <script lang="ts">
-	import WortigerGameForm from './WortigerGameForm.svelte';
-	import EckchenGameForm from './EckchenGameForm.svelte';
+	import WortigerGameForm from './games/wortiger/WortigerGameForm.svelte';
+	import EckchenGameForm from './games/eckchen/EckchenGameForm.svelte';
 	import type { PageData } from '../routes/$types';
 	import type { BeginningOptions, GameComplete, GameEckchenComplete, GameType, GameWortigerComplete } from '$types';
 	import type { ViewStateStore } from '$stores/view-state-store.svelte';
-
 
 	let {
 		resultsDataBody = $bindable(),

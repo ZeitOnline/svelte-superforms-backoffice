@@ -116,13 +116,6 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           searchable: true,
           sortable: true,
         },
-        {
-          key: 'active',
-          label: 'Aktiv',
-          getValue: () => 'active',
-          searchable: false,
-          sortable: false,
-        },
       ],
     },
     form: {
@@ -147,12 +140,6 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           type: 'text',
           placeholder: 'Lösung eingeben',
           required: true,
-        },
-        {
-          key: 'published',
-          label: 'Aktiv',
-          type: 'checkbox',
-          required: false,
         },
       ],
     },

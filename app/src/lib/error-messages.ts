@@ -5,8 +5,8 @@ export const ERRORS = {
     NO_FILE: 'Bitte laden sie eine CSV hoch.',
     SIZE: 'Darf nicht größer als 100 kB sein.',
     TYPE: 'Es sind nur CSV Dateien erlaubt.',
-    NUMBER_OF_COLUMNS: 'Die CSV Datei muss genau 7 Spalten haben.',
     EMPTY: 'Die CSV Datei darf nicht leer sein.',
+    PARSE: 'Fehler beim Lesen der CSV',
   },
   EMPTY: 'Darf nicht leer sein.',
   GAME: {
@@ -51,5 +51,13 @@ export const ERRORS = {
       REQUIRED: 'Die Lösung darf nicht leer sein.',
       TAKEN: 'Diese Lösung ist bereits vergeben.',
     },
+    CSV: {
+      NUMBER_OF_COLUMNS: 'Die CSV Datei muss genau 5 Spalten haben.'
+    }
   },
+  ECKCHEN: {
+    CSV: {
+      NUMBER_OF_COLUMNS: 'Die CSV Datei muss genau 7 Spalten haben.'
+    }
+  }
 };
