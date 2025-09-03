@@ -1,4 +1,5 @@
 <script lang="ts">
+    import IconHandler from '$components/icons/IconHandler.svelte';
 	import { getToastState } from '$lib/toast-state.svelte';
 	import type { ToastType } from '$types';
 	import { fade, fly } from 'svelte/transition';
@@ -27,7 +28,7 @@
 	<span class="toast__message">{toast.message}</span>
 	<button class="toast__close" onclick={() => toastState.remove(toast.id)}>
 		<span class="sr-only">Toast zumachen</span>
-		x
+		<IconHandler iconName="create" />
 	</button>
 </div>
 
@@ -38,7 +39,7 @@
 		flex-direction: column;
 		justify-content: center;
 		height: 4rem;
-		padding: 0 var(--z-ds-space-l);
+		padding: 0 var(--z-ds-space-xxl) 0 var(--z-ds-space-m);
 		border-radius: 0.375rem;
 		border: 1px solid var(--z-ds-color-border-70);
 		background-color: var(--z-ds-color-text-100);
@@ -61,11 +62,20 @@
 		position: absolute;
 		top: 0.5rem;
 		right: 0.5rem;
-		width: 1.25rem;
-		height: 1.25rem;
-		border: none;
+		width: 1.5rem;
+		height: 1.5rem;
+		aspect-ratio: 1;
+		border: 1px solid var(--z-ds-color-border-70);
+		display: flex;
+		border-radius: 50%;
+		justify-content: center;
+		align-items: center;
 		background: transparent;
 		cursor: pointer;
 		color: var(--z-ds-color-background-0);
+	}
+
+	.toast__close:hover {
+		background: lightgray;
 	}
 </style>
