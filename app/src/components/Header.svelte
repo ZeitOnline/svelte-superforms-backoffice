@@ -2,6 +2,7 @@
 	import { EckchenLogo, WortigerLogo } from './games';
 	import ZeitSpieleLogo from './ZeitSpieleLogo.svelte';
     import { goto } from '$app/navigation';
+    import { page } from '$app/state';
 
 	let { gameName }: { gameName?: string } = $props();
 
@@ -18,16 +19,25 @@
 	</a>
 
 	<div class="flex items-center justify-between gap-3">
-		{#if gameName === 'Eckchen'}
+		{#if gameName === 'eckchen'}
 			<EckchenLogo classExtra="w-6 h-6" />
-		{:else if gameName === 'Wortiger'}
+		{:else if gameName === 'wortiger'}
 			<WortigerLogo classExtra="w-6 h-6" />
 		{/if}
 	</div>
 
 	<select class="border border-black p-1" name="game" id="game" onchange={handleGameChange}>
-		<option value="eckchen" selected={gameName === 'Eckchen'}>Eckchen</option>
-		<option value="wortiger" selected={gameName === 'Wortiger'}>Wortiger</option>
+		<option value="eckchen" selected={gameName === 'eckchen'}>Eckchen</option>
+		<option value="wortiger" selected={gameName === 'wortiger'}>Wortiger</option>
 	</select>
 
 </header>
+
+{#if gameName === "wortiger"}
+    <nav aria-label="Wortiger Navigation" class="flex justify-end gap-2 mb-4">
+      <a class:!bg-gray-300={page.route.id == '/wortiger'}
+      class="bg-gray-100 hover:bg-gray-300 px-3 py-1 border border-black" href="/wortiger">Dashboard</a>
+      <a class:!bg-gray-300={page.route.id == '/wortiger/wortliste'}
+      class="bg-gray-100 hover:bg-gray-300 px-3 py-1 border border-black" href="/wortiger/wortliste">Wortliste</a>
+    </nav>
+{/if}

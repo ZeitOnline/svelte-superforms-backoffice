@@ -21,9 +21,6 @@
         gameName: GameType
 	} = $props();
 
-	console.log('GameTableWrapper initialized with game and these questions:', resultsDataBody);
-
-
 </script>
 
 {#if gameName === 'wortiger'}
