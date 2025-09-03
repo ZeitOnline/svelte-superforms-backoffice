@@ -101,7 +101,7 @@ export async function createGame({
 export async function createGamesBulk({
   gameName,
   rows,
-  onConflict // e.g. 'release_date,level'
+  onConflict, // e.g. 'release_date,level'
 }: {
   gameName: GameType;
   rows: Array<Partial<GameComplete> & Record<string, unknown>>;
@@ -118,9 +118,9 @@ export async function createGamesBulk({
       // Remove it if you want pure inserts that error on duplicates.
       Prefer: onConflict
         ? 'resolution=merge-duplicates,return=representation'
-        : 'return=representation'
+        : 'return=representation',
     },
-    body: JSON.stringify(rows)
+    body: JSON.stringify(rows),
   });
 
   if (!res.ok) {
@@ -137,7 +137,6 @@ export async function createGamesBulk({
 
   return res.json();
 }
-
 
 /**
  * Get the next available date for a game.

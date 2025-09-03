@@ -52,12 +52,12 @@ export const ERRORS = {
       TAKEN: 'Diese Lösung ist bereits vergeben.',
     },
     CSV: {
-      NUMBER_OF_COLUMNS: 'Die CSV Datei muss genau 5 Spalten haben.'
-    }
+      NUMBER_OF_COLUMNS: 'Die CSV Datei muss genau 5 Spalten haben.',
+    },
   },
   ECKCHEN: {
     CSV: {
-      NUMBER_OF_COLUMNS: 'Die CSV Datei muss genau 7 Spalten haben.'
-    }
-  }
+      NUMBER_OF_COLUMNS: 'Die CSV Datei muss genau 7 Spalten haben.',
+    },
+  },
 };

@@ -5,5 +5,5 @@
 	let { data } = $props();
 </script>
 
-<Header gameName="Eckchen" />
+<Header gameName="eckchen" />
 <App {data} />

@@ -6,7 +6,7 @@ import { generateWortigerGameSchema, saveWortigerGameFormSchema } from '$schemas
 
 export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   eckchen: {
-    label: 'Eckchen',
+    label: 'eckchen',
     apiBase: '/api/eckchen',
     apiEndpoint: 'game',
     productionUrl: 'https://spiele.zeit.de/eckchen',
@@ -75,9 +75,10 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
     },
   },
   wortiger: {
-    label: 'Wortiger',
+    label: 'wortiger',
     apiBase: '/api/wortiger',
     apiEndpoint: 'wortiger_games',
+    apiWordListEndpoint: 'wortliste',
     productionUrl: 'https://spiele.zeit.de/wortiger',
     schemas: {
       generateGameSchema: generateWortigerGameSchema,

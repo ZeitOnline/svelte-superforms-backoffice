@@ -54,8 +54,7 @@ export type DataProps = {
   generateGameForm: SuperValidated<{
     csv: File;
   }>;
-}
-
+};
 
 export type ToastType = {
   id: string;
@@ -110,6 +109,7 @@ export type GameConfig = {
   apiBase: string;
   productionUrl: string;
   apiEndpoint: string;
+  apiWordListEndpoint?: string;
   schemas: {
     generateGameSchema: z.ZodTypeAny;
     saveGameFormSchema: z.ZodTypeAny;
