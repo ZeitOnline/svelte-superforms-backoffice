@@ -149,7 +149,7 @@
   <table class="w-full text-sm text-left">
     <thead>
       <tr>
-        {#each headers as h}
+        {#each headers as h (h)}
           <th class="px-2 py-2">{h}</th>
         {/each}
         <th class="px-2 py-2"></th>
