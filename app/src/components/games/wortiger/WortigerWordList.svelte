@@ -44,6 +44,21 @@
   }
 
   /**
+   * Ask the user for a new value and PATCH if confirmed.
+   */
+  const requestRename = async (current: string) => {
+    const proposal = prompt(`Neues Wort für „${current}“ eingeben:`, current);
+    if (proposal == null) return; // user canceled prompt
+    const next = proposal.trim();
+    if (!next || next === current) return;
+
+    const ok = confirm(`Wirklich umbenennen?\n\n${current} → ${next}`);
+    if (!ok) return;
+
+    await updateWord(activeTab, next, { oldWord: current });
+  };
+
+  /**
    * POST a new word to PostgREST and update local state.
    *
    * @param number - Word length bucket -> table `wortliste_${number}`
@@ -117,6 +132,93 @@
     } finally {
       addBusy = false;
     }
+  };
+
+  /**
+   * Add or update (rename) a word in the PostgREST word list.
+   *
+   * - Add: call with { oldWord: undefined } → POST (optionally as update)
+   * - Update: call with { oldWord } → PATCH /?word=eq.{oldWord}
+   *
+   * @param number   Word length bucket (4|5|6|7) -> table `wortliste_${number}`
+   * @param nextWord New word value
+   * @param opts     Optional: { oldWord } if renaming an existing entry
+   */
+  const updateWord = async (
+    number: number,
+    nextWord: string,
+    opts?: { oldWord?: string },
+  ): Promise<void> => {
+    addError = '';
+
+    // normalize per your policy; keeping user casing:
+    const next = nextWord.trim();
+
+    const err = validateWord(next, number);
+    if (err) {
+      addError = err;
+      return;
+    }
+
+    const table = `${CONFIG_GAMES.wortiger.apiWordListEndpoint}_${number}`;
+    const baseUrl = `${CONFIG_GAMES.wortiger.apiBase}/${table}`;
+
+    // optimistic snapshot
+    const prevWords = words;
+    const prevAll = { ...allWords };
+
+    // 🔁 Update (rename) branch
+    if (opts?.oldWord) {
+      const old = opts.oldWord;
+
+      // client-side duplicate check (allow no-op rename)
+      if (next !== old && allWords[number]?.includes(next)) {
+        addError = 'Dieses Wort existiert bereits.';
+        return;
+      }
+
+      // optimistic replace
+      words = words
+        .map(w => (w === old ? next : w))
+        .sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
+      allWords[number] = allWords[number]
+        .map(w => (w === old ? next : w))
+        .sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
+
+      addBusy = true;
+      try {
+        const url = `${baseUrl}?word=eq.${encodeURIComponent(old)}`;
+        const res = await fetch(url, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ word: next }),
+        });
+
+        if (!res.ok) {
+          words = prevWords;
+          allWords = prevAll;
+          const text = await res.text().catch(() => '');
+          toastManager.add('Fehler beim Aktualisieren', text || `(${res.status})`);
+          return;
+        }
+
+        newWord = '';
+        toastManager.add('Wort aktualisiert', `${old} → ${next}`);
+      } catch (e) {
+        words = prevWords;
+        allWords = prevAll;
+        addError = 'Netzwerkfehler beim Aktualisieren.';
+        console.error(e);
+        toastManager.add('Netzwerkfehler', String(e));
+      } finally {
+        addBusy = false;
+      }
+      return;
+    }
+
   };
 
   // Convert Proxy object to array and extract word strings
@@ -243,7 +345,7 @@
   <nav class="tabs flex flex-col md:flex-row justify-center gap-3">
     {#each [4, 5, 6, 7] as tabNum (tabNum)}
       <button
-        class="tab-button bg-gray-100 hover:bg-gray-300 px-3 py-1 border border-black cursor-pointer"
+        class="tab-button bg-gray-100 hover:bg-gray-300 text-xs px-3 py-1 border border-black cursor-pointer"
         class:!bg-gray-300={activeTab === tabNum}
         onclick={() => switchTab(tabNum)}
         disabled={loading}
@@ -256,51 +358,54 @@
 
 <div class="flex flex-col md:flex-row my-6 w-full justify-between items-center gap-4">
   <!-- New Word Form  -->
-   <div class="flex flex-col w-full gap-2">
+  <div class="flex flex-col w-full gap-2">
+    <form
+      class="flex items-end gap-2 w-full"
+      onsubmit={() => addWord(activeTab, newWord)}
+      aria-describedby="add-word-help add-word-error"
+    >
+      <div class="flex flex-col gap-2 w-full">
+        <label for="add-word" class="text-sm font-bold">Wort hinzufügen</label>
+        <input
+          id="add-word"
+          type="text"
+          class="border border-black px-2 py-1 text-xs w-full"
+          bind:value={newWord}
+          minlength={activeTab}
+          maxlength={activeTab}
+          pattern="[A-Za-zÄÖÜäöüß]+"
+          placeholder={`${activeTab} Zeichen`}
+          autocomplete="off"
+          spellcheck="false"
+          aria-invalid={!!addError}
+          aria-describedby="add-word-help add-word-error"
+          oninput={() => {
+            if (addError) {
+              addError = '';
+            }
+          }}
+        />
+      </div>
 
-     <form
-       class="flex items-end gap-2 w-full"
-       onsubmit={() => addWord(activeTab, newWord)}
-       aria-describedby="add-word-help add-word-error"
-     >
-       <div class="flex flex-col gap-2 w-full">
-         <label for="add-word" class="text-sm font-bold">Wort hinzufügen</label>
-         <input
-           id="add-word"
-           type="text"
-           class="border border-black px-2 py-1 text-xs w-full"
-           bind:value={newWord}
-           minlength={activeTab}
-           maxlength={activeTab}
-           pattern="[A-Za-zÄÖÜäöüß]+"
-           placeholder={`${activeTab} Zeichen`}
-           autocomplete="off"
-           spellcheck="false"
-           aria-invalid={!!addError}
-           aria-describedby="add-word-help add-word-error"
-         />
-       </div>
-
-       <button
-         type="submit"
-         class="z-ds-button"
-         disabled={addBusy || !newWord.trim()}
-         aria-live="polite"
-       >
-         Hinzufügen
-       </button>
-
-     </form>
-     {#if addError}
-        <span id="add-word-error" class="text-sm text-red-700" aria-live="assertive">
-         {addError}
-       </span>
-     {:else}
-       <span id="add-word-help" class="text-sm text-gray-600 italic">
-         Ein Wort mit genau {activeTab} Buchstaben eingeben.
-       </span>
-       {/if}
-   </div>
+      <button
+        type="submit"
+        class="z-ds-button"
+        disabled={addBusy || !newWord.trim()}
+        aria-live="polite"
+      >
+        Hinzufügen
+      </button>
+    </form>
+    {#if addError}
+      <span id="add-word-error" class="text-sm text-red-700" aria-live="assertive">
+        {addError}
+      </span>
+    {:else}
+      <span id="add-word-help" class="text-sm text-gray-600 italic">
+        Ein Wort mit genau {activeTab} Buchstaben eingeben.
+      </span>
+    {/if}
+  </div>
 
   <!-- Search Input -->
   <div class="w-full">
@@ -346,7 +451,7 @@
           <div class="mr-auto">{@html highlightMatch(word, debouncedSearch)}</div>
           <button
             aria-label="Spiel bearbeiten"
-            onclick={() => alert('coming soon')}
+            onclick={() => requestRename(word)}
             class="z-ds-button z-ds-button-outline"
           >
             <IconHandler iconName="update" />

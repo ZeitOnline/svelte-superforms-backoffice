@@ -36,8 +36,8 @@
 {#if gameName === "wortiger"}
     <nav aria-label="Wortiger Navigation" class="flex justify-end gap-2 mb-4">
       <a class:!bg-gray-300={page.route.id == '/wortiger'}
-      class="bg-gray-100 hover:bg-gray-300 px-3 py-1 border border-black" href="/wortiger">Dashboard</a>
+      class="bg-gray-100 hover:bg-gray-300 px-3 py-1 border border-black text-xs" href="/wortiger">Dashboard</a>
       <a class:!bg-gray-300={page.route.id == '/wortiger/wortliste'}
-      class="bg-gray-100 hover:bg-gray-300 px-3 py-1 border border-black" href="/wortiger/wortliste">Wortliste</a>
+      class="bg-gray-100 hover:bg-gray-300 px-3 py-1 border border-black text-xs" href="/wortiger/wortliste">Wortliste</a>
     </nav>
 {/if}
