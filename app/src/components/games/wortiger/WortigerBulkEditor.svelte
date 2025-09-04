@@ -5,6 +5,8 @@
   import IconHandler from '$components/icons/IconHandler.svelte';
   import { createGamesBulk } from '$lib/queries';
   import { getToastState } from '$lib/toast-state.svelte';
+  import { CONFIG_GAMES } from '$config/games.config';
+  import { onMount } from 'svelte';
 
   type Props = {
     store: ViewStateStore;
@@ -26,6 +28,91 @@
 
   const toastManager = getToastState();
 
+  /** Change this depending on your rule:
+   * 'must-exist'     -> error if NOT found in word list
+   * 'must-not-exist' -> error if already present in word list
+   */
+  const WORDLIST_RULE: 'must-exist' | 'must-not-exist' = 'must-exist';
+
+  /** In-memory sets for O(1) membership checks */
+  let wordSets = $state<Record<number, Set<string>>>({
+    4: new Set(),
+    5: new Set(),
+    6: new Set(),
+    7: new Set(),
+  });
+
+  /** Normalize for comparison (case-insensitive, trim). Adjust if you want strict case. */
+  const normalize = (s: string) => s.trim().toLocaleLowerCase('de-DE');
+
+  /** Fetch one list and return a Set of normalized words */
+  async function fetchWordSetForLength(length: number): Promise<Set<string>> {
+    const url = `${CONFIG_GAMES.wortiger.apiBase}/${CONFIG_GAMES.wortiger.apiWordListEndpoint}_${length}?select=word`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Fetch failed for ${length}: ${res.status}`);
+    const data = await res.json();
+    const set = new Set<string>();
+    let i = 0;
+    while (data[i] !== undefined) {
+      const w = data[i]?.word;
+      if (w) set.add(normalize(w));
+      i++;
+    }
+    return set;
+  }
+
+  /** Fetch all lists required by the current "levels" columns */
+  async function loadWordSets(levelLens: number[]) {
+    try {
+      const uniqueLens = Array.from(new Set(levelLens)).filter(n => [4, 5, 6, 7].includes(n));
+      const results = await Promise.all(uniqueLens.map(fetchWordSetForLength));
+      const next: Record<number, Set<string>> = {
+        4: new Set(),
+        5: new Set(),
+        6: new Set(),
+        7: new Set(),
+      };
+      uniqueLens.forEach((len, idx) => {
+        next[len] = results[idx];
+      });
+      wordSets = next;
+    } catch (e: any) {
+      console.error(e);
+    } finally {
+      console.log('Loaded word sets', wordSets);
+    }
+  }
+
+  /** Validate a single solution cell against the corresponding word list */
+  function validateAgainstWordList(lengthForThisColumn: number, value: string): string | null {
+    const v = (value ?? '').trim();
+    if (!v) return null; // empty is handled elsewhere
+    const set = wordSets[lengthForThisColumn];
+    if (!set || set.size === 0) return null; // if not loaded yet, don’t block typing
+
+    const exists = set.has(normalize(v));
+
+    if (WORDLIST_RULE === 'must-exist' && !exists) {
+      return `„${v}“ ist nicht in der ${lengthForThisColumn}-Buchstaben-Wortliste`;
+    }
+    if (WORDLIST_RULE === 'must-not-exist' && exists) {
+      return `„${v}“ existiert bereits in der ${lengthForThisColumn}-Buchstaben-Wortliste`;
+    }
+    return null;
+  }
+
+  /** Derived flag: any cell violates the word-list rule? */
+  let hasWordListViolations = $derived(() => {
+    return rows.some(r => {
+      const [_date, ...solutions] = r;
+      return solutions.some((val, idx) => {
+        const len = levels[idx];
+        const msg = validateAgainstWordList(len, val);
+        return !!msg;
+      });
+    });
+  });
+
   /** editable table model — deep reactive */
   let rows = $state<string[][]>(resultsDataBody);
 
@@ -35,12 +122,12 @@
 
   let areNotAllFieldsFilled = $derived(() => {
     // Every row: release_date must be filled, and all solutions must be filled and longer than 3 chars
-    return rows.some(row => {
+    const baseInvalid = rows.some(row => {
       const [release_date, ...solutions] = row;
       if (!release_date?.trim()) return true;
-      // All solutions must be filled and longer than 3 characters
       return solutions.some(cell => !cell.trim() || cell.trim().length <= 3);
     });
+    return baseInvalid || hasWordListViolations();
   });
 
   function addEmptyRow() {
@@ -53,6 +140,10 @@
     if (!confirm(`Zeile ${i + 1} löschen?`)) return;
     rows.splice(i, 1);
   }
+
+  onMount(() => {
+    loadWordSets(levels);
+  });
 
   /**
    * Normalize the UI rows into payload entries:
@@ -132,7 +223,12 @@
     <button class="z-ds-button z-ds-button-outline" type="button" onclick={addEmptyRow}
       >+ Zeile</button
     >
-    <button class="z-ds-button" type="button" disabled={saving || areNotAllFieldsFilled()} onclick={saveAll}>
+    <button
+      class="z-ds-button"
+      type="button"
+      disabled={saving || areNotAllFieldsFilled()}
+      onclick={saveAll}
+    >
       {saving ? 'Speichere…' : 'Bestätigen & Speichern'}
     </button>
   </div>
@@ -170,15 +266,20 @@
           {#each levels as lvl, j (lvl)}
             {@const expected = MAP_LEVEL_CHARACTERS[lvl]}
             {@const colIndex = 1 + j}
+            {@const msg = validateAgainstWordList(lvl, r[colIndex])}
             <td class="px-2 py-1">
               <input
                 class="border px-2 py-1 w-[160px] font-mono"
                 bind:value={r[colIndex]}
                 placeholder={`(${expected ?? '?'} chars)`}
                 aria-label={`Level ${lvl} Lösung`}
+                aria-invalid={msg ? 'true' : 'false'}
               />
               {#if r[colIndex] && expected && r[colIndex].length !== expected}
                 <div class="text-xs text-amber-700">Erwartet: {expected} Zeichen</div>
+              {/if}
+              {#if msg}
+                <div class="text-xs text-red-700">{msg}</div>
               {/if}
             </td>
           {/each}
