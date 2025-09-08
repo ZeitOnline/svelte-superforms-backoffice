@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { IconOption } from '$types';
-	import { ChevronRightIcon, EditIcon, ErrorIcon, SearchIcon, TickIcon, UploadIcon, DeleteIcon } from '.';
+	import { ChevronRightIcon, EditIcon, ErrorIcon, SearchIcon, TickIcon, UploadIcon, DeleteIcon, DownloadIcon } from '.';
 
 	let { iconName, extraClasses }: { iconName: IconOption; extraClasses?: string } = $props();
 </script>
@@ -19,6 +19,8 @@
 	<UploadIcon {extraClasses} />
 {:else if iconName == 'delete'}
 	<DeleteIcon {extraClasses} />
+{:else if iconName == 'download'}
+	<DownloadIcon {extraClasses} />
 {:else}
 	<TickIcon {extraClasses} />
 {/if}

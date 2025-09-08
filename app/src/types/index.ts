@@ -23,7 +23,8 @@ export type IconOption =
   | 'search'
   | 'error'
   | 'upload'
-  | 'delete';
+  | 'delete'
+  | 'download';
 
 /**
  * This is how games look like - matching actual API data structure

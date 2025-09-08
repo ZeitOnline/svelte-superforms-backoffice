@@ -4,6 +4,7 @@
   import { debounce, highlightMatch } from '$utils';
   import IconHandler from '$components/icons/IconHandler.svelte';
   import { getToastState } from '$lib/toast-state.svelte';
+  import { toCSV } from './utils';
 
   let wordListNumber = $state<number>(4);
   let words = $state<string[]>([]);
@@ -24,6 +25,26 @@
   let addError = $state<string>('');
 
   const toastManager = getToastState();
+
+  /**
+   * Export current visible words as CSV with a Datum column.
+   * Filename example: wortiger_4_2025-09-08.csv
+   */
+  function exportCurrentListAsCSV() {
+    const rows: string[][] = [['Wort'], ...visibleWords().map(w => [w])];
+
+    // Prepend BOM for Excel & Umlauts
+    const csv = '\uFEFF' + toCSV(rows, ';');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `wortiger_${activeTab}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  }
 
   /**
    * Validate a candidate word against the current `activeTab`.
@@ -218,7 +239,6 @@
       }
       return;
     }
-
   };
 
   // Convert Proxy object to array and extract word strings
@@ -353,6 +373,18 @@
         {tabNum} Buchstaben
       </button>
     {/each}
+    <!-- Export button -->
+    <button
+      type="button"
+      class="z-ds-button whitespace-nowrap ml-auto w-full md:w-fit"
+      onclick={exportCurrentListAsCSV}
+      disabled={visibleWords().length === 0}
+      aria-label="Aktuelle Wortliste als CSV exportieren"
+      title="Aktuelle Wortliste als CSV exportieren"
+    >
+      <IconHandler iconName="download" extraClasses="w-4 h-4 inline-block" />
+      CSV
+    </button>
   </nav>
 </div>
 
