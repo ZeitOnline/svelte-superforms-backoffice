@@ -7,6 +7,7 @@
   import { getToastState } from '$lib/toast-state.svelte';
   import { CONFIG_GAMES } from '$config/games.config';
   import { onMount } from 'svelte';
+  import { SvelteSet } from 'svelte/reactivity';
 
   type Props = {
     store: ViewStateStore;
@@ -51,7 +52,7 @@
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Fetch failed for ${length}: ${res.status}`);
     const data = await res.json();
-    const set = new Set<string>();
+    const set = new SvelteSet<string>();
     let i = 0;
     while (data[i] !== undefined) {
       const w = data[i]?.word;

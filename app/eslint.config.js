@@ -20,9 +20,10 @@ export default [
     },
   },
   {
-    files: ['**/*.svelte'],
+    files: ['**/*.svelte', '**/*.svelte.js', '**/*.svelte.ts'],
     languageOptions: {
       parserOptions: {
+        extraFileExtensions: ['.svelte'],
         parser: ts.parser,
       },
     },
@@ -35,6 +36,7 @@ export default [
       camelcase: 'off',
       'svelte/no-at-html-tags': 'off',
       'svelte/no-unused-svelte-ignore': 'warn',
+      'svelte/no-navigation-without-resolve': 'warn',
       'svelte/require-each-key': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [

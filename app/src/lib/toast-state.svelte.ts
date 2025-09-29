@@ -1,10 +1,10 @@
 import type { ToastType } from '$types';
 import { getContext, onDestroy, setContext } from 'svelte';
+import { SvelteMap } from 'svelte/reactivity';
 
 export class ToastState {
   toasts = $state<ToastType[]>([]);
-  toastToTimeoutMap = new Map<string, ReturnType<typeof setTimeout>>(); // Corrected type for setTimeout handles
-
+  toastToTimeoutMap = new SvelteMap<string, ReturnType<typeof setTimeout>>();
   constructor() {
     onDestroy(() => {
       for (const timeout of this.toastToTimeoutMap.values()) {

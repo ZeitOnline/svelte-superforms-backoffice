@@ -19,6 +19,7 @@
 	import { getToastState } from '$lib/toast-state.svelte';
 	import { saveWortigerGameFormSchema, type SaveWortigerGameFormSchema } from '$schemas/wortiger';
 	import { isWortigerGame } from '$utils';
+    import { SvelteDate } from 'svelte/reactivity';
 
 	type DataProps = {
 		games: GameWortiger[];
@@ -47,6 +48,7 @@
 	const wortigerForm = data.saveGameForm;
 
 	const superform = superForm(wortigerForm, {
+		// @ts-expect-error type issue with the schema
 		validators: zodClient(saveWortigerGameFormSchema),
 		SPA: true,
 		resetForm: false,
@@ -164,7 +166,7 @@
 	const addCustomDate = async () => {
 		try {
 			const lastGameDate = await getNextAvailableDateForGame("wortiger");
-			const lastGameDateFormat = new Date(lastGameDate);
+			const lastGameDateFormat = new SvelteDate(lastGameDate);
 			lastGameDateFormat.setDate(lastGameDateFormat.getDate() + 1);
 			const nextGameDate = lastGameDateFormat.toISOString().split('T')[0];
 			$form.release_date = nextGameDate;

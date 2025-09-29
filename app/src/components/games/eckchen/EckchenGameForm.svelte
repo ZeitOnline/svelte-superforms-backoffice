@@ -24,6 +24,7 @@
     updateGameQuestions,
   } from '$lib/games/eckchen';
   import { CONFIG_GAMES } from '$config/games.config';
+    import { SvelteDate } from 'svelte/reactivity';
 
   type DataProps = {
     games: GameEckchenComplete[];
@@ -56,6 +57,7 @@
   const eckchenForm = data.saveGameForm as SuperValidated<SaveEckchenGameFormSchema>;
 
   const superform = superForm(eckchenForm, {
+    // @ts-expect-error type issue with the schema
     validators: zodClient(CONFIG_GAMES['eckchen'].schemas.saveGameFormSchema),
     SPA: true,
     resetForm: false,
@@ -228,7 +230,7 @@
   const addCustomDate = async () => {
     try {
       const lastGameDate = await getNextAvailableDateForGame('eckchen');
-      const lastGameDateFormat = new Date(lastGameDate);
+      const lastGameDateFormat = new SvelteDate(lastGameDate);
       lastGameDateFormat.setDate(lastGameDateFormat.getDate() + 1);
       const nextGameDate = lastGameDateFormat.toISOString().split('T')[0];
       $form.release_date = nextGameDate;
