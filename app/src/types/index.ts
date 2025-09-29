@@ -94,6 +94,8 @@ export enum Orientation {
   VERTICAL = 'v',
 }
 
+export type SortDirection = 'asc' | 'desc';
+
 export type BeginningOptions = 'scratch' | 'csv' | 'edit' | null;
 
 export type TableColumn = {

@@ -5,6 +5,7 @@
   import IconHandler from '$components/icons/IconHandler.svelte';
   import { getToastState } from '$lib/toast-state.svelte';
   import { toCSV } from './utils';
+    import type { SortDirection } from '$types';
 
   let wordListNumber = $state<number>(4);
   let words = $state<string[]>([]);
@@ -25,6 +26,11 @@
   let addError = $state<string>('');
 
   const toastManager = getToastState();
+  let sortDir = $state<SortDirection>('asc');
+
+  function setSort(dir: SortDirection) {
+    sortDir = dir;
+  }
 
   /**
    * Export current visible words as CSV with a Datum column.
@@ -330,6 +336,7 @@
 
   const switchTab = async (tabNumber: number) => {
     activeTab = tabNumber;
+    sortDir = 'asc';
     await fetchWordLists(tabNumber);
   };
 
@@ -352,8 +359,13 @@
     const base = words;
     const filtered = term ? base.filter(w => w.toLocaleLowerCase('de-DE').includes(term)) : base;
 
-    // German collation, case/diacritics-insensitive
-    return filtered.slice().sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
+    const collator = new Intl.Collator('de-DE', { sensitivity: 'base' });
+
+    if (sortDir === 'asc') {
+      return filtered.slice().sort((a, b) => collator.compare(a, b));
+    } else {
+      return filtered.slice().sort((a, b) => collator.compare(b, a));
+    }
   });
 
   /** Title-safe count for the summary line */
@@ -387,6 +399,39 @@
     </button>
   </nav>
 </div>
+
+<fieldset class="ml-auto mt-4">
+  <legend class="text-sm font-semibold mb-2">Sorting</legend>
+
+  <div class="flex gap-2 justify-start" role="tablist" aria-label="Sortierung">
+    <button
+      type="button"
+      role="tab"
+      aria-selected={sortDir === 'asc'}
+      aria-controls="wortiger-grid"
+      class="bg-gray-100 hover:bg-gray-300 text-xs px-3 py-1 border border-black rounded cursor-pointer"
+      class:!bg-gray-300={sortDir === 'asc'}
+      onclick={() => setSort('asc')}
+      aria-label="Sortieren von A bis Z"
+    >
+      A-Z
+    </button>
+
+    <button
+      type="button"
+      role="tab"
+      aria-selected={sortDir === 'desc'}
+      aria-controls="wortiger-grid"
+      class="bg-gray-100 hover:bg-gray-300 text-xs px-3 py-1 border border-black rounded cursor-pointer"
+      class:!bg-gray-300={sortDir === 'desc'}
+      onclick={() => setSort('desc')}
+      aria-label="Sortieren von Z bis A"
+    >
+      Z-A
+    </button>
+  </div>
+</fieldset>
+
 
 <div class="flex flex-col md:flex-row my-6 w-full justify-between items-center gap-4">
   <!-- New Word Form  -->
