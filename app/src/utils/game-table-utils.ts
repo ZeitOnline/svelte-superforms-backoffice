@@ -1,4 +1,4 @@
-import type { GameComplete, TableColumn } from '$types';
+import type { GameComplete, SortDirection, TableColumn } from '$types';
 import { isEckchenGame } from '.';
 
 /**
@@ -22,7 +22,7 @@ export function getGameDisplayTitle(game: GameComplete): string {
 export function sortGamesByColumn(
   games: GameComplete[],
   column: TableColumn,
-  direction: 'asc' | 'desc' = 'asc',
+  direction: SortDirection = 'asc',
 ): GameComplete[] {
   return [...games].sort((a, b) => {
     const aVal = column.getValue(a);

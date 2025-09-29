@@ -5,6 +5,7 @@
   import IconHandler from '$components/icons/IconHandler.svelte';
   import { getToastState } from '$lib/toast-state.svelte';
   import { toCSV } from './utils';
+    import type { SortDirection } from '$types';
 
   let wordListNumber = $state<number>(4);
   let words = $state<string[]>([]);
@@ -25,9 +26,9 @@
   let addError = $state<string>('');
 
   const toastManager = getToastState();
-  let sortDir = $state<'asc' | 'desc'>('asc');
+  let sortDir = $state<SortDirection>('asc');
 
-  function setSort(dir: 'asc' | 'desc') {
+  function setSort(dir: SortDirection) {
     sortDir = dir;
   }
 
