@@ -1,5 +1,5 @@
 import { superValidate, type SuperValidated } from 'sveltekit-superforms';
-import { zod } from 'sveltekit-superforms/adapters';
+import { zod4 } from 'sveltekit-superforms/adapters';
 import { getAllGames } from '$lib/queries';
 
 import type { GameComplete } from '$types';
@@ -19,10 +19,12 @@ export const load = async (): Promise<{
 }> => {
   // The two forms are handled here based on current game configuration
   const generateGameForm = (await superValidate(
-    zod(CONFIG_GAMES['wortiger'].schemas.generateGameSchema),
+    // @ts-expect-error type issue with the schema
+    zod4(CONFIG_GAMES['wortiger'].schemas.generateGameSchema),
   )) as GenerateGameForm;
   const saveGameForm = (await superValidate(
-    zod(CONFIG_GAMES['wortiger'].schemas.saveGameFormSchema),
+    // @ts-expect-error type issue with the schema
+    zod4(CONFIG_GAMES['wortiger'].schemas.saveGameFormSchema),
   )) as SaveGameForm;
 
   const games = await getAllGames({ gameName: 'wortiger' });
