@@ -3,6 +3,7 @@ import { transformedPublishedData, isGameActive } from '$utils';
 // Schemas for the games
 import { generateEckchenGameSchema, saveEckchenGameFormSchema } from '$schemas/eckchen';
 import { generateWortigerGameSchema, saveWortigerGameFormSchema } from '$schemas/wortiger';
+import type { ZodValidationSchema } from 'sveltekit-superforms/adapters';
 
 export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   eckchen: {
@@ -11,8 +12,8 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
     apiEndpoint: 'game',
     productionUrl: 'https://spiele.zeit.de/eckchen',
     schemas: {
-      generateGameSchema: generateEckchenGameSchema,
-      saveGameFormSchema: saveEckchenGameFormSchema,
+      generateGameSchema: generateEckchenGameSchema as unknown as ZodValidationSchema,
+      saveGameFormSchema: saveEckchenGameFormSchema as unknown as ZodValidationSchema,
     },
     ui: { icon: '🧩', themeColor: '#1e88e5' },
     table: {
@@ -81,8 +82,8 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
     apiWordListEndpoint: 'wortliste',
     productionUrl: 'https://spiele.zeit.de/wortiger',
     schemas: {
-      generateGameSchema: generateWortigerGameSchema,
-      saveGameFormSchema: saveWortigerGameFormSchema,
+      generateGameSchema: generateWortigerGameSchema as unknown as ZodValidationSchema,
+      saveGameFormSchema: saveWortigerGameFormSchema as unknown as ZodValidationSchema,
     },
     ui: { icon: '🐯', themeColor: '#43a047' },
     table: {

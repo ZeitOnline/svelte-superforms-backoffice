@@ -9,7 +9,7 @@
   import { createGame, getNextAvailableDateForGame, updateGame } from '$lib/queries';
   import ViewNavigation from '../../ViewNavigation.svelte';
   import type { BeginningOptions } from '$types';
-  import { zodClient } from 'sveltekit-superforms/adapters';
+  import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
   import { onMount } from 'svelte';
   import type { ViewStateStore } from '$stores/view-state-store.svelte';
   import { APP_MESSAGES } from '$lib/app-messages';
@@ -25,6 +25,7 @@
   } from '$lib/games/eckchen';
   import { CONFIG_GAMES } from '$config/games.config';
     import { SvelteDate } from 'svelte/reactivity';
+    import type { ZodTypeAny } from 'zod';
 
   type DataProps = {
     games: GameEckchenComplete[];
@@ -55,10 +56,10 @@
 
   // Assert the correct form type for Eckchen
   const eckchenForm = data.saveGameForm as SuperValidated<SaveEckchenGameFormSchema>;
+  const saveGameFormSchema = CONFIG_GAMES['eckchen'].schemas.saveGameFormSchema;
 
   const superform = superForm(eckchenForm, {
-    // @ts-expect-error type issue with the schema
-    validators: zodClient(CONFIG_GAMES['eckchen'].schemas.saveGameFormSchema),
+    validators: zodClient(saveGameFormSchema as unknown as ZodObjectType),
     SPA: true,
     resetForm: false,
     taintedMessage: isSubmitted ? false : true,
