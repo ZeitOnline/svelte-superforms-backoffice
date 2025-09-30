@@ -8,6 +8,8 @@
   import { CONFIG_GAMES } from '$config/games.config';
   import { onMount } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
+  import { isWortigerGame } from '$utils';
+  import ViewNavigation from '$components/ViewNavigation.svelte';
 
   type Props = {
     data: DataProps;
@@ -16,6 +18,7 @@
     levels?: number[];
     beginning_option: BeginningOptions;
   };
+
   let {
     data,
     store,
@@ -23,8 +26,6 @@
     beginning_option = $bindable(),
     levels = [4, 5, 6, 7],
   }: Props = $props();
-
-  type GameRow = { id: number; level: number; release_date: string; solution: string };
 
   type ExistingIndex = Record<
     number,
@@ -34,13 +35,22 @@
     >
   >;
 
+  /** editable table model — deep reactive */
+  let rows = $state<string[][]>(resultsDataBody);
+
+  /** pending + per-cell length guard based on MAP_LEVEL_CHARACTERS */
+  let saving = $state(false);
+  let error = $state<string | null>(null);
+
   /** Build once from incoming `data` (array of 100 objects) */
   const existingIndex = $derived.by<ExistingIndex>(() => {
     const idx: ExistingIndex = { 4: new Map(), 5: new Map(), 6: new Map(), 7: new Map() };
 
     // If DataProps has the games array on a property, adjust here.
     // Your console shows `data` itself is the array, so iterate directly:
-    for (const g of data.games as unknown as GameRow[]) {
+    for (const g of data.games) {
+      if (!isWortigerGame(g)) continue;
+
       const sol = g?.solution ?? '';
       const len = sol.trim().length;
       if (!idx[len]) continue;
@@ -55,8 +65,15 @@
     return idx;
   });
 
-  console.log("Let's see the data", data);
-  // data is an array from objects with release_data and solution and level
+  const existingDates = $derived(() => {
+    const s = new SvelteSet<string>();
+    for (const g of data.games) {
+      if (!isWortigerGame(g)) continue;
+
+      if (g.release_date) s.add(g.release_date.slice(0, 10));
+    }
+    return s;
+  });
 
   const CHAR_TO_LEVEL: Record<number, number> = {};
   for (const [lvl, len] of Object.entries(MAP_LEVEL_CHARACTERS)) {
@@ -140,18 +157,29 @@
     return `„${v}“ wurde schon verwendet${when}${suffix}`;
   }
 
-  let hasExistingDuplicates = $derived(() => {
-    return rows.some(r => {
-      const [_date, ...solutions] = r;
-      return solutions.some((val, idx) => {
-        const len = levels[idx];
-        const msg = validateAgainstExistingSolutions(len, val);
-        return !!msg;
-      });
-    });
-  });
+  /** Validate a row's release date against DB + within-table duplicates */
+  function validateReleaseDate(dateStr: string, rowIndex: number): string | null {
+    const d = (dateStr ?? '').trim();
+    if (!d) return null;
 
-  /** Validate a single solution cell against the corresponding word list */
+    // Conflict with existing games in DB
+    if (existingDates().has(d)) {
+      return `Für ${d} existiert bereits ein Spiel (4/5/6/7). Bitte wähle ein anderes Datum.`;
+    }
+
+    // Duplicate within current editor table
+    let repeats = 0;
+    for (let i = 0; i < rows.length; i++) {
+      if ((rows[i][0] ?? '').trim() === d) repeats++;
+    }
+    if (repeats > 1) {
+      return `Datum ${d} wird mehrfach in dieser Tabelle verwendet.`;
+    }
+
+    return null;
+  }
+
+   /** Validate a single solution cell against the corresponding word list */
   function validateAgainstWordList(lengthForThisColumn: number, value: string): string | null {
     const v = (value ?? '').trim();
     if (!v) return null; // empty is handled elsewhere
@@ -169,7 +197,19 @@
     return null;
   }
 
-  /** Derived flag: any cell violates the word-list rule? */
+  let hasExistingDuplicates = $derived(() => {
+    return rows.some(r => {
+      const [_date, ...solutions] = r;
+      return solutions.some((val, idx) => {
+        const len = levels[idx];
+        const msg = validateAgainstExistingSolutions(len, val);
+        return !!msg;
+      });
+    });
+  });
+
+  let hasDateConflicts = $derived(() => rows.some((r, i) => !!validateReleaseDate(r[0], i)));
+
   let hasWordListViolations = $derived(() => {
     return rows.some(r => {
       const [_date, ...solutions] = r;
@@ -181,21 +221,14 @@
     });
   });
 
-  /** editable table model — deep reactive */
-  let rows = $state<string[][]>(resultsDataBody);
-
-  /** pending + per-cell length guard based on MAP_LEVEL_CHARACTERS */
-  let saving = $state(false);
-  let error = $state<string | null>(null);
-
-  let areNotAllFieldsFilled = $derived(() => {
+  let isEmptyOrWithError = $derived(() => {
     const baseInvalid = rows.some(row => {
       const [release_date, ...solutions] = row;
       if (!release_date?.trim()) return true;
       return solutions.some(cell => !cell.trim() || cell.trim().length <= 3);
     });
 
-    return baseInvalid || hasWordListViolations() || hasExistingDuplicates();
+    return baseInvalid || hasWordListViolations() || hasExistingDuplicates() || hasDateConflicts();
   });
 
   function addEmptyRow() {
@@ -283,10 +316,20 @@
   }
 
   const headers = ['Release_Date', ...levels.map(l => `Level_${l}`)];
+
+  const handleBackToDashboard = () => {
+    window.location.reload();
+  };
 </script>
 
-<div class="flex items-center justify-between my-z-ds-24">
-  <div class="font-bold">Wortiger – Bulk Editor</div>
+<ViewNavigation
+  viewName="Bulk Editor"
+  mainAction={handleBackToDashboard}
+  mainActionText="Zurück"
+  gameName="wortiger"
+/>
+
+<div class="flex items-center justify-end my-z-ds-24">
   <div class="flex gap-2">
     <button class="z-ds-button z-ds-button-outline" type="button" onclick={addEmptyRow}
       >+ Zeile</button
@@ -294,7 +337,7 @@
     <button
       class="z-ds-button"
       type="button"
-      disabled={saving || areNotAllFieldsFilled()}
+      disabled={saving || isEmptyOrWithError()}
       onclick={saveAll}
     >
       {saving ? 'Speichere…' : 'Bestätigen & Speichern'}
@@ -321,6 +364,7 @@
     </thead>
     <tbody>
       {#each rows as r, i (i)}
+        {@const dateMsg = validateReleaseDate(r[0], i)}
         <tr>
           <td class="px-2 py-1 w-[170px]">
             <input
@@ -328,7 +372,11 @@
               class="border px-2 py-1 w-[160px]"
               bind:value={r[0]}
               aria-label="Release date"
+              aria-invalid={dateMsg ? 'true' : 'false'}
             />
+            {#if dateMsg}
+              <div class="text-xs text-red-700">{dateMsg}</div>
+            {/if}
           </td>
 
           {#each levels as lvl, j (lvl)}
