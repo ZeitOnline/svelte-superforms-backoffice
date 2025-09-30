@@ -4,7 +4,7 @@
   import Papa from 'papaparse';
   import { dev } from '$app/environment';
   import ViewNavigation from './ViewNavigation.svelte';
-  import { zodClient } from 'sveltekit-superforms/adapters';
+  import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
   import { ERRORS } from '$lib/error-messages';
   import { APP_MESSAGES } from '$lib/app-messages';
   import { CONFIG_GAMES } from '$config/games.config';
@@ -42,9 +42,11 @@
   let isDragging = $state(false);
   let fileInput = $state<HTMLInputElement | null>(null);
 
+  const generateGameSchema = CONFIG_GAMES[gameName].schemas.generateGameSchema as unknown as ZodObjectType;
+
   const { form, errors, enhance, isTainted, reset } = superForm(data.generateGameForm, {
     resetForm: false,
-    validators: zodClient(CONFIG_GAMES[gameName].schemas.generateGameSchema),
+    validators: zodClient(generateGameSchema),
     SPA: true,
     taintedMessage: true,
     invalidateAll: false,
