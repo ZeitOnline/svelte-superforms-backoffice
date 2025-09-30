@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { BeginningOptions } from '$types';
+  import type { BeginningOptions, DataProps } from '$types';
   import type { ViewStateStore } from '$stores/view-state-store.svelte';
   import { MAP_LEVEL_CHARACTERS } from '$lib/games/wortiger';
   import IconHandler from '$components/icons/IconHandler.svelte';
@@ -10,17 +10,53 @@
   import { SvelteSet } from 'svelte/reactivity';
 
   type Props = {
+    data: DataProps;
     store: ViewStateStore;
     resultsDataBody: string[][];
     levels?: number[];
     beginning_option: BeginningOptions;
   };
   let {
+    data,
     store,
     resultsDataBody = $bindable(),
     beginning_option = $bindable(),
     levels = [4, 5, 6, 7],
   }: Props = $props();
+
+  type GameRow = { id: number; level: number; release_date: string; solution: string };
+
+  type ExistingIndex = Record<
+    number,
+    Map<
+      string, // normalized solution
+      { count: number; first_date?: string } // summary for messaging
+    >
+  >;
+
+  /** Build once from incoming `data` (array of 100 objects) */
+  const existingIndex = $derived.by<ExistingIndex>(() => {
+    const idx: ExistingIndex = { 4: new Map(), 5: new Map(), 6: new Map(), 7: new Map() };
+
+    // If DataProps has the games array on a property, adjust here.
+    // Your console shows `data` itself is the array, so iterate directly:
+    for (const g of data.games as unknown as GameRow[]) {
+      const sol = g?.solution ?? '';
+      const len = sol.trim().length;
+      if (!idx[len]) continue;
+
+      const key = normalize(sol);
+      const entry = idx[len].get(key) ?? { count: 0, first_date: undefined };
+      entry.count += 1;
+      // keep the earliest date we see for nicer messaging (optional)
+      if (g?.release_date && !entry.first_date) entry.first_date = g.release_date;
+      idx[len].set(key, entry);
+    }
+    return idx;
+  });
+
+  console.log("Let's see the data", data);
+  // data is an array from objects with release_data and solution and level
 
   const CHAR_TO_LEVEL: Record<number, number> = {};
   for (const [lvl, len] of Object.entries(MAP_LEVEL_CHARACTERS)) {
@@ -84,6 +120,37 @@
     }
   }
 
+  /** Check if the value already exists in previously saved games (same length) */
+  function validateAgainstExistingSolutions(
+    lengthForThisColumn: number,
+    value: string,
+  ): string | null {
+    const v = (value ?? '').trim();
+    if (!v) return null;
+
+    const map = existingIndex[lengthForThisColumn];
+    if (!map) return null;
+
+    const hit = map.get(normalize(v));
+    if (!hit || hit.count <= 0) return null;
+
+    // Optional: include the first known date and a “+N×” suffix if repeated
+    const suffix = hit.count > 1 ? ` (+${hit.count - 1}×)` : '';
+    const when = hit.first_date ? ` — zuletzt am ${hit.first_date}` : '';
+    return `„${v}“ wurde schon verwendet${when}${suffix}`;
+  }
+
+  let hasExistingDuplicates = $derived(() => {
+    return rows.some(r => {
+      const [_date, ...solutions] = r;
+      return solutions.some((val, idx) => {
+        const len = levels[idx];
+        const msg = validateAgainstExistingSolutions(len, val);
+        return !!msg;
+      });
+    });
+  });
+
   /** Validate a single solution cell against the corresponding word list */
   function validateAgainstWordList(lengthForThisColumn: number, value: string): string | null {
     const v = (value ?? '').trim();
@@ -122,13 +189,13 @@
   let error = $state<string | null>(null);
 
   let areNotAllFieldsFilled = $derived(() => {
-    // Every row: release_date must be filled, and all solutions must be filled and longer than 3 chars
     const baseInvalid = rows.some(row => {
       const [release_date, ...solutions] = row;
       if (!release_date?.trim()) return true;
       return solutions.some(cell => !cell.trim() || cell.trim().length <= 3);
     });
-    return baseInvalid || hasWordListViolations();
+
+    return baseInvalid || hasWordListViolations() || hasExistingDuplicates();
   });
 
   function addEmptyRow() {
@@ -268,6 +335,7 @@
             {@const expected = MAP_LEVEL_CHARACTERS[lvl]}
             {@const colIndex = 1 + j}
             {@const msg = validateAgainstWordList(lvl, r[colIndex])}
+            {@const dupMsg = validateAgainstExistingSolutions(lvl, r[colIndex])}
             <td class="px-2 py-1">
               <input
                 class="border px-2 py-1 w-[160px] font-mono"
@@ -281,6 +349,9 @@
               {/if}
               {#if msg}
                 <div class="text-xs text-red-700">{msg}</div>
+              {/if}
+              {#if dupMsg}
+                <div class="text-xs text-red-700">{dupMsg}</div>
               {/if}
             </td>
           {/each}
