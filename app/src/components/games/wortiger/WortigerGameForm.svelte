@@ -11,7 +11,7 @@
 	} from '$lib/queries';
 	import ViewNavigation from '../../ViewNavigation.svelte';
 	import type { BeginningOptions } from '$types';
-	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
 	import { onMount } from 'svelte';
 	import type { ViewStateStore } from '$stores/view-state-store.svelte';
 	import { APP_MESSAGES } from '$lib/app-messages';
@@ -48,8 +48,8 @@
 	const wortigerForm = data.saveGameForm;
 
 	const superform = superForm(wortigerForm, {
-		// @ts-expect-error type issue with the schema
-		validators: zodClient(saveWortigerGameFormSchema),
+
+		validators: zodClient(saveWortigerGameFormSchema as unknown as ZodObjectType),
 		SPA: true,
 		resetForm: false,
 		taintedMessage: isSubmitted ? false : true,

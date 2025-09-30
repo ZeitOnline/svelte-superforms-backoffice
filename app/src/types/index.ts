@@ -1,5 +1,5 @@
 import type { SuperValidated } from 'sveltekit-superforms';
-import type z from 'zod';
+import type { ZodValidationSchema } from 'sveltekit-superforms/adapters';
 
 /**
  * This is the type for the game types used in the app
@@ -114,8 +114,8 @@ export type GameConfig = {
   apiEndpoint: string;
   apiWordListEndpoint?: string;
   schemas: {
-    generateGameSchema: z.ZodTypeAny;
-    saveGameFormSchema: z.ZodTypeAny;
+    generateGameSchema: ZodValidationSchema;
+    saveGameFormSchema: ZodValidationSchema;
   };
   ui: {
     icon: string;
