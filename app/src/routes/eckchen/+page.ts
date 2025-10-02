@@ -18,19 +18,14 @@ export const load = async (): Promise<{
   saveGameForm: SaveGameForm;
   games: GameComplete[];
 }> => {
-
   const { schemas } = CONFIG_GAMES.eckchen;
 
   const generateGameSchema = schemas.generateGameSchema;
   const saveGameFormSchema = schemas.saveGameFormSchema;
 
   // The two forms are handled here based on current game configuration
-  const generateGameForm = (await superValidate(
-    zod4(generateGameSchema),
-  )) as GenerateGameForm;
-  const saveGameForm = (await superValidate(
-    zod4(saveGameFormSchema),
-  )) as SaveGameForm;
+  const generateGameForm = (await superValidate(zod4(generateGameSchema))) as GenerateGameForm;
+  const saveGameForm = (await superValidate(zod4(saveGameFormSchema))) as SaveGameForm;
 
   const games = await getAllGames({ gameName: 'eckchen' });
 

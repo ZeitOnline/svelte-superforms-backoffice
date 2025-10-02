@@ -52,6 +52,8 @@ export type GameWortigerComplete = GameWortiger & {
 };
 
 export type DataProps = {
+  games: GameComplete[];
+  saveGameForm: SuperValidated<GameEckchen | GameWortiger>;
   generateGameForm: SuperValidated<{
     csv: File;
   }>;

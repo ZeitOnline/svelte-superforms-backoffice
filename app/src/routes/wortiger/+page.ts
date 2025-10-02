@@ -23,12 +23,8 @@ export const load = async (): Promise<{
   const generateGameSchema = schemas.generateGameSchema;
   const saveGameFormSchema = schemas.saveGameFormSchema;
 
-  const generateGameForm = (await superValidate(
-    zod4(generateGameSchema),
-  )) as GenerateGameForm;
-  const saveGameForm = (await superValidate(
-    zod4(saveGameFormSchema),
-  )) as SaveGameForm;
+  const generateGameForm = (await superValidate(zod4(generateGameSchema))) as GenerateGameForm;
+  const saveGameForm = (await superValidate(zod4(saveGameFormSchema))) as SaveGameForm;
 
   const games = await getAllGames({ gameName: 'wortiger' });
 

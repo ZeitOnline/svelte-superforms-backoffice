@@ -73,6 +73,7 @@
       {:else if gameName === 'wortiger'}
 	    <!-- Wortiger allows a bulk upload from the csv directly into the db -->
         <WortigerBulkEditor
+          {data}
           {store}
           bind:beginning_option
           bind:resultsDataBody
