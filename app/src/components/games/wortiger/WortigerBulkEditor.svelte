@@ -59,7 +59,9 @@
       const entry = idx[len].get(key) ?? { count: 0, first_date: undefined };
       entry.count += 1;
       // keep the earliest date we see for nicer messaging (optional)
-      if (g?.release_date && !entry.first_date) entry.first_date = g.release_date;
+      if (g?.release_date && !entry.first_date) {
+        entry.first_date = g.release_date;
+      }
       idx[len].set(key, entry);
     }
     return idx;
@@ -70,7 +72,9 @@
     for (const g of data.games) {
       if (!isWortigerGame(g)) continue;
 
-      if (g.release_date) s.add(g.release_date.slice(0, 10));
+      if (g.release_date) {
+        s.add(g.release_date.slice(0, 10));
+      }
     }
     return s;
   });
@@ -109,7 +113,9 @@
     let i = 0;
     while (data[i] !== undefined) {
       const w = data[i]?.word;
-      if (w) set.add(normalize(w));
+      if (w) {
+        set.add(normalize(w));
+      }
       i++;
     }
     return set;
