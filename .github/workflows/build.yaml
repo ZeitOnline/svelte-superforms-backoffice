@@ -1,0 +1,60 @@
+name: Build and Test
+on:
+  push:
+    tags:
+        - '*'
+
+env:
+  ENVIRONMENT: production
+  PROJECT: spiele-backoffice
+  IMAGE: backoffice
+  REGISTRY: ${{ vars.GAR_DOCKER_REGISTRY }}
+
+jobs:
+  build:
+    name: Build
+    runs-on: zon-ubuntu-general-dind
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: extraxt version
+        shell: bash
+        run: |
+          REF=${{ github.ref_name }}
+          TAG=${REF#${{ inputs.context }}-}
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Baseproject
+        id: baseproject
+        uses: ZeitOnline/gh-action-baseproject@v0
+        with:
+          project_name: ${{ env.PROJECT }}
+          environment: ${{ env.ENVIRONMENT }}
+          gar_docker_auth: true
+
+      - run: docker context create buildx
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          endpoint: buildx  # created in previous step
+          driver-opts: network=host
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.sha }}
+
