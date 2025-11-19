@@ -146,4 +146,76 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
       ],
     },
   },
+  // TODO: this is mock data to show the frontend,
+  // implement real schema and config
+  buchstabiene: {
+    label: 'buchstabiene',
+    apiBase: '/api/buchstabiene',
+    apiEndpoint: 'buchstabiene_games',
+    productionUrl: 'https://spiele.zeit.de/buchstabiene',
+    schemas: {
+      generateGameSchema: {} as ZodValidationSchema,
+      saveGameFormSchema: {} as ZodValidationSchema,
+    },
+    ui: { icon: '🔤', themeColor: '#f4511e' },
+    table: {
+      hasLiveView: true,
+      columns: [
+        {
+          key: 'level',
+          label: 'Level des Spiels',
+          getValue: game => (game as GameWortigerComplete).level,
+          searchable: true,
+          sortable: true,
+        },
+        {
+          key: 'id',
+          label: 'ID',
+          getValue: game => game.id,
+          searchable: true,
+          sortable: true,
+        },
+        {
+          key: 'release_date',
+          label: 'Veröffentlichungsdatum',
+          getValue: game => game.release_date,
+          getDisplayValue: game => transformedPublishedData(game.release_date),
+          searchable: true,
+          sortable: true,
+        },
+        {
+          key: 'solution',
+          label: 'Lösung',
+          getValue: game => (game as GameWortigerComplete).solution || '',
+          searchable: true,
+          sortable: true,
+        },
+      ],
+    },
+    form: {
+      hasQuestionsTable: false,
+      fields: [
+        {
+          key: 'level',
+          label: 'Level',
+          type: 'number',
+          placeholder: '1',
+          required: true,
+        },
+        {
+          key: 'release_date',
+          label: 'Veröffentlichungsdatum',
+          type: 'date',
+          required: true,
+        },
+        {
+          key: 'solution',
+          label: 'Lösung',
+          type: 'text',
+          placeholder: 'Lösung eingeben',
+          required: true,
+        },
+      ],
+    },
+  },
 };

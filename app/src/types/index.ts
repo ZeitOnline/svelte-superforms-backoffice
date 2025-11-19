@@ -5,7 +5,7 @@ import type { ZodValidationSchema } from 'sveltekit-superforms/adapters';
  * This is the type for the game types used in the app
  * It can be extended with more game types in the future
  */
-export type GameType = 'eckchen' | 'wortiger';
+export type GameType = 'eckchen' | 'wortiger' | 'buchstabiene';
 
 /**
  * These are the possible views in the app

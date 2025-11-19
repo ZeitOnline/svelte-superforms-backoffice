@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { EckchenLogo, WortigerLogo } from './games';
+	import { BuchstabieneLogo, EckchenLogo, WortigerLogo } from './games';
 	import ZeitSpieleLogo from './ZeitSpieleLogo.svelte';
     import { goto } from '$app/navigation';
     import { page } from '$app/state';
@@ -10,6 +10,7 @@
 		const value = (event.target as HTMLSelectElement).value;
 		if (value === 'eckchen') goto('/eckchen');
 		else if (value === 'wortiger') goto('/wortiger');
+		else if (value === 'buchstabiene') goto('/buchstabiene');
 	}
 </script>
 
@@ -23,10 +24,13 @@
 			<EckchenLogo classExtra="w-6 h-6" />
 		{:else if gameName === 'wortiger'}
 			<WortigerLogo classExtra="w-6 h-6" />
+		{:else if gameName === 'buchstabiene'}
+			<BuchstabieneLogo classExtra="w-6 h-6" />
 		{/if}
 	</div>
 
-	<select class="border border-black p-1" name="game" id="game" onchange={handleGameChange}>
+	<select class="border border-black p-1 min-w-[160px]" name="game" id="game" onchange={handleGameChange}>
+		<option value="buchstabiene" selected={gameName === 'buchstabiene'}>Buchstabiene</option>
 		<option value="eckchen" selected={gameName === 'eckchen'}>Eckchen</option>
 		<option value="wortiger" selected={gameName === 'wortiger'}>Wortiger</option>
 	</select>
