@@ -1,16 +1,19 @@
 <script lang="ts">
-	import { EckchenLogo, WortigerLogo } from './games';
-	import ZeitSpieleLogo from './ZeitSpieleLogo.svelte';
+    import type { GameType } from '$types';
     import { goto } from '$app/navigation';
     import { page } from '$app/state';
     import { resolve } from '$app/paths';
+	import { BuchstabieneLogo, EckchenLogo, WortigerLogo } from './games';
+	import ZeitSpieleLogo from './ZeitSpieleLogo.svelte';
 
-	let { gameName }: { gameName?: string } = $props();
+	let { gameName }: { gameName?: GameType } = $props();
 
 	function handleGameChange(event: Event) {
-		const value = (event.target as HTMLSelectElement).value;
+		const value = (event.target as HTMLSelectElement).value as GameType;
+
 		if (value === 'eckchen') goto(resolve(`/eckchen`));
 		else if (value === 'wortiger') goto(resolve(`/wortiger`));
+		else if (value === 'spelling-bee') goto(resolve(`/spelling-bee`));
 	}
 </script>
 
@@ -24,10 +27,13 @@
 			<EckchenLogo classExtra="w-6 h-6" />
 		{:else if gameName === 'wortiger'}
 			<WortigerLogo classExtra="w-6 h-6" />
+		{:else if gameName === 'spelling-bee'}
+			<BuchstabieneLogo classExtra="w-6 h-6" />
 		{/if}
 	</div>
 
-	<select class="border border-black p-1" name="game" id="game" onchange={handleGameChange}>
+	<select class="border border-black p-1 min-w-[160px]" name="game" id="game" onchange={handleGameChange}>
+		<option value="spelling-bee" selected={gameName === 'spelling-bee'}>Buchstabiene</option>
 		<option value="eckchen" selected={gameName === 'eckchen'}>Eckchen</option>
 		<option value="wortiger" selected={gameName === 'wortiger'}>Wortiger</option>
 	</select>

@@ -13,6 +13,9 @@ export default defineConfig({
     setupFiles: ['./vitest-setup.js'],
   },
   server: {
+    allowedHosts: [
+      'localhost.staging.zeit.de',
+    ],
     proxy: {
       '/api/eckchen': {
         target: 'http://localhost:3001',
@@ -21,6 +24,11 @@ export default defineConfig({
       '/api/wortiger': {
         target: 'http://localhost:3002',
         rewrite: path => path.replace(/^\/api\/wortiger/, ''),
+      },
+      '/api/spelling-bee': {
+        target: 'https://spiele.staging.zeit.de/admin/api/spelling-bee',
+        rewrite: path => path.replace(/^\/api\/spelling-bee/, ''),
+        changeOrigin: true,
       },
     },
   },

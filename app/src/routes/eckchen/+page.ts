@@ -13,7 +13,7 @@ export const ssr = false;
 type GenerateGameForm = SuperValidated<z.infer<typeof generateEckchenGameSchema>>;
 type SaveGameForm = SuperValidated<z.infer<typeof saveEckchenGameFormSchema>>;
 
-export const load = async (): Promise<{
+export const load = async ({ fetch }): Promise<{
   generateGameForm: GenerateGameForm;
   saveGameForm: SaveGameForm;
   games: GameComplete[];
@@ -27,7 +27,7 @@ export const load = async (): Promise<{
   const generateGameForm = (await superValidate(zod4(generateGameSchema))) as GenerateGameForm;
   const saveGameForm = (await superValidate(zod4(saveGameFormSchema))) as SaveGameForm;
 
-  const games = await getAllGames({ gameName: 'eckchen' });
+  const games = await getAllGames({ gameName: 'eckchen', fetch });
 
   return { generateGameForm, saveGameForm, games };
 };

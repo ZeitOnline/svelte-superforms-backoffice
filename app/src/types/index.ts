@@ -5,7 +5,7 @@ import type { ZodValidationSchema } from 'sveltekit-superforms/adapters';
  * This is the type for the game types used in the app
  * It can be extended with more game types in the future
  */
-export type GameType = 'eckchen' | 'wortiger';
+export type GameType = 'eckchen' | 'wortiger' | 'spelling-bee';
 
 /**
  * These are the possible views in the app
@@ -109,19 +109,23 @@ export type TableColumn = {
   sortable?: boolean;
 };
 
+//TODO: remove the apiEndpoint from this config
 export type GameConfig = {
   label: string;
   apiBase: string;
   productionUrl: string;
-  apiEndpoint: string;
-  apiWordListEndpoint?: string;
+  endpoints: {
+    games: {
+      name: string;
+      releaseDateField: string;
+    };
+    wordList?: {
+      name: string;
+    }
+  };
   schemas: {
     generateGameSchema: ZodValidationSchema;
     saveGameFormSchema: ZodValidationSchema;
-  };
-  ui: {
-    icon: string;
-    themeColor: string;
   };
   table: {
     columns: TableColumn[];

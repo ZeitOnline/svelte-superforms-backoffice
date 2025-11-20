@@ -105,7 +105,7 @@
 
   /** Fetch one list and return a Set of normalized words */
   async function fetchWordSetForLength(length: number): Promise<Set<string>> {
-    const url = `${CONFIG_GAMES.wortiger.apiBase}/${CONFIG_GAMES.wortiger.apiWordListEndpoint}_${length}?select=word`;
+    const url = `${CONFIG_GAMES.wortiger.apiBase}/${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${length}?select=word`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Fetch failed for ${length}: ${res.status}`);
     const data = await res.json();
