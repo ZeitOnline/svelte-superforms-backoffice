@@ -148,7 +148,6 @@ export const getNextAvailableDateForGame = async (gameName: GameType) => {
   const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?select=${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}&order=${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}.desc&limit=1`;
   const response = await fetch(URL);
   const data = await response.json();
-  // console.log('Next available date for game:', data);
 
   // if latest available date is in the past, return today's date
   const isDateInThePast = data[0].release_date < new Date().toISOString().split('T')[0];
