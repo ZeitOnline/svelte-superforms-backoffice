@@ -106,7 +106,7 @@
       return;
     }
 
-    const table = `${CONFIG_GAMES.wortiger.apiWordListEndpoint}_${number}`;
+    const table = `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
     const url = `${CONFIG_GAMES.wortiger.apiBase}/${table}`;
 
     // optimistic update
@@ -187,7 +187,7 @@
       return;
     }
 
-    const table = `${CONFIG_GAMES.wortiger.apiWordListEndpoint}_${number}`;
+    const table = `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
     const baseUrl = `${CONFIG_GAMES.wortiger.apiBase}/${table}`;
 
     // optimistic snapshot
@@ -273,7 +273,7 @@
       return;
     }
 
-    const URL = `${CONFIG_GAMES.wortiger.apiBase}/${CONFIG_GAMES.wortiger.apiWordListEndpoint}_${number}`;
+    const URL = `${CONFIG_GAMES.wortiger.apiBase}/${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
     loading = true;
 
     try {
@@ -299,7 +299,7 @@
   };
 
   const deleteWord = async (number: number, word: string): Promise<void> => {
-    const table = `${CONFIG_GAMES.wortiger.apiWordListEndpoint}_${number}`;
+    const table = `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
     const url = `${CONFIG_GAMES.wortiger.apiBase}/${table}?word=eq.${encodeURIComponent(word)}`;
 
     // optimistic update

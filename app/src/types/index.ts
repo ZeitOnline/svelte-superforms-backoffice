@@ -109,19 +109,23 @@ export type TableColumn = {
   sortable?: boolean;
 };
 
+//TODO: remove the apiEndpoint from this config
 export type GameConfig = {
   label: string;
   apiBase: string;
   productionUrl: string;
-  apiEndpoint: string;
-  apiWordListEndpoint?: string;
+  endpoints: {
+    games: {
+      name: string;
+      releaseDateField: string;
+    };
+    wordList?: {
+      name: string;
+    }
+  };
   schemas: {
     generateGameSchema: ZodValidationSchema;
     saveGameFormSchema: ZodValidationSchema;
-  };
-  ui: {
-    icon: string;
-    themeColor: string;
   };
   table: {
     columns: TableColumn[];

@@ -1,19 +1,20 @@
-import { superValidate, type SuperValidated } from 'sveltekit-superforms';
-import { zod4 } from 'sveltekit-superforms/adapters';
-import type z from 'zod';
-import type { GameComplete } from '$types';
-import type { generateEckchenGameSchema, saveEckchenGameFormSchema } from '$schemas/eckchen';
-
+// import { superValidate, type SuperValidated } from 'sveltekit-superforms';
+// import { zod4 } from 'sveltekit-superforms/adapters';
+// import type z from 'zod';
+// import type { GameComplete } from '$types';
+// import type { generateEckchenGameSchema, saveEckchenGameFormSchema } from '$schemas/eckchen';
 import { getAllGames } from '$lib/queries';
-import { CONFIG_GAMES } from '$config/games.config';
+
+// import { getAllGames } from '$lib/queries';
+// import { CONFIG_GAMES } from '$config/games.config';
 
 export const ssr = false;
 
 // Define the union types for the forms
-type GenerateGameForm = SuperValidated<z.infer<typeof generateEckchenGameSchema>>;
-type SaveGameForm = SuperValidated<z.infer<typeof saveEckchenGameFormSchema>>;
+// type GenerateGameForm = SuperValidated<z.infer<typeof generateEckchenGameSchema>>;
+// type SaveGameForm = SuperValidated<z.infer<typeof saveEckchenGameFormSchema>>;
 
-export const load = async (): Promise<void> => {
+export const load = async ({ fetch }): Promise<void> => {
 //   const { schemas } = CONFIG_GAMES.eckchen;
 
 //   const generateGameSchema = schemas.generateGameSchema;
@@ -23,7 +24,9 @@ export const load = async (): Promise<void> => {
 //   const generateGameForm = (await superValidate(zod4(generateGameSchema))) as GenerateGameForm;
 //   const saveGameForm = (await superValidate(zod4(saveGameFormSchema))) as SaveGameForm;
 
-  // const games = await getAllGames({ gameName: 'spelling-bee' });
+  const games = await getAllGames({ gameName: 'spelling-bee', fetch });
+
+  console.log('Fetched spelling-bee games:', games);
 
   // console.log('Buchstabiene games fetched:', games);
 

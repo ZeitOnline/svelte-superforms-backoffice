@@ -1,4 +1,5 @@
 import type { GameComplete, GameType } from '$types';
+import type { LoadEvent } from '@sveltejs/kit';
 import { CONFIG_GAMES } from '../config/games.config';
 import { deleteEckchenGame } from './games/eckchen';
 import { deleteWortigerGame } from './games/wortiger';
@@ -13,9 +14,10 @@ export const SHOULD_DELETE_STATE = false;
  * Get all games from the backend.
  * @returns all games
  */
-export const getAllGames = async ({ gameName }: { gameName: GameType }) => {
-  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].apiEndpoint}?limit=100&order=release_date.desc`;
-  console.log('Fetching all games from URL:', URL);
+export const getAllGames = async ({ gameName, fetch }: { gameName: GameType, fetch: LoadEvent['fetch'] }) => {
+  const releaseDatePart = CONFIG_GAMES[gameName].endpoints.games.releaseDateField + '.desc';
+
+  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?limit=100&order=${releaseDatePart}`;
 
   const response = await fetch(URL);
   const data = await response.json();
@@ -46,7 +48,7 @@ export const deleteGame = async (gameName: 'eckchen' | 'wortiger', id: number) =
 export const updateGame = async (gameName: GameType, id: number, data: GameComplete) => {
   try {
     const response = await fetch(
-      `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].apiEndpoint}?id=eq.${id}`,
+      `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?id=eq.${id}`,
       {
         method: 'PATCH',
         headers: {
@@ -81,7 +83,7 @@ export async function createGame({
   gameName: GameType;
   data: GameComplete;
 }): Promise<GameComplete[]> {
-  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].apiEndpoint}`;
+  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
   const game = await fetch(URL, {
     method: 'POST',
     headers: {
@@ -107,7 +109,7 @@ export async function createGamesBulk({
   rows: Array<Partial<GameComplete> & Record<string, unknown>>;
   onConflict?: string;
 }) {
-  const base = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].apiEndpoint}`;
+  const base = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
   const url = onConflict ? `${base}?on_conflict=${encodeURIComponent(onConflict)}` : base;
 
   const res = await fetch(url, {
@@ -143,10 +145,10 @@ export async function createGamesBulk({
  * @returns the next available date for a game in string format
  */
 export const getNextAvailableDateForGame = async (gameName: GameType) => {
-  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].apiEndpoint}?select=release_date&order=release_date.desc&limit=1`;
+  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?select=${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}&order=${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}.desc&limit=1`;
   const response = await fetch(URL);
   const data = await response.json();
-  console.log('Next available date for game:', data);
+  // console.log('Next available date for game:', data);
 
   // if latest available date is in the past, return today's date
   const isDateInThePast = data[0].release_date < new Date().toISOString().split('T')[0];

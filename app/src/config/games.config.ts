@@ -9,13 +9,17 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   eckchen: {
     label: 'eckchen',
     apiBase: '/api/eckchen',
-    apiEndpoint: 'game',
     productionUrl: 'https://spiele.zeit.de/eckchen',
+    endpoints: {
+      games: {
+        name: 'game',
+        releaseDateField: 'release_date',
+      },
+    },
     schemas: {
       generateGameSchema: generateEckchenGameSchema as unknown as ZodValidationSchema,
       saveGameFormSchema: saveEckchenGameFormSchema as unknown as ZodValidationSchema,
     },
-    ui: { icon: '🧩', themeColor: '#1e88e5' },
     table: {
       hasLiveView: true,
       columns: [
@@ -78,14 +82,20 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   wortiger: {
     label: 'wortiger',
     apiBase: '/api/wortiger',
-    apiEndpoint: 'wortiger_games',
-    apiWordListEndpoint: 'wortliste',
+    endpoints: {
+      games: {
+        name: 'wortiger_games',
+        releaseDateField: 'release_date',
+      },
+      wordList: {
+        name: 'wortliste',
+      },
+    },
     productionUrl: 'https://spiele.zeit.de/wortiger',
     schemas: {
       generateGameSchema: generateWortigerGameSchema as unknown as ZodValidationSchema,
       saveGameFormSchema: saveWortigerGameFormSchema as unknown as ZodValidationSchema,
     },
-    ui: { icon: '🐯', themeColor: '#43a047' },
     table: {
       hasLiveView: true,
       columns: [
@@ -151,13 +161,17 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   "spelling-bee": {
     label: 'spelling-bee',
     apiBase: '/api/spelling-bee',
-    apiEndpoint: 'spelling-bee_games',
+    endpoints: {
+      games: {
+        name: 'game',
+        releaseDateField: 'start_time',
+      },
+    },
     productionUrl: 'https://spiele.zeit.de/spelling-bee',
     schemas: {
       generateGameSchema: {} as ZodValidationSchema,
       saveGameFormSchema: {} as ZodValidationSchema,
     },
-    ui: { icon: '🔤', themeColor: '#f4511e' },
     table: {
       hasLiveView: true,
       columns: [
