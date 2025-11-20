@@ -1,8 +1,6 @@
 import adapter from '@sveltejs/adapter-node';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
-const dev = process?.env?.NODE_ENV === 'development';
-
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   // Consult https://kit.svelte.dev/docs/integrations#preprocessors
@@ -21,7 +19,7 @@ const config = {
       $config: './src/config',
     },
     paths: {
-			base: !dev ? '/backoffice' : ''
+			base: '/backoffice',
 		},
     // adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
     // If your environment is not supported, or you settled on a specific environment, switch out the adapter.
