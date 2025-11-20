@@ -1,22 +1,24 @@
 <script lang="ts">
-	import { BuchstabieneLogo, EckchenLogo, WortigerLogo } from './games';
-	import ZeitSpieleLogo from './ZeitSpieleLogo.svelte';
+    import type { GameType } from '$types';
     import { goto } from '$app/navigation';
     import { page } from '$app/state';
-    import type { GameType } from '$types';
+    import { resolve } from '$app/paths';
+	import { BuchstabieneLogo, EckchenLogo, WortigerLogo } from './games';
+	import ZeitSpieleLogo from './ZeitSpieleLogo.svelte';
 
 	let { gameName }: { gameName?: GameType } = $props();
 
 	function handleGameChange(event: Event) {
-		const value = (event.target as HTMLSelectElement).value;
-		if (value === 'eckchen') goto('/eckchen');
-		else if (value === 'wortiger') goto('/wortiger');
-		else if (value === 'spelling-bee') goto('/spelling-bee');
+		const value = (event.target as HTMLSelectElement).value as GameType;
+
+		if (value === 'eckchen') goto(resolve(`/eckchen`));
+		else if (value === 'wortiger') goto(resolve(`/wortiger`));
+		else if (value === 'spelling-bee') goto(resolve(`/spelling-bee`));
 	}
 </script>
 
 <header class="flex flex-col sm:flex-row justify-between items-center w-full mb-12 gap-5">
-	<a href="/">
+	<a href={resolve(`/`)}>
 		<ZeitSpieleLogo classExtra="w-32 h-auto" />
 	</a>
 
@@ -41,8 +43,8 @@
 {#if gameName === "wortiger"}
     <nav aria-label="Wortiger Navigation" class="flex justify-end gap-2 mb-4">
       <a class:!bg-gray-300={page.route.id == '/wortiger'}
-      class="bg-gray-100 hover:bg-gray-300 px-3 py-1 border border-black text-xs" href="/wortiger">Dashboard</a>
+      class="bg-gray-100 hover:bg-gray-300 px-3 py-1 border border-black text-xs" href={resolve(`/wortiger`)}>Dashboard</a>
       <a class:!bg-gray-300={page.route.id == '/wortiger/wortliste'}
-      class="bg-gray-100 hover:bg-gray-300 px-3 py-1 border border-black text-xs" href="/wortiger/wortliste">Wortliste</a>
+      class="bg-gray-100 hover:bg-gray-300 px-3 py-1 border border-black text-xs" href={resolve(`/wortiger/wortliste`)}>Wortliste</a>
     </nav>
 {/if}
