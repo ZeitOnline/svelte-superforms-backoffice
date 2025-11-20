@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+    import { resolve } from '$app/paths';
 
   import Header from '$components/Header.svelte';
   import ViewNavigation from '$components/ViewNavigation.svelte';
@@ -7,7 +8,7 @@
   import WortigerWordList from '$components/games/wortiger/WortigerWordList.svelte';
 
   const handleBackToDashboard = () => {
-    goto('/wortiger');
+    goto(resolve(`/wortiger`));
   };
 
 </script>
