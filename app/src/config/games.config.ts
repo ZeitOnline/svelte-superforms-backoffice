@@ -148,11 +148,11 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   },
   // TODO: this is mock data to show the frontend,
   // implement real schema and config
-  buchstabiene: {
-    label: 'buchstabiene',
-    apiBase: '/api/buchstabiene',
-    apiEndpoint: 'buchstabiene_games',
-    productionUrl: 'https://spiele.zeit.de/buchstabiene',
+  "spelling-bee": {
+    label: 'spelling-bee',
+    apiBase: '/api/spelling-bee',
+    apiEndpoint: 'spelling-bee_games',
+    productionUrl: 'https://spiele.zeit.de/spelling-bee',
     schemas: {
       generateGameSchema: {} as ZodValidationSchema,
       saveGameFormSchema: {} as ZodValidationSchema,

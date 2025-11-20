@@ -4,5 +4,5 @@
 	// let { data } = $props<{ data: PageData }>();
 </script>
 
-<Header gameName="buchstabiene" />
+<Header gameName="spelling-bee" />
 <!-- <App {data} /> -->

@@ -3,7 +3,7 @@
   import { BuchstabieneLogo, EckchenLogo, WortigerLogo } from '$components/games';
 
   const GAMES = [
-    { name: 'Buchstabiene', path: '/buchstabiene', logo: BuchstabieneLogo, tag: 'coming soon', color: 'gray' },
+    { name: 'Buchstabiene', path: '/spelling-bee', logo: BuchstabieneLogo, tag: 'coming soon', color: 'gray' },
     { name: 'Eckchen', path: '/eckchen', logo: EckchenLogo, tag: 'live', color: 'green' },
     { name: 'Wortiger', path: '/wortiger', logo: WortigerLogo, tag: 'live', color: 'green' },
   ];
