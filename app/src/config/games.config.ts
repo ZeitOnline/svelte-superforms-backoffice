@@ -157,8 +157,6 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
       ],
     },
   },
-  // TODO: this is mock data to show the frontend,
-  // implement real schema and config
   "spelling-bee": {
     label: 'spelling-bee',
     apiBase: '/api/spelling-bee',
