@@ -57,7 +57,7 @@ export type GameSpellingBee = BaseGame & {
   name: string;
   start_time: string;
   wordcloud: string;
-  solutions_count?: number; // will be added dynamically
+  game_solution?: Array<{ solution: string; points: number }>;
 };
 
 /**

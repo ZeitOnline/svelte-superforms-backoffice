@@ -324,8 +324,9 @@
                 {:else if gameName === 'spelling-bee' && column.key === 'wordcloud'}
                   <!-- Add solutions column for Spelling Bee -->
                   {@html renderCellContent(item, column)}
-                  {@const count = (item as GameSpellingBeeComplete).solutions_count ?? ''}
-                  ({count})
+                  {@const solutionsForGame = (item as GameSpellingBeeComplete).game_solution ?? []}
+
+                  ({solutionsForGame.length})
                 {:else if column.key === 'solution' && !column.getValue(item)}
                   <!-- Special handling for missing solution -->
                   <span class="text-z-ds-color-error-70">Keine Lösung</span>
