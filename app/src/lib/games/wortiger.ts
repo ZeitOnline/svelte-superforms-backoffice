@@ -11,8 +11,7 @@ export const MAP_LEVEL_CHARACTERS: Record<number, number> = {
 };
 
 export const deleteWortigerGame = async (id: number) => {
-  console.log('Deleting Wortiger game with id:', id);
-  const URL = `${CONFIG_GAMES['wortiger'].apiBase}/${CONFIG_GAMES['wortiger'].apiEndpoint}?id=eq.${id}`;
+  const URL = `${CONFIG_GAMES['wortiger'].apiBase}/${CONFIG_GAMES['wortiger'].endpoints.games.name}?id=eq.${id}`;
 
   try {
     // Wortiger games are simpler - just delete the game record itself

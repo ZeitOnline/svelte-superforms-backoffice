@@ -124,7 +124,6 @@ export type TableColumn = {
   sortable?: boolean;
 };
 
-//TODO: remove the apiEndpoint from this config
 export type GameConfig = {
   label: string;
   apiBase: string;

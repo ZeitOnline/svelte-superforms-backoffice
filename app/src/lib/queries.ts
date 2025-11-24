@@ -29,7 +29,7 @@ export const getAllGames = async ({ gameName, fetch }: { gameName: GameType, fet
  * @param id the id of the game to be deleted
  * @returns the status of the deletion
  */
-export const deleteGame = async (gameName: 'eckchen' | 'wortiger', id: number) => {
+export const deleteGame = async (gameName: GameType, id: number) => {
   if (gameName === 'eckchen') {
     return deleteEckchenGame(id);
   } else if (gameName === 'wortiger') {
