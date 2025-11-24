@@ -9,7 +9,6 @@ import { CONFIG_GAMES } from '$config/games.config';
 
 export const ssr = false;
 
-// Define the union types for the forms
 type GenerateGameForm = SuperValidated<z.infer<typeof generateWortigerGameSchema>>;
 type SaveGameForm = SuperValidated<z.infer<typeof saveWortigerGameFormSchema>>;
 
