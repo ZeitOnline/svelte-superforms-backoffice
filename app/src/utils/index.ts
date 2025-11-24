@@ -1,4 +1,4 @@
-import type { GameComplete, GameEckchen, GameSpellingBeeComplete, GameWortiger, TableColumn } from '$types';
+import type { GameComplete, GameEckchen, GameEckchenComplete, GameSpellingBeeComplete, GameWortiger, GameWortigerComplete, TableColumn } from '$types';
 
 /**
  *  This function is used to transform the published date
@@ -122,7 +122,7 @@ export function isGameActive(game: GameComplete): boolean {
 export function getGameSearchableText(game: GameComplete): string[] {
   const releaseOrStartData = isSpellingBeeGame(game)
     ? (game as GameSpellingBeeComplete).start_time
-    : game.release_date;
+    : (game as GameEckchenComplete | GameWortigerComplete).release_date;
   const common = [game.id.toString(), releaseOrStartData];
 
   if (isEckchenGame(game)) {
