@@ -29,7 +29,7 @@ export const saveSpellingBeeGameFormSchema = z
   })
   .superRefine((data, ctx) => {
     // Optionally: enforce lowercase letters only for wordcloud
-    if (!/^[a-z]{9}$/i.test(data.wordcloud)) {
+    if (!/^[a-z]{9}$/.test(data.wordcloud)) {
       ctx.addIssue({
         path: ['wordcloud'],
         code: 'custom',
