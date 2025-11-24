@@ -66,6 +66,8 @@ export type GameEckchenComplete = CompleteGame<GameEckchen>;
 export type GameWortigerComplete = CompleteGame<GameWortiger>;
 export type GameSpellingBeeComplete = CompleteGame<GameSpellingBee>;
 
+export type GameComplete = GameEckchenComplete | GameWortigerComplete | GameSpellingBeeComplete;
+
 export type DataProps = {
   games: GameComplete[];
   saveGameForm: SuperValidated<GameEckchen | GameWortiger>;
@@ -90,8 +92,6 @@ export type Question = {
   direction: Orientation;
   description: string;
 };
-
-export type GameComplete = GameEckchenComplete | GameWortigerComplete | GameSpellingBeeComplete;
 
 export type QuestionComplete = Question & {
   id: number;

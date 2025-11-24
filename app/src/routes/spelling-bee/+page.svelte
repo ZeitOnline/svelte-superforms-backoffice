@@ -5,5 +5,5 @@
   let { data } = $props();
 </script>
 
-<Header gameName="spelling-bee" />
+<Header gameName={data.gameType} />
 <App {data} />
