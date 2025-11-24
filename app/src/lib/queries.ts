@@ -14,10 +14,10 @@ export const SHOULD_DELETE_STATE = false;
  * Get all games from the backend.
  * @returns all games
  */
-export const getAllGames = async ({ gameName, fetch }: { gameName: GameType, fetch: LoadEvent['fetch'] }) => {
+export const getAllGames = async ({ gameName, fetch, limit = 100 }: { gameName: GameType, fetch: LoadEvent['fetch'], limit?: number }) => {
   const releaseDatePart = CONFIG_GAMES[gameName].endpoints.games.releaseDateField + '.desc';
 
-  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?limit=100&order=${releaseDatePart}`;
+  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?limit=${limit}&order=${releaseDatePart}`;
 
   const response = await fetch(URL);
   const data = await response.json();

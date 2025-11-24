@@ -5,7 +5,8 @@ import { CONFIG_GAMES } from '$config/games.config';
 import { getAllGames } from '$lib/queries';
 
 import type { LayoutLoad } from './$types';
-import type { GameType, GameComplete } from '$types';
+import type { GameType, GameComplete, GameSpellingBeeComplete } from '$types';
+import { getAllGameSolutions, groupSolutionsByGameId } from '$lib/games/spelling-bee';
 
 export const ssr = false;
 
@@ -28,11 +29,21 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
         fetch
     });
 
+    if (gameType === 'spelling-bee') {
+        const solutions = await getAllGameSolutions({ gameName: gameType, fetch });
+        const groupedSolutions = groupSolutionsByGameId(solutions);
+
+        games.forEach((game) => {
+            const gameSolutions = groupedSolutions[game.id] || [];
+            (game as GameSpellingBeeComplete).solutions_count = gameSolutions.length;
+        });
+    }
+
     return {
         gameType,
         generateGameForm,
         saveGameForm,
-        games
+        games,
     };
 
 }
