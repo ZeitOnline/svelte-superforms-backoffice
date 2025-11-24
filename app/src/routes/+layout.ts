@@ -1,4 +1,3 @@
-// routes/+layout.ts
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
