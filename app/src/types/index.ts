@@ -27,40 +27,44 @@ export type IconOption =
   | 'download';
 
 /**
- * This is how games look like - matching actual API data structure
+ * Base type for all games — defines common optional fields.
  */
-export type GameEckchen = {
-  name: string;
-  release_date: string;
-  active?: boolean; // Optional since it might not be in all API responses
-  questions?: Question[];
-};
-
-export type GameEckchenComplete = GameEckchen & {
-  id: number; // ID is required for the complete game type
-};
-
-export type GameWortiger = {
-  level: number;
-  release_date: string;
-  solution: string;
-  active?: boolean; // Optional since it might not be in all API responses
-};
-
-export type GameWortigerComplete = GameWortiger & {
-  id: number; // ID is required for the complete game type
-};
-
-export type GameSpellingBee = {
-  name: string;
-  start_time: string;
-  wordcloud: string;
+export type BaseGame = {
   active?: boolean;
 };
 
-export type GameSpellingBeeComplete = GameSpellingBee & {
-  id: number;
+/**
+ * Generic utility type for "complete" games (those that have an ID).
+ */
+export type CompleteGame<T extends object> = T & { id: number };
+
+/**
+ * Game-specific data structures.
+ */
+export type GameEckchen = BaseGame & {
+  name: string;
+  release_date: string;
+  questions?: Question[];
 };
+
+export type GameWortiger = BaseGame & {
+  level: number;
+  release_date: string;
+  solution: string;
+};
+
+export type GameSpellingBee = BaseGame & {
+  name: string;
+  start_time: string;
+  wordcloud: string;
+};
+
+/**
+ * Auto-generate the “complete” types using the generic utility.
+ */
+export type GameEckchenComplete = CompleteGame<GameEckchen>;
+export type GameWortigerComplete = CompleteGame<GameWortiger>;
+export type GameSpellingBeeComplete = CompleteGame<GameSpellingBee>;
 
 export type DataProps = {
   games: GameComplete[];
