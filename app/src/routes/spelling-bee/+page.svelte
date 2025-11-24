@@ -1,5 +1,9 @@
 <script lang="ts">
-    import Header from "$components/Header.svelte";
+  import App from '$components/App.svelte';
+  import Header from '$components/Header.svelte';
+
+  let { data } = $props();
 </script>
 
-<Header gameName="spelling-bee" />
+<Header gameName={data.gameType} />
+<App {data} />

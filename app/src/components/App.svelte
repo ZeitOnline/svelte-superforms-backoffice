@@ -13,6 +13,8 @@
       gameName = 'eckchen';
     } else if (page.route.id === '/wortiger') {
       gameName = 'wortiger';
+    } else if (page.route.id === '/spelling-bee') {
+      gameName = 'spelling-bee';
     }
   });
 

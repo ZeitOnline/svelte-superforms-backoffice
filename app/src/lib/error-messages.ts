@@ -13,6 +13,8 @@ export const ERRORS = {
     FAILED_TO_ADD: '⚠️ Fehler beim Hinzufügen des Spiels, bitte versuchen Sie es erneut.',
     NAME: {
       EMPTY: 'Der Name darf nicht leer sein.',
+      TOO_LONG: 'Der Name ist zu lang (max. 254 Zeichen).',
+      REQUIRED: 'Der Name ist erforderlich.',
       UNIQUE: 'Der Name muss eindeutig sein.',
       TAKEN: 'Der Name ist bereits vergeben.',
     },
@@ -58,6 +60,11 @@ export const ERRORS = {
   ECKCHEN: {
     CSV: {
       NUMBER_OF_COLUMNS: 'Die CSV Datei muss genau 7 Spalten haben.',
+    },
+  },
+  SPELLING_BEE: {
+    WORDCLOUD: {
+      LENGTH: 'Die Wortwolke muss genau 9 Buchstaben enthalten.',
     },
   },
 };

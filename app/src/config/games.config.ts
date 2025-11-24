@@ -1,9 +1,10 @@
-import type { GameConfig, GameEckchenComplete, GameType, GameWortigerComplete } from '$types';
-import { transformedPublishedData, isGameActive } from '$utils';
+import type { GameConfig, GameEckchenComplete, GameSpellingBeeComplete, GameType, GameWortigerComplete } from '$types';
+import { transformedPublishedData, isGameActive, transformedPublishedDataWithTime } from '$utils';
 // Schemas for the games
 import { generateEckchenGameSchema, saveEckchenGameFormSchema } from '$schemas/eckchen';
 import { generateWortigerGameSchema, saveWortigerGameFormSchema } from '$schemas/wortiger';
 import type { ZodValidationSchema } from 'sveltekit-superforms/adapters';
+import { generateSpellingBeeGameSchema, saveSpellingBeeGameFormSchema } from '$schemas/spelling-bee';
 
 export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   eckchen: {
@@ -40,8 +41,8 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         {
           key: 'release_date',
           label: 'Veröffentlichungsdatum',
-          getValue: game => game.release_date,
-          getDisplayValue: game => transformedPublishedData(game.release_date),
+          getValue: game => (game as GameEckchenComplete).release_date,
+          getDisplayValue: game => transformedPublishedData((game as GameEckchenComplete).release_date),
           searchable: true,
           sortable: true,
         },
@@ -116,8 +117,8 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         {
           key: 'release_date',
           label: 'Veröffentlichungsdatum',
-          getValue: game => game.release_date,
-          getDisplayValue: game => transformedPublishedData(game.release_date),
+          getValue: game => (game as GameWortigerComplete).release_date,
+          getDisplayValue: game => transformedPublishedData((game as GameWortigerComplete).release_date),
           searchable: true,
           sortable: true,
         },
@@ -156,8 +157,6 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
       ],
     },
   },
-  // TODO: this is mock data to show the frontend,
-  // implement real schema and config
   "spelling-bee": {
     label: 'spelling-bee',
     apiBase: '/api/spelling-bee',
@@ -169,16 +168,16 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
     },
     productionUrl: 'https://spiele.zeit.de/spelling-bee',
     schemas: {
-      generateGameSchema: {} as ZodValidationSchema,
-      saveGameFormSchema: {} as ZodValidationSchema,
+      generateGameSchema: generateSpellingBeeGameSchema as unknown as ZodValidationSchema,
+      saveGameFormSchema: saveSpellingBeeGameFormSchema as unknown as ZodValidationSchema,
     },
     table: {
       hasLiveView: true,
       columns: [
         {
-          key: 'level',
-          label: 'Level des Spiels',
-          getValue: game => (game as GameWortigerComplete).level,
+          key: 'name',
+          label: 'Name des Spiels',
+          getValue: game => (game as GameSpellingBeeComplete).name,
           searchable: true,
           sortable: true,
         },
@@ -190,17 +189,17 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           sortable: true,
         },
         {
-          key: 'release_date',
-          label: 'Veröffentlichungsdatum',
-          getValue: game => game.release_date,
-          getDisplayValue: game => transformedPublishedData(game.release_date),
+          key: 'start_time',
+          label: 'Startzeit',
+          getValue: game => (game as GameSpellingBeeComplete).start_time,
+          getDisplayValue: game => transformedPublishedDataWithTime((game as GameSpellingBeeComplete).start_time),
           searchable: true,
           sortable: true,
         },
         {
-          key: 'solution',
-          label: 'Lösung',
-          getValue: game => (game as GameWortigerComplete).solution || '',
+          key: 'wordcloud',
+          label: 'Wortwolke',
+          getValue: game => (game as GameSpellingBeeComplete).wordcloud,
           searchable: true,
           sortable: true,
         },
@@ -210,24 +209,25 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
       hasQuestionsTable: false,
       fields: [
         {
-          key: 'level',
-          label: 'Level',
-          type: 'number',
-          placeholder: '1',
+          key: 'name',
+          label: 'Name',
+          type: 'text',
+          placeholder: 'Buchstabiene Nr.XXX',
           required: true,
         },
         {
-          key: 'release_date',
-          label: 'Veröffentlichungsdatum',
+          key: 'start_time',
+          label: 'Startzeit',
           type: 'date',
           required: true,
         },
         {
-          key: 'solution',
-          label: 'Lösung',
+          key: 'wordcloud',
+          label: 'Wortwolke (9 Zeichen)',
           type: 'text',
-          placeholder: 'Lösung eingeben',
+          placeholder: 'z. B. abcdefghi',
           required: true,
+          validation: { length: 9 },
         },
       ],
     },
