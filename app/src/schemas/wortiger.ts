@@ -21,7 +21,7 @@ export const saveWortigerGameFormSchema = z
     if (expectedLength && data.solution.length !== expectedLength) {
       ctx.addIssue({
         path: ['solution'],
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `Solution must be ${expectedLength} characters for level ${data.level}.`,
       });
     }

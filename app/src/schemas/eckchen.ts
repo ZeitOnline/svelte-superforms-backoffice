@@ -40,7 +40,7 @@ export const saveEckchenGameFormSchema = z.object({
   name: z.string().trim().min(1, {
     message: ERRORS.GAME.NAME.EMPTY,
   }),
-  release_date: z.string().date().min(1, { message: ERRORS.GAME.RELEASE_DATE.EMPTY }),
+  release_date: z.iso.date().min(1, { message: ERRORS.GAME.RELEASE_DATE.EMPTY }),
   published: z.boolean().default(false),
   questions: saveEckchenGameArraySchema,
 });
