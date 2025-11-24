@@ -51,6 +51,17 @@ export type GameWortigerComplete = GameWortiger & {
   id: number; // ID is required for the complete game type
 };
 
+export type GameSpellingBee = {
+  name: string;
+  start_time: string;
+  wordcloud: string;
+  active?: boolean;
+};
+
+export type GameSpellingBeeComplete = GameSpellingBee & {
+  id: number;
+};
+
 export type DataProps = {
   games: GameComplete[];
   saveGameForm: SuperValidated<GameEckchen | GameWortiger>;
@@ -76,7 +87,7 @@ export type Question = {
   description: string;
 };
 
-export type GameComplete = GameEckchenComplete | GameWortigerComplete;
+export type GameComplete = GameEckchenComplete | GameWortigerComplete | GameSpellingBeeComplete;
 
 export type QuestionComplete = Question & {
   id: number;

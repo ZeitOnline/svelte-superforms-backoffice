@@ -1,4 +1,4 @@
-import type { GameComplete, GameEckchen, GameWortiger, TableColumn } from '$types';
+import type { GameComplete, GameEckchen, GameSpellingBeeComplete, GameWortiger, TableColumn } from '$types';
 
 /**
  *  This function is used to transform the published date
@@ -96,12 +96,18 @@ export function isWortigerGame(game: GameComplete): game is GameWortiger & { id:
   return 'level' in game && typeof (game as GameWortiger & { id: number }).level === 'number';
 }
 
+export function isSpellingBeeGame(game: GameComplete): game is GameSpellingBeeComplete {
+  return 'wordcloud' in game;
+}
+
 // Helper functions to work with games regardless of their type
 export function getGameDisplayName(game: GameComplete): string {
   if (isEckchenGame(game)) {
     return game.name;
   } else if (isWortigerGame(game)) {
     return `Level ${game.level}`;
+  } else if (isSpellingBeeGame(game)) {
+    return game.name;
   }
   // Fallback - this should never happen with proper discriminated unions
   return `Game ${(game as { id: number }).id}`;
@@ -114,11 +120,18 @@ export function isGameActive(game: GameComplete): boolean {
 
 // Helper function to get searchable text for any game type
 export function getGameSearchableText(game: GameComplete): string[] {
-  const common = [game.id.toString(), game.release_date];
+  const releaseOrStartData = isSpellingBeeGame(game)
+    ? (game as GameSpellingBeeComplete).start_time
+    : game.release_date;
+  const common = [game.id.toString(), releaseOrStartData];
 
   if (isEckchenGame(game)) {
     return [...common, game.name];
-  } else {
+  } else if (isWortigerGame(game)) {
     return [...common, game.level.toString(), game.solution || ''];
+  } else if (isSpellingBeeGame(game)) {
+    return [...common, game.name, game.wordcloud];
   }
+
+  return common;
 }
