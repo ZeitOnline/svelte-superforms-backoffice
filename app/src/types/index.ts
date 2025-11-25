@@ -24,7 +24,9 @@ export type IconOption =
   | 'error'
   | 'upload'
   | 'delete'
-  | 'download';
+  | 'download'
+  | 'eye'
+  | 'eye-scan';
 
 /**
  * Base type for all games — defines common optional fields.
@@ -57,7 +59,7 @@ export type GameSpellingBee = BaseGame & {
   name: string;
   start_time: string;
   wordcloud: string;
-  game_solution?: Array<{ solution: string; points: number }>;
+  game_solution?: BuchstabieneSolutionItem;
 };
 
 /**
@@ -162,3 +164,5 @@ export type FormField = {
   required?: boolean;
   validation?: Record<string, unknown>; // For custom validation rules
 };
+
+export type BuchstabieneSolutionItem = Array<{ solution: string; points: number }>

@@ -1,29 +1,20 @@
 <script lang="ts">
-	let { extraClasses, title }: { extraClasses?: string, title?: string } = $props();
+  let { extraClasses, title }: { extraClasses?: string; title?: string } = $props();
 </script>
 
 <svg
-	focusable="false"
-	aria-hidden="true"
-	class={extraClasses}
-	xmlns="http://www.w3.org/2000/svg"
-	width="18"
-	height="18"
-	viewBox="0 0 18 18"
-	fill="none"
+  aria-hidden="true"
+  class={extraClasses}
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  ><path
+    d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
+  /><circle cx="12" cy="12" r="3" /></svg
 >
-	{#if title}
-		<title>{title}</title>
-	{/if}
-
-	<path
-		fill-rule="evenodd"
-		clip-rule="evenodd"
-		d="M0.5 9C0.5 9 3.5 15.5 9 15.5C14.5 15.5 17.5 9 17.5 9C17.5 9 14.5 2.5 9 2.5C3.5 2.5 0.5 9 0.5 9ZM2.19731 9C2.24062 8.92466 2.28802 8.84393 2.33947 8.75854C2.67328 8.20456 3.16783 7.47092 3.81099 6.74386C5.12614 5.25717 6.87547 4 9 4C11.1245 4 12.8739 5.25717 14.189 6.74386C14.8322 7.47092 15.3267 8.20456 15.6605 8.75854C15.712 8.84393 15.7594 8.92466 15.8027 9C15.7594 9.07534 15.712 9.15607 15.6605 9.24146C15.3267 9.79544 14.8322 10.5291 14.189 11.2561C12.8739 12.7428 11.1245 14 9 14C6.87547 14 5.12614 12.7428 3.81099 11.2561C3.16783 10.5291 2.67328 9.79544 2.33947 9.24146C2.28802 9.15607 2.24062 9.07534 2.19731 9Z"
-		fill="currentColor"
-	/>
-	<path
-		d="M11 9C11 10.1046 10.1046 11 9 11C7.89543 11 7 10.1046 7 9C7 7.89543 7.89543 7 9 7C10.1046 7 11 7.89543 11 9Z"
-		fill="currentColor"
-	/>
-</svg>
