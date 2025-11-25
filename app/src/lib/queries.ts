@@ -18,17 +18,29 @@ export const getAllGames = async ({
   gameName,
   fetch,
   apiBaseUrl,
+  limit = 100
 }: {
   gameName: GameType;
   fetch: LoadEvent['fetch'];
   apiBaseUrl?: string;
+  limit?: number;
 }) => {
   const baseUrl = apiBaseUrl || CONFIG_GAMES[gameName].apiBase;
   const releaseDatePart = `${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}.desc`;
 
-  const URL = `${baseUrl}/${CONFIG_GAMES[gameName].endpoints.games.name}?limit=100&order=${releaseDatePart}`;
+  // If this is spelling-bee, embed solutions directly
+  const selectParam =
+    gameName === 'spelling-bee'
+      ? 'id,name,start_time,wordcloud,game_solution(solution,points)'
+      : '*';
+
+  const URL = `${baseUrl}/${CONFIG_GAMES[gameName].endpoints.games.name}?select=${selectParam}&limit=${limit}&order=${releaseDatePart}`;
 
   const response = await fetch(URL);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${gameName} games: ${response.status}`);
+  }
+
   const data = await response.json();
   return data;
 };

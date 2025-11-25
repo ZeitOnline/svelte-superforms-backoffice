@@ -36,5 +36,4 @@ export const load: LayoutLoad = async ({ url, fetch, data }) => {
         games,
         apiBaseUrl: data?.apiBaseUrl
     };
-
 }
