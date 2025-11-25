@@ -162,14 +162,3 @@ export type FormField = {
   required?: boolean;
   validation?: Record<string, unknown>; // For custom validation rules
 };
-
-export type SpellingBeeGameSolution = {
-  id: number;
-  game_id: number;
-  solution: string;
-  points: number;
-  solution_type: string;
-  solution_explanation: string;
-};
-
-export type SpellingBeeGameSolutionInput = Omit<SpellingBeeGameSolution, 'id'>;

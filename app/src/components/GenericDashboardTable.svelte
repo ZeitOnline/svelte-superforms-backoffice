@@ -88,13 +88,9 @@
     // Active status filtering
     if (filters.active) {
       filteredItems = filteredItems.filter(item => isGameActive(item));
-      // console.log('After active filter:', filteredItems.length);
     } else if (filters.notActive) {
       filteredItems = filteredItems.filter(item => !isGameActive(item));
-      // console.log('After notActive filter:', filteredItems.length);
     }
-
-    // console.log('Final filtered items:', filteredItems.length);
     return filteredItems;
   });
 
