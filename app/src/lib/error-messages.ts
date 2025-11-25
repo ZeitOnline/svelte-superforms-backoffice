@@ -66,5 +66,27 @@ export const ERRORS = {
     WORDCLOUD: {
       LENGTH: 'Die Wortwolke muss genau 9 Buchstaben enthalten.',
     },
+    SOLUTION: {
+      GAME_ID: {
+        REQUIRED: 'Game ID is required.',
+        MIN: 'Game ID must be greater than 0.',
+      },
+      SOLUTION: {
+        REQUIRED: 'Solution cannot be empty.',
+        MAX: 'Solution is too long.',
+      },
+      POINTS: {
+        REQUIRED: 'Points must be provided.',
+        MIN: 'Points cannot be negative.',
+      },
+      TYPE: {
+        REQUIRED: 'Solution type is required.',
+        MAX: 'Solution type is too long.',
+      },
+      EXPLANATION: {
+        REQUIRED: 'Solution explanation is required.',
+        MAX: 'Solution explanation is too long.',
+      },
+    },
   },
 };

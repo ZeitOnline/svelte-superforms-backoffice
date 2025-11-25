@@ -32,7 +32,7 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
         gameType,
         generateGameForm,
         saveGameForm,
-        games
+        games,
     };
 
 }

@@ -5,7 +5,13 @@
 	import type { GameComplete, GameType } from '$types';
 	import type { ViewStateStore } from '../stores/view-state-store.svelte';
 
-	let { store, games, gameName }: { store: ViewStateStore; games: GameComplete[], gameName: GameType } = $props();
+	type Props = {
+		store: ViewStateStore;
+		games: GameComplete[];
+		gameName: GameType;
+	}
+
+	let { store, games, gameName }: Props = $props();
 
 	function handleNewGameView() {
 		store.updateView('new-game');

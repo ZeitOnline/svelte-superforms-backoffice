@@ -57,6 +57,7 @@ export type GameSpellingBee = BaseGame & {
   name: string;
   start_time: string;
   wordcloud: string;
+  game_solution?: Array<{ solution: string; points: number }>;
 };
 
 /**
@@ -135,7 +136,9 @@ export type GameConfig = {
     };
     wordList?: {
       name: string;
-    }
+    };
+    solutions?:
+    { name: string };
   };
   schemas: {
     generateGameSchema: ZodValidationSchema;

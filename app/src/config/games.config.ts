@@ -165,6 +165,7 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         name: 'game',
         releaseDateField: 'start_time',
       },
+      solutions: { name: 'game_solution' },
     },
     productionUrl: 'https://spiele.zeit.de/spelling-bee',
     schemas: {
