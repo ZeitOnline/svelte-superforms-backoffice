@@ -1,6 +1,49 @@
-id,name,start_time,wordcloud
-1244,Buchstabiene Nr.1229,2025-12-30T23:00:00+00:00,fradeling
-1245,Buchstabiene Nr.1230,2026-01-06T23:00:00+00:00,monstrava
-1246,Buchstabiene Nr.1231,2026-01-13T23:00:00+00:00,gluecksee
-1247,Buchstabiene Nr.1232,2026-01-20T23:00:00+00:00,kerndufta
-1248,Buchstabiene Nr.1233,2026-01-27T23:00:00+00:00,wolknfela
+Wortwolke;Lösungen;Wortlänge;Punkte;Wortart;Darstellung
+zartolfil;ZOLLTARIF;9;12;Nomen;Ein- bzw. Ausfuhrgebühren
+zartolfil;ZORILLA;7;7;Nomen;afrik. Tier
+zartolfil;LITORAL;7;7;Adjektiv;die Küste betreffend
+zartolfil;FLORAL;6;6;Adjektiv;Blumen betreffend, geblümt
+zartolfil;LOLITA;6;6;Nomen;Kindfrau
+zartolfil;FLOAT;5;5;Nomen;Begriff aus dem Bankwesen
+zartolfil;FLORA;5;5;Nomen;Pflanzenwelt
+zartolfil;FOLIA;5;5;Nomen;Pl. von Folium (Pflanzenblatt)
+zartolfil;ZOLLT;5;5;Verbform;"von ""zollen"" (""Sie zollt ihm Respekt"")"
+zartolfil;FORTI;5;5;Nomen;"Pl. von ""Forte"" (Ausdruck aus der Musik)"
+zartolfil;TRAFO;5;5;Nomen;elektr. Umspanner
+zartolfil;ATOLL;5;5;Nomen;Koralleninsel
+zartolfil;ROLLI;5;5;Nomen;Kurzwort für Rollkragenpullover
+zartolfil;YOLLT;5;5;Verbform;"von ""rollen"" (""Sie rollt die Kugel"")"
+zartolfil;TROLL;5;5;Nomen;Sagengestalt
+zartolfil;TOLAR;5;5;Nomen;ehem. slowenische Währungseinheit
+zartolfil;RATIO;5;5;Nomen;latein. für Vernunft
+zartolfil;FOTZ;4;3;Verbform;"Imp. von ""fotzen"" (südd. für ohrfeigen)"
+zartolfil;FLOR;4;3;Nomen;poet. für Blüte
+zartolfil;LOFT;4;3;Nomen;zu einer Wohnung umgebaute Fabriketage
+zartolfil;ZOLL;4;3;Nomen;Abgabe, Längenmaß
+zartolfil;FORA;4;3;Nomen;Pl. von Forum (latein. für Marktplatz, Gerichtsort)
+zartolfil;FORT;4;3;Nomen;Festung
+zartolfil;TORF;4;3;Nomen;organisches Material aus Mooren
+zartolfil;ITZO;4;3;Adverb;veraltet für jetzt
+zartolfil;ROLL;4;3;Verbform;"Imp. von ""rollen"""
+zartolfil;ROTZ;4;3;Nomen;Tierkrankheit
+zartolfil;TOLL;4;3;Adjektiv;großartig
+zartolfil;LORI;4;3;Nomen;ein Papagei
+zartolfil;ORAL;4;3;Adjektiv;den Mund betreffend
+zartolfil;IOTA;4;3;Nomen;altgr. Buchstabe
+zartolfil;ROIT;4;3;Verbform;"von ""roien"" (rudern; ""Sie roit"")"
+zartolfil;ROTA;4;3;Nomen;höchster kath. Gerichtshof
+zartolfil;TARO;4;3;Nomen;eine trop. Frucht
+zartolfil;TIRO;4;3;Interjektion;"""tiro!"" (Jägersprache: ""schieße hoch!"")"
+zartolfil;TORA;4;3;Nomen;"gleichbedeutend mit ""Thora"" (das mosaische Gesetz)"
+zartolfil;TORI;4;3;Nomen;Pl. von Torus (Begriff aus der Mathematik)
+zartolfil;TRIO;4;3;Nomen;dreiköpfige Musikergruppe
+zartolfil;OFT;3;2;Adverb;häufig
+zartolfil;LOL;3;2;Adverb;"Jugendsprache, kurz für ""laughing out loud"""
+zartolfil;OLL;3;2;Adjektiv;"ugs. für ""alt"""
+zartolfil;ZOT;3;2;Verbform;"Imp. von ""zoten"" (Witze reißen)"
+zartolfil;LOT;3;2;Nomen;Gerät zur Ermittlung der Wassertief
+zartolfil;ORT;3;2;Nomen;Platz, Stadt
+zartolfil;ROI;3;2;Verbform;"Imp. von ""roien"" (rudern; ""Roi mich bitte ans Ufer!"")"
+zartolfil;ROT;3;2;Adjektiv;eine Farbe
+zartolfil;TAO;3;2;Nomen;Begriff aus der chin. Philosophie
+zartolfil;TOR;3;2;Nomen;Treffer beim Sport

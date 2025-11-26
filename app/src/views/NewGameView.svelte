@@ -11,10 +11,9 @@
 
   type Props = {
     data: DataProps;
-    store: ViewStateStore;
-    gameName: GameType;
+    store: ViewStateStore
   };
-  let { data, store, gameName }: Props = $props();
+  let { data, store }: Props = $props();
 
   let resultsDataBody: string[][] = $state([]);
   let beginning_option: BeginningOptions = $state(null);
@@ -30,7 +29,7 @@
       viewName="Neues Spiel erstellen"
       mainAction={handleBackToDashboard}
       mainActionText="Zurück"
-      {gameName}
+      gameName={data.gameType}
     />
     <div class="flex items-center justify-between gap-z-ds-8">
       <button
@@ -62,15 +61,18 @@
   {/if}
 
   {#if beginning_option === 'scratch'}
-    <GameTableWrapper {store} {data} bind:beginning_option bind:resultsDataBody {gameName} />
+    <GameTableWrapper {store} {data} bind:beginning_option bind:resultsDataBody gameName={data.gameType} />
   {/if}
 
   {#if beginning_option === 'csv'}
     {#if resultsDataBody.length > 0}
-      {#if gameName === 'eckchen'}
+      {#if data.gameType === 'eckchen'}
 	  	<!-- Eckchen loads the question from the csv into the table  -->
-        <GameTableWrapper {store} {data} bind:beginning_option bind:resultsDataBody {gameName} />
-      {:else if gameName === 'wortiger'}
+        <GameTableWrapper {store} {data} bind:beginning_option bind:resultsDataBody gameName={data.gameType} />
+        {:else if data.gameType === 'spelling-bee'}
+        <GameTableWrapper {store} {data} bind:beginning_option bind:resultsDataBody gameName={data.gameType} />
+
+        {:else if data.gameType === 'wortiger'}
 	    <!-- Wortiger allows a bulk upload from the csv directly into the db -->
         <WortigerBulkEditor
           {data}
@@ -81,7 +83,7 @@
         />
       {/if}
     {:else}
-      <CSVGameFileUploader {data} bind:beginning_option bind:resultsDataBody {gameName} />
+      <CSVGameFileUploader {data} bind:beginning_option bind:resultsDataBody gameName={data.gameType} />
     {/if}
   {/if}
 </ViewWrapper>

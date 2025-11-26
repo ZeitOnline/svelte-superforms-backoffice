@@ -24,8 +24,7 @@
     updateGameQuestions,
   } from '$lib/games/eckchen';
   import { CONFIG_GAMES } from '$config/games.config';
-    import { SvelteDate } from 'svelte/reactivity';
-    import type { ZodTypeAny } from 'zod';
+  import { SvelteDate } from 'svelte/reactivity';
 
   type DataProps = {
     games: GameEckchenComplete[];
@@ -48,8 +47,6 @@
     beginning_option = $bindable(),
     store,
   }: EckchenGameFormProps = $props();
-
-  console.log('EckchenGameForm initialized with game and these questions:', resultsDataBody);
 
   const toastManager = getToastState();
   let isSubmitted = false;

@@ -3,7 +3,7 @@
     import { goto } from '$app/navigation';
     import { page } from '$app/state';
     import { resolve } from '$app/paths';
-	import { BuchstabieneLogo, EckchenLogo, WortigerLogo } from './games';
+	import { SpellingBeeLogo, EckchenLogo, WortigerLogo } from './games';
 	import ZeitSpieleLogo from './ZeitSpieleLogo.svelte';
 
 	let { gameName }: { gameName?: GameType } = $props();
@@ -28,7 +28,7 @@
 		{:else if gameName === 'wortiger'}
 			<WortigerLogo classExtra="w-6 h-6" />
 		{:else if gameName === 'spelling-bee'}
-			<BuchstabieneLogo classExtra="w-6 h-6" />
+			<SpellingBeeLogo classExtra="w-6 h-6" />
 		{/if}
 	</div>
 
