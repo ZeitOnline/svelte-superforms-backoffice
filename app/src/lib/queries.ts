@@ -17,15 +17,12 @@ export const SHOULD_DELETE_STATE = false;
 export const getAllGames = async ({
   gameName,
   fetch,
-  apiBaseUrl,
-  limit = 100
+  limit = 100,
 }: {
   gameName: GameType;
   fetch: LoadEvent['fetch'];
-  apiBaseUrl?: string;
   limit?: number;
 }) => {
-  const baseUrl = apiBaseUrl || CONFIG_GAMES[gameName].apiBase;
   const releaseDatePart = `${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}.desc`;
 
   // If this is spelling-bee, embed solutions directly
@@ -34,8 +31,7 @@ export const getAllGames = async ({
       ? 'id,name,start_time,wordcloud,game_solution(solution,points)'
       : '*';
 
-  const URL = `${baseUrl}/${CONFIG_GAMES[gameName].endpoints.games.name}?select=${selectParam}&limit=${limit}&order=${releaseDatePart}`;
-
+  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?select=${selectParam}&limit=${limit}&order=${releaseDatePart}`;
   const response = await fetch(URL);
   if (!response.ok) {
     throw new Error(`Failed to fetch ${gameName} games: ${response.status}`);
@@ -64,20 +60,12 @@ export const deleteGame = async (gameName: GameType, id: number) => {
  * Updates a game by its id.
  * @param id - the id of the game to be updated
  * @param data - the data to be updated
- * @param apiBaseUrl - optional API base URL (from server)
  * @returns the updated game
  */
-export const updateGame = async (
-  gameName: GameType,
-  id: number,
-  data: GameComplete,
-  apiBaseUrl?: string,
-) => {
-  const baseUrl = apiBaseUrl || CONFIG_GAMES[gameName].apiBase;
-
+export const updateGame = async (gameName: GameType, id: number, data: GameComplete) => {
   try {
     const response = await fetch(
-      `${baseUrl}/${CONFIG_GAMES[gameName].endpoints.games.name}?id=eq.${id}`,
+      `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?id=eq.${id}`,
       {
         method: 'PATCH',
         headers: {
@@ -104,20 +92,16 @@ export const updateGame = async (
  * Create a game.
  * @param gameName - the game type
  * @param data - the data to be created
- * @param apiBaseUrl - optional API base URL (from server)
  * @returns the created game
  */
 export async function createGame({
   gameName,
   data,
-  apiBaseUrl,
 }: {
   gameName: GameType;
   data: GameComplete;
-  apiBaseUrl?: string;
 }): Promise<GameComplete[]> {
-  const baseUrl = apiBaseUrl || CONFIG_GAMES[gameName].apiBase;
-  const URL = `${baseUrl}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
+  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
   const game = await fetch(URL, {
     method: 'POST',
     headers: {
@@ -138,15 +122,12 @@ export async function createGamesBulk({
   gameName,
   rows,
   onConflict, // e.g. 'release_date,level'
-  apiBaseUrl,
 }: {
   gameName: GameType;
   rows: Array<Partial<GameComplete> & Record<string, unknown>>;
   onConflict?: string;
-  apiBaseUrl?: string;
 }) {
-  const baseUrl = apiBaseUrl || CONFIG_GAMES[gameName].apiBase;
-  const base = `${baseUrl}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
+  const base = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
   const url = onConflict ? `${base}?on_conflict=${encodeURIComponent(onConflict)}` : base;
 
   const res = await fetch(url, {
@@ -180,12 +161,10 @@ export async function createGamesBulk({
 /**
  * Get the next available date for a game.
  * @param gameName - the game type
- * @param apiBaseUrl - optional API base URL (from server)
  * @returns the next available date for a game in string format
  */
-export const getNextAvailableDateForGame = async (gameName: GameType, apiBaseUrl?: string) => {
-  const baseUrl = apiBaseUrl || CONFIG_GAMES[gameName].apiBase;
-  const URL = `${baseUrl}/${CONFIG_GAMES[gameName].endpoints.games.name}?select=${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}&order=${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}.desc&limit=1`;
+export const getNextAvailableDateForGame = async (gameName: GameType) => {
+  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?select=${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}&order=${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}.desc&limit=1`;
   const response = await fetch(URL);
   const data = await response.json();
 

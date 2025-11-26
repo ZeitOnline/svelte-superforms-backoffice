@@ -9,7 +9,7 @@ import type { GameType, GameComplete } from '$types';
 
 export const ssr = false;
 
-export const load: LayoutLoad = async ({ url, fetch, data }) => {
+export const load: LayoutLoad = async ({ url, fetch }) => {
     // We extract the game type after base path
     const gameType = url.pathname.split('/')[2] as GameType;
 
@@ -26,7 +26,6 @@ export const load: LayoutLoad = async ({ url, fetch, data }) => {
     const games: GameComplete[] = await getAllGames({
         gameName: gameType,
         fetch,
-        apiBaseUrl: data?.apiBaseUrl
     });
 
     return {
@@ -34,6 +33,5 @@ export const load: LayoutLoad = async ({ url, fetch, data }) => {
         generateGameForm,
         saveGameForm,
         games,
-        apiBaseUrl: data?.apiBaseUrl
     };
 }
