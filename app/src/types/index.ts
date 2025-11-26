@@ -77,6 +77,8 @@ export type DataProps = {
   generateGameForm: SuperValidated<{
     csv: File;
   }>;
+  gameType: GameType;
+  apiBaseUrl?: string;
 };
 
 export type ToastType = {
