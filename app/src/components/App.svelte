@@ -7,7 +7,6 @@
 
   let store: ViewStateStore = viewStateStore();
   let gameName = $derived<GameType>(data.gameType);
-
 </script>
 
 {#if store.view == 'new-game'}
