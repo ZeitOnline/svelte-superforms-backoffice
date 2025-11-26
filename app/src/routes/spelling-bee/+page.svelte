@@ -3,6 +3,7 @@
   import App from '$components/App.svelte';
   import Header from '$components/Header.svelte';
   import { buchstabieneStore } from '$stores/buchstabiene-word.svelte.js';
+  import IconHandler from '$components/icons/IconHandler.svelte';
 
   let { data } = $props();
 
@@ -48,6 +49,11 @@
             </ul>
           </div>
         {/each}
+      </div>
+    {:else}
+      <div class="italic mt-2 inline-flex gap-1">
+        <span>Noch keine Reihe ausgewählt.</span>
+        <IconHandler iconName="eye" extraClasses="inline-block w-4 h-4" />
       </div>
     {/if}
   </details>

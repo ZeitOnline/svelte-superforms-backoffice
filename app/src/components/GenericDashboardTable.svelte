@@ -10,7 +10,7 @@
   import { afterNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import { CONFIG_GAMES } from '../config/games.config';
-  import { buchstabieneStore } from '$stores/buchstabiene-word.svelte';
+  import { buchstabieneStore, toggleLegend } from '$stores/buchstabiene-word.svelte';
 
   const ITEMS_PER_PAGE = 10;
 
@@ -308,9 +308,7 @@
                           rel="nofollow noopener"
                           href={`${currentGameConfig.productionUrl}/#${item.id}`}
                         >
-                          <EyeIcon
-                            extraClasses="text-black w-5 h-5"
-                          />
+                          <EyeIcon extraClasses="text-black w-5 h-5" />
                         </a>
                       {/if}
                     </div>
@@ -318,10 +316,29 @@
                     <CloseIcon extraClasses="text-z-ds-color-error-70 w-7 h-7" />
                   {/if}
                 {:else if gameName === 'spelling-bee' && column.key === 'wordcloud'}
-                  <!-- Add solutions column for Spelling Bee -->
                   {@html renderCellContent(item, column)}
                   {@const solutionsForGame = (item as GameSpellingBeeComplete).game_solution ?? []}
-                  ({solutionsForGame.length} Lösungen)
+                  {@const maxPoints = solutionsForGame.reduce(
+                    (max, current) => Math.max(max, current.points),
+                    0,
+                  )}
+
+                  {@const wordsWithMaxPoints = solutionsForGame.filter(
+                    solution => solution.points === maxPoints,
+                  )}
+                  <br />
+                  <span class="flex text-[0.75rem]"> ({solutionsForGame.length} Lösungen)</span>
+                  {#if wordsWithMaxPoints.length > 0}
+                    <div class="flex flex-wrap gap-1 mt-1 max-w-[100px]">
+                      {#each wordsWithMaxPoints as wmp (wmp.solution)}
+                        <span
+                          class="text-[0.5rem] border bg-gray-200 rounded-2xl px-2 border-gray-700 py-1 mb-auto"
+                        >
+                          {wmp.solution}
+                        </span>
+                      {/each}
+                    </div>
+                  {/if}
                 {:else if column.key === 'solution' && !column.getValue(item)}
                   <!-- Special handling for missing solution -->
                   <span class="text-z-ds-color-error-70">Keine Lösung</span>
@@ -343,12 +360,7 @@
                       aria-pressed={buchstabieneStore.word === item.wordcloud}
                       aria-label="Lösungen in Store laden"
                       onclick={() => {
-                        const legendSpellingBee = document.getElementById('legend-spelling-bee') as HTMLDetailsElement;
-                        if (legendSpellingBee) {
-                          legendSpellingBee.open = true;
-                        }
-                        buchstabieneStore.word = item.wordcloud;
-                        buchstabieneStore.solutions = solutionsForGame;
+                        toggleLegend(item, solutionsForGame);
                       }}
                       class="z-ds-button z-ds-button-outline aria-pressed:!bg-black aria-pressed:!text-white"
                     >
