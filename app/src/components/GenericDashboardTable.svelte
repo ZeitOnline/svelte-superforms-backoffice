@@ -310,7 +310,6 @@
                         >
                           <EyeIcon
                             extraClasses="text-black w-5 h-5"
-                            title="Aktuell im Eckchen-Spiel sichtbar"
                           />
                         </a>
                       {/if}
@@ -351,7 +350,7 @@
                         buchstabieneStore.word = item.wordcloud;
                         buchstabieneStore.solutions = solutionsForGame;
                       }}
-                      class="z-ds-button z-ds-button-outline aria-pressed:!bg-black aria-pressed:!text-white "
+                      class="z-ds-button z-ds-button-outline aria-pressed:!bg-black aria-pressed:!text-white"
                     >
                       {#if buchstabieneStore.word === item.wordcloud}
                         <IconHandler extraClasses="w-5 h-5" iconName="eye-scan" />

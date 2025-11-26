@@ -32,14 +32,14 @@
   <details id="legend-spelling-bee">
     <summary>Legende bei Buchstabiene</summary>
     <hr class="mt-2" />
-    <h4 class="my-2">Word: {buchstabieneStore.word}</h4>
+    <div class="my-2">Wortwolke: {buchstabieneStore.word}</div>
     {#if Object.keys(groupedSolutions).length}
       <div class="max-h-60 overflow-y-auto">
-        <h5 class="font-bold mb-1">Solutions:</h5>
+        <div class="font-bold mb-1">Lösungen:</div>
         {#each Object.entries(groupedSolutions) as [letter, items]}
           <div class="mb-2">
-            <h5 class="font-bold text-[0.6rem] mb-1">{letter}</h5>
-            <ul class="flex flex-wrap gap-2">
+            <div class="font-bold text-[0.6rem] mb-1">{letter}</div>
+            <ul role="list" class="flex flex-wrap gap-2">
               {#each items as item}
                 <li class="text-[0.5rem] border bg-gray-200 rounded-2xl px-2 border-gray-700 py-1">
                   {item.points} - {item.solution}
