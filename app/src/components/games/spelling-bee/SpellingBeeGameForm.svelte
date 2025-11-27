@@ -33,15 +33,12 @@
 
   let { data, game, beginning_option = $bindable(), store, resultsDataBody = $bindable() }: SpellingBeeGameFormProps = $props();
 
-  console.log('SpellingBeeGameForm props:', { data, game, beginning_option, resultsDataBody });
   const toastManager = getToastState();
   let isSubmitted = false;
 
-  // Get schema and form setup
-  const spellingBeeForm = data.saveGameForm;
   const saveGameFormSchema = CONFIG_GAMES['spelling-bee'].schemas.saveGameFormSchema;
 
-  const superform = superForm(spellingBeeForm, {
+  const superform = superForm(data.saveGameForm, {
     validators: zodClient(saveGameFormSchema as unknown as ZodObjectType),
     SPA: true,
     resetForm: false,
@@ -92,8 +89,11 @@
 
         if (!form.valid) return;
 
-        // TODO: add edit
-        await createGame({ gameName: 'spelling-bee', data: finalData as GameComplete });
+        if (beginning_option !== "edit") {
+          // TODO: add edit
+          await createGame({ gameName: 'spelling-bee', data: finalData as GameComplete });
+        }
+
         isSubmitted = true;
         toastManager.add(APP_MESSAGES.GAME.ADDED_SUCCESS, '');
 

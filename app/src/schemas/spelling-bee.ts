@@ -26,9 +26,6 @@ export const saveSpellingBeeGameFormSchema = z
     wordcloud: z
       .string()
       .length(9, { message: ERRORS.SPELLING_BEE.WORDCLOUD.LENGTH })
-      // .regex(/^[a-z]+$/, {
-      //   message: ERRORS.SPELLING_BEE.WORDCLOUD.LENGTH,
-      // }),
   })
 
 

@@ -11,7 +11,7 @@
 		game?: GameComplete;
 		beginning_option: BeginningOptions;
 		store: ViewStateStore;
-		gameName: GameType
+		gameName: GameType;
 	};
 
 	let {
