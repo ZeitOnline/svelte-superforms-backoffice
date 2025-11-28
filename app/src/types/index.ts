@@ -78,7 +78,6 @@ export type DataProps = {
     csv: File;
   }>;
   gameType: GameType;
-  apiBaseUrl?: string;
 };
 
 export type ToastType = {

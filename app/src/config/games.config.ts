@@ -9,7 +9,7 @@ import { generateSpellingBeeGameSchema, saveSpellingBeeGameFormSchema } from '$s
 export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   eckchen: {
     label: 'eckchen',
-    apiBase: '/api/eckchen',
+    apiBase: '/backoffice/api/eckchen',
     productionUrl: 'https://spiele.zeit.de/eckchen',
     endpoints: {
       games: {
@@ -82,7 +82,7 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   },
   wortiger: {
     label: 'wortiger',
-    apiBase: '/api/wortiger',
+    apiBase: '/backoffice/api/wortiger',
     endpoints: {
       games: {
         name: 'wortiger_games',
@@ -159,7 +159,7 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   },
   "spelling-bee": {
     label: 'spelling-bee',
-    apiBase: '/api/spelling-bee',
+    apiBase: '/backoffice/api/spelling-bee',
     endpoints: {
       games: {
         name: 'game',

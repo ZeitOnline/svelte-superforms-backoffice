@@ -17,17 +17,17 @@ export default defineConfig({
       'localhost.staging.zeit.de',
     ],
     proxy: {
-      '/api/eckchen': {
+      '/backoffice/api/eckchen': {
         target: 'http://localhost:3001',
-        rewrite: path => path.replace(/^\/api\/eckchen/, ''),
+        rewrite: path => path.replace(/^\/backoffice\/api\/eckchen/, ''),
       },
-      '/api/wortiger': {
+      '/backoffice/api/wortiger': {
         target: 'http://localhost:3002',
-        rewrite: path => path.replace(/^\/api\/wortiger/, ''),
+        rewrite: path => path.replace(/^\/backoffice\/api\/wortiger/, ''),
       },
-      '/api/spelling-bee': {
+      '/backoffice/api/spelling-bee': {
         target: 'https://spiele.staging.zeit.de/admin/api/spelling-bee',
-        rewrite: path => path.replace(/^\/api\/spelling-bee/, ''),
+        rewrite: path => path.replace(/^\/backoffice\/api\/spelling-bee/, ''),
         changeOrigin: true,
       },
     },

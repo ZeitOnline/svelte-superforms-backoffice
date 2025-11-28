@@ -93,7 +93,7 @@ cat >> $OUTPUT_FILE << 'EOF'
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA eckchen TO web_anon;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA eckchen TO web_anon;
 
--- Grant permissions for PostgREST on wortiger schema  
+-- Grant permissions for PostgREST on wortiger schema
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA wortiger TO web_anon;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA wortiger TO web_anon;
 

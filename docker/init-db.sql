@@ -68528,7 +68528,7 @@ SELECT pg_catalog.setval('wortiger.wortiger_games_id_seq', 4607, true);
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA eckchen TO web_anon;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA eckchen TO web_anon;
 
--- Grant permissions for PostgREST on wortiger schema  
+-- Grant permissions for PostgREST on wortiger schema
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA wortiger TO web_anon;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA wortiger TO web_anon;
 
