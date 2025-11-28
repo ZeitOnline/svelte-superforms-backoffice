@@ -110,6 +110,11 @@ export async function createGame({
     },
     body: JSON.stringify(data),
   });
+
+  if (!game.ok) {
+    throw new Error(`Failed to create game. Status: ${game.status}`);
+  }
+
   return await game.json();
 }
 
@@ -163,16 +168,31 @@ export async function createGamesBulk({
  * @param gameName - the game type
  * @returns the next available date for a game in string format
  */
-export const getNextAvailableDateForGame = async (gameName: GameType) => {
-  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?select=${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}&order=${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}.desc&limit=1`;
+export const getNextAvailableDateForGame = async (gameName: GameType, apiBaseUrl?: string) => {
+  const baseUrl = apiBaseUrl || CONFIG_GAMES[gameName].apiBase;
+  const dateField = CONFIG_GAMES[gameName].endpoints.games.releaseDateField;
+  const URL = `${baseUrl}/${CONFIG_GAMES[gameName].endpoints.games.name}?select=${dateField}&order=${dateField}.desc&limit=1`;
+
   const response = await fetch(URL);
   const data = await response.json();
 
-  // if latest available date is in the past, return today's date
-  const isDateInThePast = data[0].release_date < new Date().toISOString().split('T')[0];
-  if (isDateInThePast) {
+  if (!data?.length) {
     return new Date().toISOString().split('T')[0];
   }
 
-  return data[0].release_date;
+  const lastFieldValue = data[0][dateField];
+
+  const lastDateString =
+    gameName === 'spelling-bee'
+      ? lastFieldValue.split('T')[0]
+      : lastFieldValue;
+
+  const today = new Date().toISOString().split('T')[0];
+  const isDateInThePast = lastDateString < today;
+
+  if (isDateInThePast) {
+    return today;
+  }
+
+  return lastDateString;
 };

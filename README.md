@@ -11,7 +11,6 @@
 <img style="margin-block: 20px;" src="./static/favicon-eckchen.png" alt="Logo Eckchen" width="50" />
 </div>
 
-
 [Repo](https://github.com/ZeitOnline/svelte-superforms-backoffice)
 |
 [Figma](https://www.figma.com/design/3Dz9yV5vMb9bORSvQQkw8Q/Backoffice---Designs?node-id=6-59&t=iYY5z1KsRiPfrMBo-0)

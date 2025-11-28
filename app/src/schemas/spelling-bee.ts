@@ -25,18 +25,9 @@ export const saveSpellingBeeGameFormSchema = z
       .min(1, { message: ERRORS.GAME.RELEASE_DATE.EMPTY }),
     wordcloud: z
       .string()
-      .length(9, { message: ERRORS.SPELLING_BEE.WORDCLOUD.LENGTH }),
+      .length(9, { message: ERRORS.SPELLING_BEE.WORDCLOUD.LENGTH })
   })
-  .superRefine((data, ctx) => {
-    // Optionally: enforce lowercase letters only for wordcloud
-    if (!/^[a-z]{9}$/.test(data.wordcloud)) {
-      ctx.addIssue({
-        path: ['wordcloud'],
-        code: 'custom',
-        message: 'Wordcloud must contain exactly 9 alphabetic characters.',
-      });
-    }
-  });
+
 
 // ------------------------------------
 // 3. Export inferred types

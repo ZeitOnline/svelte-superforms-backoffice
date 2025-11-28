@@ -57,4 +57,3 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }}
             ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.sha }}
-

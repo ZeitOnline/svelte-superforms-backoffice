@@ -1,13 +1,13 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import ViewWrapper from '$components/ViewWrapper.svelte';
-  import { BuchstabieneLogo, EckchenLogo, WortigerLogo } from '$components/games';
+  import { SpellingBeeLogo, EckchenLogo, WortigerLogo } from '$components/games';
   import type { GameType } from '$types';
 
   type CatalogueGame = {
     name: string;
     path: GameType;
-    logo: typeof BuchstabieneLogo;
+    logo: typeof SpellingBeeLogo;
     tag: string;
     color: string;
   };
@@ -16,7 +16,7 @@
     {
       name: 'Buchstabiene',
       path: 'spelling-bee',
-      logo: BuchstabieneLogo,
+      logo: SpellingBeeLogo,
       tag: 'coming soon',
       color: 'gray',
     },
