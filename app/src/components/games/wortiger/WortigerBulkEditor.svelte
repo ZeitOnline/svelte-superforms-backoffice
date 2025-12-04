@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { BeginningOptions, DataProps } from '$types';
-  import type { ViewStateStore } from '$stores/view-state-store.svelte';
+  import { view } from '$stores/view-state-store.svelte';
   import { MAP_LEVEL_CHARACTERS } from '$lib/games/wortiger';
   import IconHandler from '$components/icons/IconHandler.svelte';
   import { createGamesBulk } from '$lib/queries';
@@ -13,7 +13,6 @@
 
   type Props = {
     data: DataProps;
-    store: ViewStateStore;
     resultsDataBody: string[][];
     levels?: number[];
     beginning_option: BeginningOptions;
@@ -21,7 +20,6 @@
 
   let {
     data,
-    store,
     resultsDataBody = $bindable(),
     beginning_option = $bindable(),
     levels = [4, 5, 6, 7],
@@ -185,7 +183,7 @@
     return null;
   }
 
-   /** Validate a single solution cell against the corresponding word list */
+  /** Validate a single solution cell against the corresponding word list */
   function validateAgainstWordList(lengthForThisColumn: number, value: string): string | null {
     const v = (value ?? '').trim();
     if (!v) return null; // empty is handled elsewhere
@@ -306,7 +304,7 @@
 
       await createGamesBulk({ gameName: 'wortiger', rows: rowsForDb });
       // Reset wizard or navigate
-      store.updateView('dashboard');
+      view.updateView('dashboard');
       beginning_option = null;
 
       toastManager.add('Alle Einträge gespeichert ✅', '');

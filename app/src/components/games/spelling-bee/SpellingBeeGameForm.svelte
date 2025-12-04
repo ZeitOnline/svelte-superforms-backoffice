@@ -8,7 +8,7 @@
   import IconHandler from '../../icons/IconHandler.svelte';
   import ViewNavigation from '../../ViewNavigation.svelte';
   import type { BeginningOptions } from '$types';
-  import type { ViewStateStore } from '$stores/view-state-store.svelte';
+  import { view } from '$stores/view-state-store.svelte';
   import { createGame, getNextAvailableDateForGame, updateGame } from '$lib/queries';
   import { CONFIG_GAMES } from '$config/games.config';
   import { APP_MESSAGES } from '$lib/app-messages';
@@ -27,11 +27,10 @@
     data: DataProps;
     game?: GameSpellingBeeComplete;
     beginning_option: BeginningOptions;
-    store: ViewStateStore;
     resultsDataBody?: string[][];
   };
 
-  let { data, game, beginning_option = $bindable(), store, resultsDataBody = $bindable() }: SpellingBeeGameFormProps = $props();
+  let { data, game, beginning_option = $bindable(), resultsDataBody = $bindable() }: SpellingBeeGameFormProps = $props();
 
   const toastManager = getToastState();
   let isSubmitted = false;
@@ -133,15 +132,19 @@
   function resetAll() {
     reset();
     beginning_option = null;
+    console.log('Resetting selection...');
     if (game) {
-      store.updateSelectedGameId(-1);
-      store.updateView('dashboard');
+      view.updateSelectedGameId(-1);
+      view.updateView('dashboard');
     }
   }
 
   function handleBackToDashboard() {
     if (isTainted()) {
-      if (confirm(APP_MESSAGES.LEAVE_PAGE)) resetAll();
+      if (confirm(APP_MESSAGES.LEAVE_PAGE)) {
+        console.log('okay')
+        resetAll();
+      }
     } else resetAll();
   }
 </script>
