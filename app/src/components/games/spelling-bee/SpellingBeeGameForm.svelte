@@ -97,7 +97,7 @@
         isSubmitted = true;
         toastManager.add(APP_MESSAGES.GAME.ADDED_SUCCESS, '');
 
-        setTimeout(() => window.location.reload(), 2500);
+        setTimeout(() => window.location.reload(), 2000);
       } catch (error) {
         console.error('Error saving Spelling Bee game:', error);
         toastManager.add(ERRORS.GAME.FAILED_TO_ADD, '');
