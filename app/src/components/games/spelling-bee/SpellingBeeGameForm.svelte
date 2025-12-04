@@ -89,14 +89,15 @@
         if (!form.valid) return;
 
         if (beginning_option !== "edit") {
-          // TODO: add edit
           await createGame({ gameName: 'spelling-bee', data: finalData as GameComplete });
+        } else {
+          await updateGame({ gameName: 'spelling-bee', gameId: game!.id, data: finalData as GameComplete });
         }
 
         isSubmitted = true;
         toastManager.add(APP_MESSAGES.GAME.ADDED_SUCCESS, '');
 
-        setTimeout(() => window.location.reload(), 2500);
+        setTimeout(() => window.location.reload(), 2000);
       } catch (error) {
         console.error('Error saving Spelling Bee game:', error);
         toastManager.add(ERRORS.GAME.FAILED_TO_ADD, '');

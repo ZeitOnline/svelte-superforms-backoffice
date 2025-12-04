@@ -105,7 +105,11 @@
             ...finalData,
           } as GameComplete;
 
-          await updateGame('eckchen', game.id, finalEditedGame);
+          await updateGame({
+            gameName: 'eckchen',
+            gameId: game.id,
+            data: finalEditedGame,
+          });
 
           // Handle questions for Eckchen games
           const editedQuestions = form.data.questions as QuestionComplete[];
