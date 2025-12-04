@@ -1,22 +1,21 @@
 <script lang="ts">
   import ViewWrapper from '$components/ViewWrapper.svelte';
   import type { GameComplete, GameType } from '$types';
-  import { type ViewStateStore } from '../stores/view-state-store.svelte';
+  import { view } from '../stores/view-state-store.svelte';
   import { deleteGame } from '$lib/queries';
   import { APP_MESSAGES } from '$lib/app-messages';
   import { getToastState } from '$lib/toast-state.svelte';
   import { isEckchenGame, isSpellingBeeGame, isWortigerGame } from '../utils';
 
   let {
-    store,
     games,
     gameName,
-  }: { store: ViewStateStore; games: GameComplete[]; gameName: GameType } = $props();
+  }: { games: GameComplete[]; gameName: GameType } = $props();
   const toastManager = getToastState();
 
   const handleBackToDashboard = () => {
-    store.updateView('dashboard');
-    store.updateSelectedGameId(-1);
+    view.updateView('dashboard');
+    view.updateSelectedGameId(-1);
   };
 
   const handleDeleteFromList = async (id: number) => {
@@ -34,8 +33,8 @@
       await deleteGame(gameName, id);
 
       setTimeout(() => {
-        store.updateView('dashboard');
-        store.updateSelectedGameId(-1);
+        view.updateView('dashboard');
+        view.updateSelectedGameId(-1);
         window.location.reload();
       }, 2000);
     } catch (error) {
@@ -47,7 +46,7 @@
     }
   };
 
-  const game = games.find((game: GameComplete) => game.id === store.selectedGameId);
+  const game = games.find((game: GameComplete) => game.id === view.selectedGameId);
 </script>
 
 <ViewWrapper>

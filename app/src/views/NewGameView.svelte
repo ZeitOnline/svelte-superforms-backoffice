@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { ViewStateStore } from '../stores/view-state-store.svelte';
-  import type { BeginningOptions, DataProps, GameType } from '$types';
+  import { view } from '../stores/view-state-store.svelte';
+  import type { BeginningOptions, DataProps } from '$types';
 
   import GameTableWrapper from '$components/GameTableWrapper.svelte';
   import CSVGameFileUploader from '$components/CSVGameFileUploader.svelte';
@@ -11,15 +11,14 @@
 
   type Props = {
     data: DataProps;
-    store: ViewStateStore
   };
-  let { data, store }: Props = $props();
+  let { data }: Props = $props();
 
   let resultsDataBody: string[][] = $state([]);
   let beginning_option: BeginningOptions = $state(null);
 
   function handleBackToDashboard() {
-    store.updateView('dashboard');
+    view.updateView('dashboard');
   }
 </script>
 
@@ -61,29 +60,42 @@
   {/if}
 
   {#if beginning_option === 'scratch'}
-    <GameTableWrapper {store} {data} bind:beginning_option bind:resultsDataBody gameName={data.gameType} />
+    <GameTableWrapper {data} bind:beginning_option bind:resultsDataBody gameName={data.gameType} />
   {/if}
 
   {#if beginning_option === 'csv'}
     {#if resultsDataBody.length > 0}
       {#if data.gameType === 'eckchen'}
-	  	<!-- Eckchen loads the question from the csv into the table  -->
-        <GameTableWrapper {store} {data} bind:beginning_option bind:resultsDataBody gameName={data.gameType} />
-        {:else if data.gameType === 'spelling-bee'}
-        <GameTableWrapper {store} {data} bind:beginning_option bind:resultsDataBody gameName={data.gameType} />
-
-        {:else if data.gameType === 'wortiger'}
-	    <!-- Wortiger allows a bulk upload from the csv directly into the db -->
+        <!-- Eckchen loads the question from the csv into the table  -->
+        <GameTableWrapper
+          {data}
+          bind:beginning_option
+          bind:resultsDataBody
+          gameName={data.gameType}
+        />
+      {:else if data.gameType === 'spelling-bee'}
+        <GameTableWrapper
+          {data}
+          bind:beginning_option
+          bind:resultsDataBody
+          gameName={data.gameType}
+        />
+      {:else if data.gameType === 'wortiger'}
+        <!-- Wortiger allows a bulk upload from the csv directly into the db -->
         <WortigerBulkEditor
           {data}
-          {store}
           bind:beginning_option
           bind:resultsDataBody
           levels={[4, 5, 6, 7]}
         />
       {/if}
     {:else}
-      <CSVGameFileUploader {data} bind:beginning_option bind:resultsDataBody gameName={data.gameType} />
+      <CSVGameFileUploader
+        {data}
+        bind:beginning_option
+        bind:resultsDataBody
+        gameName={data.gameType}
+      />
     {/if}
   {/if}
 </ViewWrapper>

@@ -11,7 +11,7 @@
   import type { BeginningOptions } from '$types';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
   import { onMount } from 'svelte';
-  import type { ViewStateStore } from '$stores/view-state-store.svelte';
+  import { view } from '$stores/view-state-store.svelte';
   import { APP_MESSAGES } from '$lib/app-messages';
   import { ERRORS } from '$lib/error-messages';
   import { getToastState } from '$lib/toast-state.svelte';
@@ -37,7 +37,6 @@
     data: DataProps;
     game?: GameEckchenComplete;
     beginning_option: BeginningOptions;
-    store: ViewStateStore;
   };
 
   let {
@@ -45,7 +44,6 @@
     data,
     game,
     beginning_option = $bindable(),
-    store,
   }: EckchenGameFormProps = $props();
 
   const toastManager = getToastState();
@@ -242,8 +240,8 @@
     resultsDataBody = [];
     beginning_option = null;
     if (game) {
-      store.updateSelectedGameId(-1);
-      store.updateView('dashboard');
+      view.updateSelectedGameId(-1);
+      view.updateView('dashboard');
     }
   }
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { GameComplete, GameSpellingBeeComplete, GameType, TableColumn } from '$types';
   import { cubicInOut } from 'svelte/easing';
-  import type { ViewStateStore } from '$stores/view-state-store.svelte';
+  import { view } from '$stores/view-state-store.svelte';
   import { debounce, highlightMatch, searchInGame, isGameActive, isSpellingBeeGame } from '$utils';
   import { blur } from 'svelte/transition';
   import IconHandler from './icons/IconHandler.svelte';
@@ -15,12 +15,11 @@
   const ITEMS_PER_PAGE = 10;
 
   type Props = {
-    store: ViewStateStore;
     games: GameComplete[];
     gameName: GameType;
   };
 
-  let { store, games, gameName }: Props = $props();
+  let { games, gameName }: Props = $props();
 
   let currentGameConfig = $state(CONFIG_GAMES[gameName]);
   let searchTerm = $state('');
@@ -123,13 +122,13 @@
   });
 
   const handleEditGame = (id: number) => {
-    store.updateView('edit-game');
-    store.updateSelectedGameId(id);
+    view.updateView('edit-game');
+    view.updateSelectedGameId(id);
   };
 
   const handleDeleteGame = (id: number) => {
-    store.updateSelectedGameId(id);
-    store.updateView('delete-game');
+    view.updateSelectedGameId(id);
+    view.updateView('delete-game');
   };
 
   const handleSearch = debounce((value: string) => {
