@@ -14,8 +14,6 @@ export const deleteWortigerGame = async (id: number) => {
   const URL = `${CONFIG_GAMES['wortiger'].apiBase}/${CONFIG_GAMES['wortiger'].endpoints.games.name}?id=eq.${id}`;
 
   try {
-    // Wortiger games are simpler - just delete the game record itself
-    // No associated questions or game_state to worry about
     const response = await fetch(URL, {
       method: 'DELETE',
       headers: {

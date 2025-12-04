@@ -3,6 +3,7 @@ import type { LoadEvent } from '@sveltejs/kit';
 import { CONFIG_GAMES } from '../config/games.config';
 import { deleteEckchenGame } from './games/eckchen';
 import { deleteWortigerGame } from './games/wortiger';
+import { deleteSpellingBeeGame } from './games/spelling-bee';
 
 /**
  * Mock configuration to skip the deletion of game_state.
@@ -51,6 +52,8 @@ export const deleteGame = async (gameName: GameType, id: number) => {
     return deleteEckchenGame(id);
   } else if (gameName === 'wortiger') {
     return deleteWortigerGame(id);
+  } else if (gameName === 'spelling-bee') {
+    return deleteSpellingBeeGame(id);
   } else {
     throw new Error(`Unsupported game type: ${gameName}`);
   }
