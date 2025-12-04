@@ -96,7 +96,11 @@
             delete finalEditedGame.active;
           }
 
-          await updateGame('wortiger', game.id, finalEditedGame);
+          await updateGame({
+            gameName: 'wortiger',
+            gameId: game.id,
+            data: finalEditedGame,
+          });
 
           // Success
           isSubmitted = true;

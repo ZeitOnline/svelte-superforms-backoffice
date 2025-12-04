@@ -65,7 +65,15 @@ export const deleteGame = async (gameName: GameType, id: number) => {
  * @param data - the data to be updated
  * @returns the updated game
  */
-export const updateGame = async (gameName: GameType, id: number, data: GameComplete) => {
+export const updateGame = async ({
+  gameName,
+  gameId: id,
+  data,
+}: {
+  gameName: GameType;
+  gameId: number;
+  data: Partial<GameComplete>;
+}) => {
   try {
     const response = await fetch(
       `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?id=eq.${id}`,

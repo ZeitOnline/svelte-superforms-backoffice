@@ -89,8 +89,9 @@
         if (!form.valid) return;
 
         if (beginning_option !== "edit") {
-          // TODO: add edit
           await createGame({ gameName: 'spelling-bee', data: finalData as GameComplete });
+        } else {
+          await updateGame({ gameName: 'spelling-bee', gameId: game!.id, data: finalData as GameComplete });
         }
 
         isSubmitted = true;
