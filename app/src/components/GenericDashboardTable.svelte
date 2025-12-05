@@ -10,7 +10,7 @@
   import { afterNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import { CONFIG_GAMES } from '../config/games.config';
-  import { buchstabieneStore, toggleLegend } from '$stores/buchstabiene-word.svelte';
+  import { spellingBeeStore, toggleLegend } from '$stores/buchstabiene-word.svelte';
 
   const ITEMS_PER_PAGE = 10;
 
@@ -356,14 +356,14 @@
 
                   {#if solutionsForGame.length > 0}
                     <button
-                      aria-pressed={buchstabieneStore.word === item.wordcloud}
+                      aria-pressed={spellingBeeStore.word === item.wordcloud}
                       aria-label="Lösungen in Store laden"
                       onclick={() => {
                         toggleLegend(item, solutionsForGame);
                       }}
                       class="z-ds-button z-ds-button-outline aria-pressed:!bg-black aria-pressed:!text-white"
                     >
-                      {#if buchstabieneStore.word === item.wordcloud}
+                      {#if spellingBeeStore.word === item.wordcloud}
                         <IconHandler extraClasses="w-5 h-5" iconName="eye-scan" />
                       {:else}
                         <IconHandler extraClasses="w-5 h-5" iconName="eye" />

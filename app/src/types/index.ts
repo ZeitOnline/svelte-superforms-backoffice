@@ -59,7 +59,7 @@ export type GameSpellingBee = BaseGame & {
   name: string;
   start_time: string;
   wordcloud: string;
-  game_solution?: BuchstabieneSolutionItem;
+  game_solution?: SpellingBeeSolutionItem;
 };
 
 /**
@@ -166,4 +166,4 @@ export type FormField = {
   validation?: Record<string, unknown>; // For custom validation rules
 };
 
-export type BuchstabieneSolutionItem = Array<{ solution: string; points: number }>
+export type SpellingBeeSolutionItem = Array<{ solution: string; points: number, solution_type: string; solution_explanation: string }>;

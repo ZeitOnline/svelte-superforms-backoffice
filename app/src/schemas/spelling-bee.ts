@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ERRORS } from '$lib/error-messages';
+import { saveSpellingBeeSolutionArraySchema, saveSpellingBeeSolutionSchema } from './spelling-bee_game-solutions';
 
 // ------------------------------------
 // 1. CSV Import Schema
@@ -25,7 +26,8 @@ export const saveSpellingBeeGameFormSchema = z
       .min(1, { message: ERRORS.GAME.RELEASE_DATE.EMPTY }),
     wordcloud: z
       .string()
-      .length(9, { message: ERRORS.SPELLING_BEE.WORDCLOUD.LENGTH })
+      .length(9, { message: ERRORS.SPELLING_BEE.WORDCLOUD.LENGTH }),
+    solutions: saveSpellingBeeSolutionArraySchema.default([]),
   })
 
 
@@ -34,3 +36,5 @@ export const saveSpellingBeeGameFormSchema = z
 // ------------------------------------
 export type SaveSpellingBeeGameFormSchema = z.infer<typeof saveSpellingBeeGameFormSchema>;
 export type GenerateSpellingBeeGameSchema = z.infer<typeof generateSpellingBeeGameSchema>;
+export type SaveSpellingBeeSolutionSchema = z.infer<typeof saveSpellingBeeSolutionSchema>;
+export type SaveSpellingBeeSolutionArraySchema = z.infer<typeof saveSpellingBeeSolutionArraySchema>;

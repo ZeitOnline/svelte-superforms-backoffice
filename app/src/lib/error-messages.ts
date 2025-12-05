@@ -78,6 +78,7 @@ export const ERRORS = {
       POINTS: {
         REQUIRED: 'Points must be provided.',
         MIN: 'Points cannot be negative.',
+        MAX: 'Points exceed the maximum allowed.',
       },
       TYPE: {
         REQUIRED: 'Solution type is required.',

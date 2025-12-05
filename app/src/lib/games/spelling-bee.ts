@@ -1,5 +1,11 @@
 import { CONFIG_GAMES } from "$config/games.config";
 
+export const DEFAULT_SPELLING_BEE_SOLUTION = [
+  '',
+  'Beispiel Lösung',
+  'Dies ist eine Beispiel Erklärung'
+]
+
 export const deleteSpellingBeeGame = async (id: number) => {
   const URL = `${CONFIG_GAMES['spelling-bee'].apiBase}/${CONFIG_GAMES['spelling-bee'].endpoints.games.name}?id=eq.${id}`;
 
