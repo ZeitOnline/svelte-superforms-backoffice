@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { GameComplete, GameSpellingBeeComplete } from '$types';
-  import { superForm, setError } from 'sveltekit-superforms';
+  import type { GameComplete, GameSpellingBeeComplete, SpellingBeeSolutionItem } from '$types';
+  import { superForm, setError, arrayProxy } from 'sveltekit-superforms';
   import type { SuperValidated } from 'sveltekit-superforms';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
   import { onMount } from 'svelte';
@@ -16,6 +16,8 @@
   import { getToastState } from '$lib/toast-state.svelte';
   import { isSpellingBeeGame } from '$utils';
   import { SvelteDate } from 'svelte/reactivity';
+  import type { SaveSpellingBeeGameFormSchema } from '$schemas/spelling-bee';
+  import { DEFAULT_SPELLING_BEE_SOLUTION } from '$lib/games/spelling-bee';
 
   type DataProps = {
     games: GameSpellingBeeComplete[];
@@ -27,17 +29,23 @@
     data: DataProps;
     game?: GameSpellingBeeComplete;
     beginning_option: BeginningOptions;
-    resultsDataBody?: string[][];
+    resultsDataBody: string[][];
   };
 
-  let { data, game, beginning_option = $bindable(), resultsDataBody = $bindable() }: SpellingBeeGameFormProps = $props();
+  let {
+    data,
+    game,
+    beginning_option = $bindable(),
+    resultsDataBody = $bindable(),
+  }: SpellingBeeGameFormProps = $props();
 
   const toastManager = getToastState();
   let isSubmitted = false;
 
+  const spellingBeeForm = data.saveGameForm as SuperValidated<SaveSpellingBeeGameFormSchema>;
   const saveGameFormSchema = CONFIG_GAMES['spelling-bee'].schemas.saveGameFormSchema;
 
-  const superform = superForm(data.saveGameForm, {
+  const superform = superForm(spellingBeeForm, {
     validators: zodClient(saveGameFormSchema as unknown as ZodObjectType),
     SPA: true,
     resetForm: false,
@@ -47,40 +55,40 @@
         const finalData = {
           name: form.data.name,
           start_time: form.data.start_time,
-          wordcloud: form.data.wordcloud
+          wordcloud: form.data.wordcloud,
         };
 
         // Validation logic
         if (beginning_option === 'edit' && game && isSpellingBeeGame(game)) {
           if (game.name !== form.data.name) {
-            if (data.games.some((g) => g.name === form.data.name)) {
+            if (data.games.some(g => g.name === form.data.name)) {
               setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
               return;
             }
           }
           if (game.start_time !== form.data.start_time) {
-            if (data.games.some((g) => g.start_time === form.data.start_time)) {
+            if (data.games.some(g => g.start_time === form.data.start_time)) {
               setError(form, 'start_time', ERRORS.GAME.RELEASE_DATE.TAKEN);
               return;
             }
           }
           if (game.wordcloud !== form.data.wordcloud) {
-            if (data.games.some((g) => g.wordcloud === form.data.wordcloud)) {
+            if (data.games.some(g => g.wordcloud === form.data.wordcloud)) {
               setError(form, 'wordcloud', 'Diese Wortwolke existiert bereits.');
               return;
             }
           }
         } else {
           // Create validation
-          if (data.games.some((g) => g.name === form.data.name)) {
+          if (data.games.some(g => g.name === form.data.name)) {
             setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
             return;
           }
-          if (data.games.some((g) => g.start_time === form.data.start_time)) {
+          if (data.games.some(g => g.start_time === form.data.start_time)) {
             setError(form, 'start_time', ERRORS.GAME.RELEASE_DATE.TAKEN);
             return;
           }
-          if (data.games.some((g) => g.wordcloud === form.data.wordcloud)) {
+          if (data.games.some(g => g.wordcloud === form.data.wordcloud)) {
             setError(form, 'wordcloud', 'Diese Wortwolke existiert bereits.');
             return;
           }
@@ -88,10 +96,14 @@
 
         if (!form.valid) return;
 
-        if (beginning_option !== "edit") {
+        if (beginning_option !== 'edit') {
           await createGame({ gameName: 'spelling-bee', data: finalData as GameComplete });
         } else {
-          await updateGame({ gameName: 'spelling-bee', gameId: game!.id, data: finalData as GameComplete });
+          await updateGame({
+            gameName: 'spelling-bee',
+            gameId: game!.id,
+            data: finalData as GameComplete,
+          });
         }
 
         isSubmitted = true;
@@ -102,10 +114,16 @@
         console.error('Error saving Spelling Bee game:', error);
         toastManager.add(ERRORS.GAME.FAILED_TO_ADD, '');
       }
-    }
+    },
   });
 
   const { form, errors, enhance, isTainted, reset } = superform;
+
+  const solutionProxy = arrayProxy(superform, 'solutions');
+  const { values: solutionValues, valueErrors: solutionErrors } = solutionProxy;
+
+  // const solutionValues = solutionProxy.values as unknown as SolutionRow[];
+  // const solutionErrors = solutionProxy.valueErrors;
 
   onMount(() => {
     if (game && isSpellingBeeGame(game)) {
@@ -143,11 +161,43 @@
   function handleBackToDashboard() {
     if (isTainted()) {
       if (confirm(APP_MESSAGES.LEAVE_PAGE)) {
-        console.log('okay')
+        console.log('okay');
         resetAll();
       }
     } else resetAll();
   }
+
+  function addSolutionRow() {
+    let defaultRow = DEFAULT_SPELLING_BEE_SOLUTION;
+    resultsDataBody.push(defaultRow);
+    const newSolutions = [...$form.solutions, defaultRow] as SpellingBeeSolutionItem;
+    $form.solutions = newSolutions;
+  }
+
+  function removeSolutionRow(index: number) {
+  if (
+      confirm(`Bist du dir sicher, dass du die Reihe ${index + 1} löschen möchtest?`) &&
+      $form.solutions.length > 0
+    ) {
+      $form.solutions.splice(index, 1);
+      $form.solutions = $form.solutions; // trigger update
+    }
+  }
+
+  onMount(() => {
+    if (beginning_option === 'edit' && game?.game_solution) {
+      $form.solutions = game.game_solution.map(s => ({
+        solution: s.solution,
+        solution_type: s.solution_type,
+        solution_explanation: s.solution_explanation,
+        points: s.points,
+      }));
+    }
+
+    if ($form.solutions.length === 0) {
+      addSolutionRow();
+    }
+  });
 </script>
 
 {#if beginning_option === 'edit' && game}
@@ -168,7 +218,9 @@
 
 <form class="my-z-ds-24" method="POST" enctype="multipart/form-data" use:enhance>
   <!-- Name -->
-  <div class="w-full flex flex-col sm:flex-row sm:items-center justify-between pb-z-ds-24 gap-z-ds-4">
+  <div
+    class="w-full flex flex-col sm:flex-row sm:items-center justify-between pb-z-ds-24 gap-z-ds-4"
+  >
     <label class="text-md font-bold" for="name">Name:</label>
     <div class="relative">
       <input
@@ -190,7 +242,9 @@
   </div>
 
   <!-- Start Time -->
-  <div class="w-full flex flex-col sm:flex-row sm:items-center justify-between pb-z-ds-24 gap-z-ds-4">
+  <div
+    class="w-full flex flex-col sm:flex-row sm:items-center justify-between pb-z-ds-24 gap-z-ds-4"
+  >
     <label class="text-md font-bold" for="start_time">Startzeit:</label>
     <div class="relative">
       <input
@@ -211,7 +265,9 @@
   </div>
 
   <!-- Wordcloud -->
-  <div class="w-full flex flex-col sm:flex-row sm:items-center justify-between pb-z-ds-24 gap-z-ds-4">
+  <div
+    class="w-full flex flex-col sm:flex-row sm:items-center justify-between pb-z-ds-24 gap-z-ds-4"
+  >
     <label class="text-md font-bold" for="wordcloud">Wortwolke (9 Zeichen):</label>
     <div class="relative">
       <input
@@ -225,12 +281,89 @@
         aria-invalid={$errors.wordcloud ? 'true' : undefined}
       />
       {#if $errors.wordcloud}
-        <div in:blur class="text-red-500 flex flex-wrap max-w-[200px] items-center gap-2 text-xs mt-2">
+        <div
+          in:blur
+          class="text-red-500 flex flex-wrap max-w-[200px] items-center gap-2 text-xs mt-2"
+        >
           <IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
           <span>{$errors.wordcloud}</span>
         </div>
       {/if}
     </div>
+  </div>
+
+  <!-- UI TABLE -->
+  <h2 class="font-bold mt-16 mb-4">Lösungen</h2>
+
+  <div class="relative overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Punkte</th>
+          <th>Wort</th>
+          <th>Wortart</th>
+          <th>Erklärung</th>
+          <th>
+            <button class="z-ds-button z-ds-button-outline" type="button" onclick={addSolutionRow}
+              >+</button
+            >
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {#each $solutionValues as _, i (i)}
+          <tr>
+            <td>{i + 1}</td>
+
+            <td>
+              <input
+                class="w-full bg-transparent border p-1"
+                readonly
+                bind:value={$solutionValues[i].points}
+              />
+            </td>
+
+            <td>
+              <input
+                class="w-full bg-transparent border p-1"
+                maxlength="9"
+                bind:value={$solutionValues[i].solution}
+                placeholder="Lösung"
+              />
+            </td>
+
+            <td>
+              <input
+                class="w-full bg-transparent border p-1"
+                bind:value={$solutionValues[i].solution_type}
+                placeholder="Nomen, Verb, etc."
+              />
+            </td>
+
+            <td>
+              <textarea
+                rows="2"
+                class="w-full bg-transparent border p-1 resize-none"
+                bind:value={$solutionValues[i].solution_explanation}
+                placeholder="Eine coole Sache über das Wort..."
+              ></textarea>
+            </td>
+
+            <td>
+              <button
+                type="button"
+                class="z-ds-button z-ds-button-outline"
+                onclick={() => removeSolutionRow(i)}
+              >
+                -
+              </button>
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
   </div>
 
   <div class="flex justify-center mt-12">

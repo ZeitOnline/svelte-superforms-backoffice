@@ -1,30 +1,30 @@
-import type { BuchstabieneSolutionItem, GameSpellingBeeComplete } from "$types";
+import type { SpellingBeeSolutionItem, GameSpellingBeeComplete } from "$types";
 
-type BuchstabieneStore = {
+type SpellingBeeStore = {
   word: string;
-  solutions: BuchstabieneSolutionItem;
+  solutions: SpellingBeeSolutionItem;
 };
 
-export const buchstabieneStore = $state<BuchstabieneStore>({
+export const spellingBeeStore = $state<SpellingBeeStore>({
   word: '',
   solutions: []
 });
 
 
-export const toggleLegend = (item: GameSpellingBeeComplete, solutionsForGame: BuchstabieneSolutionItem) => {
+export const toggleLegend = (item: GameSpellingBeeComplete, solutionsForGame: SpellingBeeSolutionItem) => {
   const legendSpellingBee = document.getElementById('legend-spelling-bee') as HTMLDetailsElement;
   if (legendSpellingBee) {
     legendSpellingBee.open = true;
   }
   // if already pressed, clear the store
-  if (buchstabieneStore.word === item.wordcloud) {
-    buchstabieneStore.word = '';
-    buchstabieneStore.solutions = [];
+  if (spellingBeeStore.word === item.wordcloud) {
+    spellingBeeStore.word = '';
+    spellingBeeStore.solutions = [];
     if (legendSpellingBee) {
       legendSpellingBee.open = false;
     }
     return;
   }
-  buchstabieneStore.word = item.wordcloud;
-  buchstabieneStore.solutions = solutionsForGame;
+  spellingBeeStore.word = item.wordcloud;
+  spellingBeeStore.solutions = solutionsForGame;
 };
