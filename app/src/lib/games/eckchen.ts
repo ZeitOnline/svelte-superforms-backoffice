@@ -173,3 +173,22 @@ export async function createGameQuestions(data: GameEckchen): Promise<Response> 
   });
   return gameQuestions;
 }
+
+export async function getResultBodyForGame(id: number, game: GameEckchen, resultsDataBody: string[][]) {
+  const questions = await getAllQuestionsByGameId(id);
+  game.questions = questions;
+  resultsDataBody = questions.map((question: QuestionComplete) => {
+    return [
+      String(question.nr),
+      String(question.question),
+      String(question.answer),
+      String(question.xc),
+      String(question.yc),
+      String(question.direction),
+      String(question.description),
+    ];
+  });
+
+  return resultsDataBody;
+
+}
