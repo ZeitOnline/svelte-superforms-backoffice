@@ -10,7 +10,7 @@
   import { afterNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import { CONFIG_GAMES } from '../config/games.config';
-  import { spellingBeeStore, toggleLegend } from '$stores/buchstabiene-word.svelte';
+  import { spellingBeeStore, toggleLegend } from '$stores/spelling-bee-word.svelte';
 
   const ITEMS_PER_PAGE = 10;
 

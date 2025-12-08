@@ -19,13 +19,15 @@ export const saveSpellingBeeSolutionSchema = z.object({
 
   solution_type: z
     .string()
-    .min(1, { message: ERRORS.SPELLING_BEE.SOLUTION.TYPE.REQUIRED })
-    .max(255, { message: ERRORS.SPELLING_BEE.SOLUTION.TYPE.MAX }),
+    .max(255, { message: ERRORS.SPELLING_BEE.SOLUTION.TYPE.MAX })
+    .optional()
+    .default(''),
 
   solution_explanation: z
     .string()
-    .min(1, { message: ERRORS.SPELLING_BEE.SOLUTION.EXPLANATION.REQUIRED })
-    .max(255, { message: ERRORS.SPELLING_BEE.SOLUTION.EXPLANATION.MAX }),
+    .max(255, { message: ERRORS.SPELLING_BEE.SOLUTION.EXPLANATION.MAX })
+    .optional()
+    .default(''),
 
   points: z
     .number()

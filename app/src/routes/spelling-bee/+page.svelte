@@ -1,7 +1,7 @@
 <script lang="ts">
   import App from '$components/App.svelte';
   import Header from '$components/Header.svelte';
-  import { spellingBeeStore } from '$stores/buchstabiene-word.svelte.js';
+  import { spellingBeeStore } from '$stores/spelling-bee-word.svelte.js';
   import IconHandler from '$components/icons/IconHandler.svelte';
   import type { DataProps, SpellingBeeSolutionItem } from '$types';
 

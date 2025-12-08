@@ -29,7 +29,7 @@ export const getAllGames = async ({
   // If this is spelling-bee, embed solutions directly
   const selectParam =
     gameName === 'spelling-bee'
-      ? 'id,name,start_time,wordcloud,game_solution(solution,points)'
+      ? 'id,name,start_time,wordcloud,game_solution(solution,points,solution_type,solution_explanation)'
       : '*';
 
   const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?select=${selectParam}&limit=${limit}&order=${releaseDatePart}`;

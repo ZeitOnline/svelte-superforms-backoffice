@@ -373,7 +373,7 @@
           <th>Dir.</th>
           <th>Beschreibung</th>
           {#if beginning_option !== 'edit' && !game}
-            <th class="!border-0">
+            <th class="border-0!">
               <button
                 title="Add new row"
                 class="z-ds-button z-ds-button-outline font-light min-w-[30px]"
@@ -452,7 +452,7 @@
             </td>
 
             {#if beginning_option !== 'edit' && !game}
-              <td class="!border-0">
+              <td class="border-0!">
                 <button
                   title="Remove this row"
                   class="z-ds-button min-w-[30px] z-ds-button-outline"

@@ -16,8 +16,8 @@
   import { getToastState } from '$lib/toast-state.svelte';
   import { isSpellingBeeGame } from '$utils';
   import { SvelteDate } from 'svelte/reactivity';
-  import type { SaveSpellingBeeGameFormSchema } from '$schemas/spelling-bee';
-  import { DEFAULT_SPELLING_BEE_SOLUTION } from '$lib/games/spelling-bee';
+  import type { SaveSpellingBeeGameFormSchema, SaveSpellingBeeSolutionSchema } from '$schemas/spelling-bee';
+  import { DEFAULT_SPELLING_BEE_SOLUTION, createSpellingBeeSolutions } from '$lib/games/spelling-bee';
 
   type DataProps = {
     games: GameSpellingBeeComplete[];
@@ -94,10 +94,27 @@
           }
         }
 
-        if (!form.valid) return;
+        if (!form.valid) {
+          const flattenedErrors = collectErrors(form.errors);
+          const firstError = flattenedErrors[0] ?? 'Bitte alle Pflichtfelder ausfüllen.';
+          toastManager.add(firstError, '');
+          return;
+        }
 
         if (beginning_option !== 'edit') {
-          await createGame({ gameName: 'spelling-bee', data: finalData as GameComplete });
+          const newGameArray = await createGame({
+            gameName: 'spelling-bee',
+            data: finalData as GameComplete,
+          });
+          const newGame = (newGameArray[0] ?? null) as GameSpellingBeeComplete | null;
+
+          if (!newGame?.id) {
+            throw new Error('Failed to retrieve created spelling bee game id.');
+          }
+
+          if (form.data.solutions && form.data.solutions.length > 0) {
+            await createSpellingBeeSolutions(newGame.id, form.data.solutions);
+          }
         } else {
           await updateGame({
             gameName: 'spelling-bee',
@@ -120,7 +137,38 @@
   const { form, errors, enhance, isTainted, reset } = superform;
 
   const solutionProxy = arrayProxy(superform, 'solutions');
-  const { values: solutionValues, valueErrors: solutionErrors } = solutionProxy;
+  const { values: solutionValues } = solutionProxy;
+
+  function collectErrors(errors: unknown): string[] {
+    if (!errors) return [];
+    if (typeof errors === 'string') return [errors];
+    if (Array.isArray(errors)) return errors.flatMap(collectErrors);
+    if (typeof errors === 'object')
+      return Object.values(errors as Record<string, unknown>).flatMap(collectErrors);
+    return [];
+  }
+
+  function calculatePoints(word: string) {
+    const len = word.trim().length;
+    if (len >= 9) return 12;
+    if (len === 4) return 3;
+    if (len === 3) return 2;
+    if (len <= 2) return 0;
+    // For lengths 5, 6, 7, 8 (or any other positive length < 9) default to the length itself.
+    return len;
+  }
+
+  function handleSolutionChange(index: number, value: string) {
+    const updatedSolutions = [...$form.solutions];
+    const existing =
+      updatedSolutions[index] ?? (DEFAULT_SPELLING_BEE_SOLUTION as SaveSpellingBeeSolutionSchema);
+    updatedSolutions[index] = {
+      ...existing,
+      solution: value,
+      points: calculatePoints(value),
+    };
+    $form.solutions = updatedSolutions as unknown as SpellingBeeSolutionItem;
+  }
 
   // const solutionValues = solutionProxy.values as unknown as SolutionRow[];
   // const solutionErrors = solutionProxy.valueErrors;
@@ -168,8 +216,10 @@
   }
 
   function addSolutionRow() {
-    let defaultRow = DEFAULT_SPELLING_BEE_SOLUTION;
-    resultsDataBody.push(defaultRow);
+    const defaultRow = {
+      ...DEFAULT_SPELLING_BEE_SOLUTION,
+      points: calculatePoints(DEFAULT_SPELLING_BEE_SOLUTION.solution),
+    };
     const newSolutions = [...$form.solutions, defaultRow] as SpellingBeeSolutionItem;
     $form.solutions = newSolutions;
   }
@@ -197,6 +247,12 @@
     if ($form.solutions.length === 0) {
       addSolutionRow();
     }
+
+    // Ensure points are in sync with typed solutions when loading a draft
+    $form.solutions = $form.solutions.map(solution => ({
+      ...solution,
+      points: calculatePoints(solution.solution),
+    })) as unknown as SpellingBeeSolutionItem;
   });
 </script>
 
@@ -331,6 +387,7 @@
                 maxlength="9"
                 bind:value={$solutionValues[i].solution}
                 placeholder="Lösung"
+                oninput={event => handleSolutionChange(i, event.currentTarget.value)}
               />
             </td>
 
