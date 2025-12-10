@@ -63,6 +63,13 @@ export const ERRORS = {
     },
   },
   SPELLING_BEE: {
+    CSV: {
+      NUMBER_OF_COLUMNS: 'Die CSV Datei muss genau 6 Spalten haben.',
+      WORDCLOUD_INVALID: 'Die Wortwolke muss ausgefüllt sein und genau 9 Zeichen haben.',
+      WORDCLOUD_MISMATCH: 'Alle Zeilen müssen dieselbe Wortwolke verwenden.',
+      SOLUTION_INCOMPATIBLE: 'Mindestens eine Lösung lässt sich nicht aus der Wortwolke bilden.',
+      NO_SOLUTIONS: 'Keine Lösungen in der CSV gefunden.',
+    },
     WORDCLOUD: {
       LENGTH: 'Die Wortwolke muss genau 9 Buchstaben enthalten.',
     },

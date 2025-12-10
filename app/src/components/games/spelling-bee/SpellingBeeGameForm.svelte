@@ -233,6 +233,58 @@
   const isSolutionIncompatible = (index: number) =>
     hasCheckedWordcloudCompatibility && incompatibleSolutionIndexes.includes(index);
 
+  const sanitizeCsvCell = (value: string | number | undefined) => String(value ?? '').trim();
+
+  function calculatePointsFromCsv(row: string[], solution: string) {
+    const rawPoints = row[3];
+    if (rawPoints !== undefined && rawPoints !== '') {
+      const numericPoints = Number(rawPoints);
+      if (Number.isFinite(numericPoints)) {
+        return Math.min(12, Math.max(0, numericPoints));
+      }
+    }
+
+    const rawLength = row[2];
+    if (rawLength !== undefined && rawLength !== '') {
+      const declaredLength = Number(rawLength);
+      if (Number.isFinite(declaredLength) && declaredLength > 0) {
+        return calculatePoints('X'.repeat(declaredLength));
+      }
+    }
+
+    return calculatePoints(solution);
+  }
+
+  function hydrateFromCsv(rows: string[][]) {
+    if (!rows.length) return;
+
+    const normalizedRows = rows.map(row => row.map(cell => sanitizeCsvCell(cell)));
+    const wordcloudFromCsv = (normalizedRows[0]?.[0] ?? '').toUpperCase();
+
+    if (wordcloudFromCsv) {
+      $form.wordcloud = wordcloudFromCsv;
+    }
+
+    const solutions = normalizedRows
+      .map(row => {
+        const solution = (row[1] ?? '').toUpperCase();
+        return {
+          solution,
+          points: calculatePointsFromCsv(row, solution),
+          solution_type: row[4] ?? '',
+          solution_explanation: row[5] ?? '',
+        };
+      })
+      .filter(solution => solution.solution.length > 0) as unknown as SpellingBeeSolutionItem;
+
+    if (solutions.length > 0) {
+      $form.solutions = solutions;
+    }
+
+    hasCheckedWordcloudCompatibility = true;
+    solutionsFitWordcloud = validateSolutionsWithWordcloud();
+  }
+
 
 
   // const solutionValues = solutionProxy.values as unknown as SolutionRow[];
@@ -307,6 +359,8 @@
         solution_explanation: s.solution_explanation,
         points: s.points,
       }));
+    } else if (beginning_option === 'csv' && resultsDataBody.length > 0) {
+      hydrateFromCsv(resultsDataBody);
     }
 
     if ($form.solutions.length === 0) {

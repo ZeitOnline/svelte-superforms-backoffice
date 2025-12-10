@@ -8,6 +8,7 @@
   import { ERRORS } from '$lib/error-messages';
   import { APP_MESSAGES } from '$lib/app-messages';
   import { CONFIG_GAMES } from '$config/games.config';
+  import { canBeBuiltFromWordcloud } from '$schemas/spelling-bee';
 
   function parseCsv(file: File): Promise<string[][]> {
     return new Promise((resolve, reject) => {
@@ -42,7 +43,8 @@
   let isDragging = $state(false);
   let fileInput = $state<HTMLInputElement | null>(null);
 
-  const generateGameSchema = CONFIG_GAMES[gameName].schemas.generateGameSchema as unknown as ZodObjectType;
+  const generateGameSchema = CONFIG_GAMES[gameName].schemas
+    .generateGameSchema as unknown as ZodObjectType;
 
   const { form, errors, enhance, isTainted, reset } = superForm(data.generateGameForm, {
     resetForm: false,
@@ -68,9 +70,6 @@
     async onUpdate({ form }) {
       if (!form.valid) return;
 
-      // clear previous CSV error before parsing
-      //   setError(form, 'csv', undefined);
-
       try {
         const rows = await parseCsv(form.data.csv);
 
@@ -94,6 +93,11 @@
             setError(form, 'csv', ERRORS.WORTIGER.CSV.NUMBER_OF_COLUMNS);
             return;
           }
+        } else if (gameName === 'spelling-bee') {
+          if (fieldSize !== 6) {
+            setError(form, 'csv', ERRORS.SPELLING_BEE.CSV.NUMBER_OF_COLUMNS);
+            return;
+          }
         }
 
         // ensure there’s at least one non-empty row
@@ -101,6 +105,37 @@
         if (cleaned.length === 0) {
           setError(form, 'csv', ERRORS.CSV.EMPTY);
           return;
+        }
+
+        if (gameName === 'spelling-bee') {
+          const wordclouds = cleaned
+            .map(row => (row[0] ?? '').trim().toUpperCase())
+            .filter(Boolean);
+          const [wordcloud] = wordclouds;
+
+          if (!wordcloud || wordcloud.length !== 9) {
+            setError(form, 'csv', ERRORS.SPELLING_BEE.CSV.WORDCLOUD_INVALID);
+            return;
+          }
+
+          if (wordclouds.some(value => value !== wordcloud)) {
+            setError(form, 'csv', ERRORS.SPELLING_BEE.CSV.WORDCLOUD_MISMATCH);
+            return;
+          }
+
+          const solutions = cleaned.map(row => (row[1] ?? '').trim()).filter(Boolean);
+          if (solutions.length === 0) {
+            setError(form, 'csv', ERRORS.SPELLING_BEE.CSV.NO_SOLUTIONS);
+            return;
+          }
+
+          const hasIncompatibleSolution = solutions.some(
+            solution => !canBeBuiltFromWordcloud(solution, wordcloud),
+          );
+          if (hasIncompatibleSolution) {
+            setError(form, 'csv', ERRORS.SPELLING_BEE.CSV.SOLUTION_INCOMPATIBLE);
+            return;
+          }
         }
 
         resultsDataBody = [];
@@ -203,11 +238,7 @@
       aria-dropeffect={isDragging ? 'copy' : 'none'}
     >
       <span
-        class={`
-				${isDragging ? 'bg-gray-200' : 'bg-white'}
-				${$form.csv ? 'bg-white' : ''}
-
-				border border-black px-5 py-4 group-hover:bg-gray-200 group-focus:bg-gray-200`}
+        class={`${isDragging ? 'bg-gray-200' : 'bg-white'} ${$form.csv ? 'bg-white' : ''} border border-black px-5 py-4 group-hover:bg-gray-200 group-focus:bg-gray-200`}
       >
         {#if isDragging}
           <span>Fast geschafft!</span>
