@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import ViewWrapper from '$components/ViewWrapper.svelte';
-  import { SpellingBeeLogo, EckchenLogo, WortigerLogo } from '$components/games';
+  import { SpellingBeeLogo, EckchenLogo, WortigerLogo, WortgeflechtLogo } from '$components/games';
   import type { GameType } from '$types';
 
   type CatalogueGame = {
@@ -22,6 +22,7 @@
     },
     { name: 'Eckchen', path: 'eckchen', logo: EckchenLogo, tag: 'live', color: 'green' },
     { name: 'Wortiger', path: 'wortiger', logo: WortigerLogo, tag: 'live', color: 'green' },
+    { name: 'Wortgeflecht', path: 'wortgeflecht', logo: WortgeflechtLogo, tag: 'coming soon', color: 'gray' },
   ];
 
   const tagColorClass = (color: string) => {

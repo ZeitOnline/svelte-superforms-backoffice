@@ -3,7 +3,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { resolve } from '$app/paths';
-  import { SpellingBeeLogo, EckchenLogo, WortigerLogo } from './games';
+  import { SpellingBeeLogo, EckchenLogo, WortigerLogo, WortgeflechtLogo } from './games';
   import ZeitSpieleLogo from './ZeitSpieleLogo.svelte';
   import { view } from '$stores/view-state-store.svelte';
 
@@ -15,6 +15,7 @@
     if (value === 'eckchen') goto(resolve(`/eckchen`));
     else if (value === 'wortiger') goto(resolve(`/wortiger`));
     else if (value === 'spelling-bee') goto(resolve(`/spelling-bee`));
+    else if (value === 'wortgeflecht') goto(resolve(`/wortgeflecht`));
   }
 </script>
 
@@ -35,11 +36,13 @@
       <WortigerLogo classExtra="w-6 h-6" />
     {:else if gameName === 'spelling-bee'}
       <SpellingBeeLogo classExtra="w-6 h-6" />
+    {:else if gameName === 'wortgeflecht'}
+      <WortgeflechtLogo classExtra="w-6 h-6" />
     {/if}
   </div>
 
   <select
-    class="border border-black p-1 min-w-[160px]"
+    class="border border-black p-1 min-w-40 cursor-pointer hover:bg-gray-100!"
     name="game"
     id="game"
     onchange={handleGameChange}
@@ -47,6 +50,7 @@
     <option value="spelling-bee" selected={gameName === 'spelling-bee'}>Buchstabiene</option>
     <option value="eckchen" selected={gameName === 'eckchen'}>Eckchen</option>
     <option value="wortiger" selected={gameName === 'wortiger'}>Wortiger</option>
+    <option value="wortgeflecht" selected={gameName === 'wortgeflecht'}>Wortgeflecht</option>
   </select>
 </header>
 

@@ -6,5 +6,5 @@
   let { data } = $props();
 </script>
 
-<Header gameName={data.gameType} />
-<App data={data as DataProps} />
+<Header gameName="wortgeflecht" />
+<!-- <App data={data as DataProps} /> -->
