@@ -16,8 +16,16 @@
   import { getToastState } from '$lib/toast-state.svelte';
   import { isSpellingBeeGame } from '$utils';
   import { SvelteDate } from 'svelte/reactivity';
-  import type { SaveSpellingBeeGameFormSchema, SaveSpellingBeeSolutionSchema } from '$schemas/spelling-bee';
-  import { DEFAULT_SPELLING_BEE_SOLUTION, createSpellingBeeSolutions } from '$lib/games/spelling-bee';
+  import {
+    canBeBuiltFromWordcloud,
+    type SaveSpellingBeeGameFormSchema,
+    type SaveSpellingBeeSolutionSchema,
+  } from '$schemas/spelling-bee';
+  import {
+    DEFAULT_SPELLING_BEE_SOLUTION,
+    createSpellingBeeSolutions,
+    replaceSpellingBeeSolutions,
+  } from '$lib/games/spelling-bee';
 
   type DataProps = {
     games: GameSpellingBeeComplete[];
@@ -41,6 +49,10 @@
 
   const toastManager = getToastState();
   let isSubmitted = false;
+  const compatibilityErrorText = 'Lösung lässt sich nicht mit den Buchstaben der Wortwolke bilden.';
+  let hasCheckedWordcloudCompatibility = false;
+  let incompatibleSolutionIndexes: number[] = [];
+  let solutionsFitWordcloud = $derived(validateSolutionsWithWordcloud());
 
   const spellingBeeForm = data.saveGameForm as SuperValidated<SaveSpellingBeeGameFormSchema>;
   const saveGameFormSchema = CONFIG_GAMES['spelling-bee'].schemas.saveGameFormSchema;
@@ -121,10 +133,16 @@
             gameId: game!.id,
             data: finalData as GameComplete,
           });
+
+          await replaceSpellingBeeSolutions(game!.id, form.data.solutions ?? []);
         }
 
         isSubmitted = true;
-        toastManager.add(APP_MESSAGES.GAME.ADDED_SUCCESS, '');
+        if (beginning_option === 'edit') {
+          toastManager.add(APP_MESSAGES.GAME.EDITED_SUCCESS, '');
+        } else {
+          toastManager.add(APP_MESSAGES.GAME.ADDED_SUCCESS, '');
+        }
 
         setTimeout(() => window.location.reload(), 2000);
       } catch (error) {
@@ -138,6 +156,19 @@
 
   const solutionProxy = arrayProxy(superform, 'solutions');
   const { values: solutionValues } = solutionProxy;
+  let firstSolutionError = $derived(Array.isArray($errors.solutions)
+    ? (((
+        $errors.solutions.find(err => (err as Record<string, string | undefined>)?.solution) as
+          | Record<string, string | undefined>
+          | undefined
+      )?.solution as string | undefined) ?? '')
+    : '');
+
+  $effect(() => {
+    if (hasCheckedWordcloudCompatibility && incompatibleSolutionIndexes.length) {
+      firstSolutionError = compatibilityErrorText;
+    }
+  });
 
   function collectErrors(errors: unknown): string[] {
     if (!errors) return [];
@@ -158,17 +189,51 @@
     return len;
   }
 
-  function handleSolutionChange(index: number, value: string) {
-    const updatedSolutions = [...$form.solutions];
+  function handleSolutionChange(index: number, input: HTMLInputElement) {
+    const uppercasedValue = input.value.toUpperCase();
+    input.value = uppercasedValue;
+
+    const updatedSolutions = [...($form.solutions ?? [])];
     const existing =
       updatedSolutions[index] ?? (DEFAULT_SPELLING_BEE_SOLUTION as SaveSpellingBeeSolutionSchema);
     updatedSolutions[index] = {
       ...existing,
-      solution: value,
-      points: calculatePoints(value),
+      solution: uppercasedValue,
+      points: calculatePoints(uppercasedValue),
     };
     $form.solutions = updatedSolutions as unknown as SpellingBeeSolutionItem;
   }
+
+  function validateSolutionsWithWordcloud() {
+    const wordcloud = ($form.wordcloud ?? '').toUpperCase();
+    const solutions = $form.solutions ?? [];
+
+    if (wordcloud.length !== 9) {
+      incompatibleSolutionIndexes = [];
+      return false;
+    }
+
+    const invalidIndexes = solutions
+      .map((solution, index) => {
+        const word = solution.solution?.trim();
+        if (!word) return null;
+        return canBeBuiltFromWordcloud(word, wordcloud) ? null : index;
+      })
+      .filter((index): index is number => index !== null);
+
+    incompatibleSolutionIndexes = invalidIndexes;
+    return invalidIndexes.length === 0;
+  }
+
+  function handleCompatibilityCheck() {
+    hasCheckedWordcloudCompatibility = true;
+    solutionsFitWordcloud = validateSolutionsWithWordcloud();
+  }
+
+  const isSolutionIncompatible = (index: number) =>
+    hasCheckedWordcloudCompatibility && incompatibleSolutionIndexes.includes(index);
+
+
 
   // const solutionValues = solutionProxy.values as unknown as SolutionRow[];
   // const solutionErrors = solutionProxy.valueErrors;
@@ -225,7 +290,7 @@
   }
 
   function removeSolutionRow(index: number) {
-  if (
+    if (
       confirm(`Bist du dir sicher, dass du die Reihe ${index + 1} löschen möchtest?`) &&
       $form.solutions.length > 0
     ) {
@@ -237,7 +302,7 @@
   onMount(() => {
     if (beginning_option === 'edit' && game?.game_solution) {
       $form.solutions = game.game_solution.map(s => ({
-        solution: s.solution,
+        solution: s.solution?.toUpperCase() ?? '',
         solution_type: s.solution_type,
         solution_explanation: s.solution_explanation,
         points: s.points,
@@ -253,6 +318,8 @@
       ...solution,
       points: calculatePoints(solution.solution),
     })) as unknown as SpellingBeeSolutionItem;
+
+    solutionsFitWordcloud = validateSolutionsWithWordcloud();
   });
 </script>
 
@@ -335,6 +402,7 @@
         class="border py-z-ds-8 px-z-ds-12 border-black text-md w-full sm:w-[250px]"
         bind:value={$form.wordcloud}
         aria-invalid={$errors.wordcloud ? 'true' : undefined}
+        onblur={handleCompatibilityCheck}
       />
       {#if $errors.wordcloud}
         <div
@@ -384,10 +452,12 @@
             <td>
               <input
                 class="w-full bg-transparent border p-1"
+                class:border-red-500={$errors.solutions?.[i]?.solution || isSolutionIncompatible(i)}
                 maxlength="9"
                 bind:value={$solutionValues[i].solution}
                 placeholder="Lösung"
-                oninput={event => handleSolutionChange(i, event.currentTarget.value)}
+                oninput={event => handleSolutionChange(i, event.currentTarget)}
+                onblur={handleCompatibilityCheck}
               />
             </td>
 
@@ -423,8 +493,20 @@
     </table>
   </div>
 
+  {#if firstSolutionError}
+    <div class="text-red-500 text-sm text-center mt-6">
+      {firstSolutionError}
+    </div>
+  {/if}
+
   <div class="flex justify-center mt-12">
-    <button class="z-ds-button" type="submit">
+    <button
+      class="z-ds-button"
+      type="submit"
+      disabled={!solutionsFitWordcloud}
+      aria-disabled={!solutionsFitWordcloud}
+      class:opacity-50={!solutionsFitWordcloud}
+    >
       {#if beginning_option === 'edit'}
         Veränderungen speichern
       {:else}

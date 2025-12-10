@@ -8,10 +8,24 @@ export const DEFAULT_SPELLING_BEE_SOLUTION = {
   solution_explanation: '',
 };
 
+const getSolutionsEndpointUrl = () => {
+  const solutionsEndpoint = CONFIG_GAMES['spelling-bee'].endpoints.solutions?.name;
+  if (!solutionsEndpoint) {
+    throw new Error('Solutions endpoint is not configured for spelling-bee.');
+  }
+
+  return `${CONFIG_GAMES['spelling-bee'].apiBase}/${solutionsEndpoint}`;
+};
+
+const normalizeSolutionValue = (solution: string) => solution.trim().toUpperCase();
+
 export const deleteSpellingBeeGame = async (id: number) => {
   const URL = `${CONFIG_GAMES['spelling-bee'].apiBase}/${CONFIG_GAMES['spelling-bee'].endpoints.games.name}?id=eq.${id}`;
 
   try {
+    // Remove solutions first since there is no DB cascade
+    await deleteSpellingBeeSolutions(id);
+
     const response = await fetch(URL, {
       method: 'DELETE',
       headers: {
@@ -41,29 +55,21 @@ export const createSpellingBeeSolutions = async (
   gameId: number,
   solutions: SpellingBeeSolutionItem,
 ) => {
-  const solutionsEndpoint = CONFIG_GAMES['spelling-bee'].endpoints.solutions?.name;
-  if (!solutionsEndpoint) {
-    throw new Error('Solutions endpoint is not configured for spelling-bee.');
-  }
-
   const payload = solutions.map(({ solution, points, solution_type, solution_explanation }) => ({
-    solution,
+    solution: normalizeSolutionValue(solution),
     points,
     solution_type,
     solution_explanation,
     game_id: gameId,
   }));
 
-  const response = await fetch(
-    `${CONFIG_GAMES['spelling-bee'].apiBase}/${solutionsEndpoint}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
+  const response = await fetch(getSolutionsEndpointUrl(), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
-  );
+    body: JSON.stringify(payload),
+  });
 
   if (!response.ok) {
     const errorMessage = await response.text();
@@ -73,4 +79,35 @@ export const createSpellingBeeSolutions = async (
   }
 
   return response;
+};
+
+export const deleteSpellingBeeSolutions = async (gameId: number) => {
+  const response = await fetch(`${getSolutionsEndpointUrl()}?game_id=eq.${gameId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorMessage = await response.text();
+    throw new Error(
+      `Failed to delete spelling bee solutions for game ${gameId}. Status: ${response.status}. Error: ${errorMessage}`,
+    );
+  }
+
+  return response;
+};
+
+export const replaceSpellingBeeSolutions = async (
+  gameId: number,
+  solutions: SpellingBeeSolutionItem,
+) => {
+  await deleteSpellingBeeSolutions(gameId);
+
+  if (!solutions?.length) {
+    return [];
+  }
+
+  return createSpellingBeeSolutions(gameId, solutions);
 };
