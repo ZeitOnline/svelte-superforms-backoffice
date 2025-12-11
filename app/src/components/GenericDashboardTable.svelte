@@ -326,7 +326,7 @@
                     solution => solution.points === maxPoints,
                   )}
                   <br />
-                  <span class="flex text-[0.75rem]"> ({solutionsForGame.length} Lösungen)</span>
+                  <span class="flex text-z-ds-12"> ({solutionsForGame.length} Lösungen)</span>
                   {#if wordsWithMaxPoints.length > 0}
                     <div class="flex flex-wrap gap-1 mt-1 max-w-[100px]">
                       {#each wordsWithMaxPoints as wmp (wmp.solution)}
@@ -361,7 +361,7 @@
                       onclick={() => {
                         toggleLegend(item, solutionsForGame);
                       }}
-                      class="z-ds-button z-ds-button-outline aria-pressed:!bg-black aria-pressed:!text-white"
+                      class="z-ds-button z-ds-button-outline aria-pressed:bg-black! aria-pressed:text-white!"
                     >
                       {#if buchstabieneStore.word === item.wordcloud}
                         <IconHandler extraClasses="w-5 h-5" iconName="eye-scan" />

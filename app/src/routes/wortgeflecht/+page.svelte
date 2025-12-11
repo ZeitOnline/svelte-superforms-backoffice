@@ -7,4 +7,4 @@
 </script>
 
 <Header gameName="wortgeflecht" />
-<!-- <App data={data as DataProps} /> -->
+<App data={data as DataProps} />

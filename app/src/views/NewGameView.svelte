@@ -2,7 +2,7 @@
   import { view } from '../stores/view-state-store.svelte';
   import type { BeginningOptions, DataProps } from '$types';
 
-  import GameTableWrapper from '$components/GameTableWrapper.svelte';
+  import GameCreator from '$components/GameCreator.svelte';
   import CSVGameFileUploader from '$components/CSVGameFileUploader.svelte';
   import ViewWrapper from '$components/ViewWrapper.svelte';
   import ViewNavigation from '$components/ViewNavigation.svelte';
@@ -44,37 +44,32 @@
         Manuell hinzufügen
       </button>
 
-      <button
-        class="relative flex-1 z-ds-button z-ds-button-outline flex items-center min-h-[200px] text-sm"
-        onclick={() => {
-          beginning_option = 'csv';
-        }}
-      >
-        <IconHandler
-          iconName="upload"
-          extraClasses="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-48 h-48 opacity-5"
-        />
-        Über CSV hinzufügen
-      </button>
+      {#if data.gameType!== 'wortgeflecht'}
+        <button
+          class="relative flex-1 z-ds-button z-ds-button-outline flex items-center min-h-[200px] text-sm"
+          onclick={() => {
+            beginning_option = 'csv';
+          }}
+        >
+          <IconHandler
+            iconName="upload"
+            extraClasses="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-48 h-48 opacity-5"
+          />
+          Über CSV hinzufügen
+        </button>
+      {/if}
     </div>
   {/if}
 
   {#if beginning_option === 'scratch'}
-    <GameTableWrapper {data} bind:beginning_option bind:resultsDataBody gameName={data.gameType} />
+    <GameCreator {data} bind:beginning_option bind:resultsDataBody gameName={data.gameType} />
   {/if}
 
   {#if beginning_option === 'csv'}
     {#if resultsDataBody.length > 0}
-      {#if data.gameType === 'eckchen'}
+      {#if data.gameType === 'eckchen' || data.gameType === 'spelling-bee'}
         <!-- Eckchen loads the question from the csv into the table  -->
-        <GameTableWrapper
-          {data}
-          bind:beginning_option
-          bind:resultsDataBody
-          gameName={data.gameType}
-        />
-      {:else if data.gameType === 'spelling-bee'}
-        <GameTableWrapper
+        <GameCreator
           {data}
           bind:beginning_option
           bind:resultsDataBody

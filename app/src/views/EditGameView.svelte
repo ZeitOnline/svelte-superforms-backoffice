@@ -1,7 +1,7 @@
 <script lang="ts">
   import ViewWrapper from '$components/ViewWrapper.svelte';
   import type { BeginningOptions, GameComplete, QuestionComplete } from '$types';
-  import GameTableWrapper from '$components/GameTableWrapper.svelte';
+  import GameCreator from '$components/GameCreator.svelte';
   import { onMount } from 'svelte';
   import { getResultBodyForGame } from '$lib/games/eckchen';
   import { view } from '$stores/view-state-store.svelte';
@@ -34,6 +34,6 @@
   <p>Loading...</p>
 {:else}
   <ViewWrapper>
-    <GameTableWrapper {data} {game} bind:beginning_option bind:resultsDataBody {gameName} />
+    <GameCreator {data} {game} bind:beginning_option bind:resultsDataBody {gameName} />
   </ViewWrapper>
 {/if}
