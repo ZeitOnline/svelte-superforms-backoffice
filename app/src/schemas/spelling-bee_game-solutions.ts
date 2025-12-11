@@ -11,42 +11,29 @@ export const generateGameSolutionSchema = z.object({
     .refine(f => f.type === 'text/csv', ERRORS.CSV.TYPE),
 });
 
-// -----------------------------
-// 2. Single solution schema
-// -----------------------------
-export const saveGameSolutionSchema = z.object({
-  game_id: z
-    .number({ message: ERRORS.SPELLING_BEE.SOLUTION.GAME_ID.REQUIRED })
-    .min(1, { message: ERRORS.SPELLING_BEE.SOLUTION.GAME_ID.MIN }),
-
+export const saveSpellingBeeSolutionSchema = z.object({
   solution: z
     .string()
     .min(1, { message: ERRORS.SPELLING_BEE.SOLUTION.SOLUTION.REQUIRED })
-    .max(254, { message: ERRORS.SPELLING_BEE.SOLUTION.SOLUTION.MAX }),
-
-  points: z
-    .number({ message: ERRORS.SPELLING_BEE.SOLUTION.POINTS.REQUIRED })
-    .min(0, { message: ERRORS.SPELLING_BEE.SOLUTION.POINTS.MIN }),
+    .max(254, { message: ERRORS.SPELLING_BEE.SOLUTION.SOLUTION.MAX })
+    .transform(value => value.trim().toUpperCase()),
 
   solution_type: z
     .string()
-    .min(1, { message: ERRORS.SPELLING_BEE.SOLUTION.TYPE.REQUIRED })
-    .max(255, { message: ERRORS.SPELLING_BEE.SOLUTION.TYPE.MAX }),
+    .max(255, { message: ERRORS.SPELLING_BEE.SOLUTION.TYPE.MAX })
+    .optional()
+    .default(''),
 
   solution_explanation: z
     .string()
-    .min(1, { message: ERRORS.SPELLING_BEE.SOLUTION.EXPLANATION.REQUIRED })
-    .max(255, { message: ERRORS.SPELLING_BEE.SOLUTION.EXPLANATION.MAX }),
+    .max(255, { message: ERRORS.SPELLING_BEE.SOLUTION.EXPLANATION.MAX })
+    .optional()
+    .default(''),
+
+  points: z
+    .number()
+    .min(0, { message: ERRORS.SPELLING_BEE.SOLUTION.POINTS.MIN })
+    .max(12, { message: ERRORS.SPELLING_BEE.SOLUTION.POINTS.MAX }),
 });
 
-// -----------------------------
-// 3. Optional: array schema
-// -----------------------------
-export const saveGameSolutionArraySchema = z.array(saveGameSolutionSchema);
-
-// -----------------------------
-// 4. Export types
-// -----------------------------
-export type SaveGameSolutionSchema = z.infer<typeof saveGameSolutionSchema>;
-export type GenerateGameSolutionSchema = z.infer<typeof generateGameSolutionSchema>;
-export type SaveGameSolutionArraySchema = z.infer<typeof saveGameSolutionArraySchema>;
+export const saveSpellingBeeSolutionArraySchema = z.array(saveSpellingBeeSolutionSchema);

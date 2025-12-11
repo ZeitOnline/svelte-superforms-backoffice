@@ -1,16 +1,16 @@
 <script lang="ts">
-  import type { BuchstabieneSolutionItem } from '$types';
   import App from '$components/App.svelte';
   import Header from '$components/Header.svelte';
-  import { buchstabieneStore } from '$stores/buchstabiene-word.svelte.js';
+  import { spellingBeeStore } from '$stores/spelling-bee-word.svelte.js';
   import IconHandler from '$components/icons/IconHandler.svelte';
+  import type { DataProps, SpellingBeeSolutionItem } from '$types';
 
   let { data } = $props();
 
   type GroupedSolutions = Record<string, { solution: string; points: number }[]>;
 
   let groupedSolutions = $derived.by(() => {
-    const solutions = buchstabieneStore.solutions as BuchstabieneSolutionItem;
+    const solutions = spellingBeeStore.solutions as SpellingBeeSolutionItem;
     if (!Array.isArray(solutions)) return {};
 
     // Flatten the array safely
@@ -25,7 +25,7 @@
 </script>
 
 <Header gameName={data.gameType} />
-<App {data} />
+<App data={data as DataProps} />
 
 <div
   class="max-w-[300px] fixed bottom-0 right-0 text-xs text-z-ds-color-black-80 p-1.5 border-t border-l border-black bg-white"
@@ -33,7 +33,7 @@
   <details id="legend-spelling-bee">
     <summary>Legende bei Buchstabiene</summary>
     <hr class="mt-2" />
-    <div class="my-2">Wortwolke: {buchstabieneStore.word}</div>
+    <div class="my-2">Wortwolke: {spellingBeeStore.word}</div>
     {#if Object.keys(groupedSolutions).length}
       <div class="max-h-60 overflow-y-auto">
         <div class="font-bold mb-1">Lösungen:</div>
