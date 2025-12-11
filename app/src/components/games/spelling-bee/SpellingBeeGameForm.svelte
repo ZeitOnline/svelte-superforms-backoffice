@@ -285,11 +285,6 @@
     solutionsFitWordcloud = validateSolutionsWithWordcloud();
   }
 
-
-
-  // const solutionValues = solutionProxy.values as unknown as SolutionRow[];
-  // const solutionErrors = solutionProxy.valueErrors;
-
   onMount(() => {
     if (game && isSpellingBeeGame(game)) {
       $form.name = game.name;
