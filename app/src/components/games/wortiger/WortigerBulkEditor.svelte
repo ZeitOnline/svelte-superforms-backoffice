@@ -183,7 +183,7 @@
 
     if (repeats > 0) {
       const suffix = repeats > 1 ? ` (+${repeats} weitere)` : '';
-      return `„${v}“ wird in dieser Tabelle mehrfach verwendet${suffix}.`;
+      return `⚠️ „${v}“ wird in dieser Tabelle mehrfach verwendet${suffix}.`;
     }
 
     return null;
@@ -196,7 +196,7 @@
 
     // Conflict with existing games in DB
     if (existingDates().has(d)) {
-      return `Für ${d} existiert bereits ein Spiel (4/5/6/7). Bitte wähle ein anderes Datum.`;
+      return `❌ Für ${d} existiert bereits ein Spiel (4/5/6/7). Bitte wähle ein anderes Datum.`;
     }
 
     // Duplicate within current editor table
@@ -221,10 +221,10 @@
     const exists = set.has(normalize(v));
 
     if (WORDLIST_RULE === 'must-exist' && !exists) {
-      return `„${v}“ ist nicht in der ${lengthForThisColumn}-Buchstaben-Wortliste`;
+      return `❌ „${v}“ ist nicht in der ${lengthForThisColumn}-Buchstaben-Wortliste`;
     }
     if (WORDLIST_RULE === 'must-not-exist' && exists) {
-      return `„${v}“ existiert bereits in der ${lengthForThisColumn}-Buchstaben-Wortliste`;
+      return `❌ „${v}“ existiert bereits in der ${lengthForThisColumn}-Buchstaben-Wortliste`;
     }
     return null;
   }
@@ -398,7 +398,7 @@
               aria-invalid={dateMsg ? 'true' : 'false'}
             />
             {#if dateMsg}
-              <div class="text-xs text-red-700">{dateMsg}</div>
+              <div class="text-xs text-red-700 mt-2">{dateMsg}</div>
             {/if}
           </td>
 
@@ -419,16 +419,16 @@
                 aria-invalid={msg ? 'true' : 'false'}
               />
               {#if r[colIndex] && expected && r[colIndex].length !== expected}
-                <div class="text-xs text-amber-700">Erwartet: {expected} Zeichen</div>
+                <div class="text-xs text-amber-700 mt-2">Erwartet: {expected} Zeichen</div>
               {/if}
               {#if msg}
-                <div class="text-xs text-red-700">{msg}</div>
+                <div class="text-xs text-red-700 mt-2">{msg}</div>
               {/if}
               {#if dupMsg}
-                <div class="text-xs text-amber-700">{dupMsg}</div>
+                <div class="text-xs text-amber-700 mt-2">{dupMsg}</div>
               {/if}
               {#if tableDupMsg}
-                <div class="text-xs text-amber-700">{tableDupMsg}</div>
+                <div class="text-xs text-amber-700 mt-2">{tableDupMsg}</div>
               {/if}
             </td>
           {/each}
