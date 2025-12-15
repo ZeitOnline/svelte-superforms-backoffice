@@ -34,7 +34,7 @@
   const toastManager = getToastState();
   let isSubmitted = false;
 
-  // Assert the correct form type for Wortiger
+  // svelte-ignore state_referenced_locally
   const wortigerForm = data.saveGameForm;
 
   const superform = superForm(wortigerForm, {

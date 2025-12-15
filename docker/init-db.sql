@@ -1794,8 +1794,6 @@ ALTER TABLE ONLY wortiger.user_statistics
     ADD CONSTRAINT user_statistics_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY wortiger.user_statistics
     ADD CONSTRAINT user_statistics_user_id_key UNIQUE (user_id);
-ALTER TABLE ONLY wortiger.wortiger_games
-    ADD CONSTRAINT wortiger_games_solution_key UNIQUE (solution);
 ALTER TABLE ONLY wortiger.wortliste_7
     ADD CONSTRAINT wortliste_7_pkey PRIMARY KEY (word);
 CREATE INDEX games_released_index ON wortiger.wortiger_games USING btree (release_date);
