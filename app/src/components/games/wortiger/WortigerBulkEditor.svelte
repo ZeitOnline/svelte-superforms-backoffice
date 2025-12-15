@@ -161,6 +161,34 @@
     return `„⚠️ ${v}“ wurde schon verwendet${when}${suffix}`;
   }
 
+  /** Warn when a value repeats within the current editor table */
+  function validateWithinTableDuplicates(
+    lengthForThisColumn: number,
+    value: string,
+    rowIndex: number,
+    colIndex: number,
+  ): string | null {
+    const v = (value ?? '').trim();
+    if (!v) return null;
+
+    let repeats = 0;
+    for (let i = 0; i < rows.length; i++) {
+      if (i === rowIndex) continue;
+      const candidate = rows[i][colIndex];
+      if (!candidate) continue;
+
+      // Only compare within the same length column
+      if (normalize(candidate) === normalize(v)) repeats++;
+    }
+
+    if (repeats > 0) {
+      const suffix = repeats > 1 ? ` (+${repeats} weitere)` : '';
+      return `⚠️ „${v}“ wird in dieser Tabelle mehrfach verwendet${suffix}.`;
+    }
+
+    return null;
+  }
+
   /** Validate a row's release date against DB + within-table duplicates */
   function validateReleaseDate(dateStr: string, rowIndex: number): string | null {
     const d = (dateStr ?? '').trim();
@@ -168,7 +196,7 @@
 
     // Conflict with existing games in DB
     if (existingDates().has(d)) {
-      return `Für ${d} existiert bereits ein Spiel (4/5/6/7). Bitte wähle ein anderes Datum.`;
+      return `❌ Für ${d} existiert bereits ein Spiel (4/5/6/7). Bitte wähle ein anderes Datum.`;
     }
 
     // Duplicate within current editor table
@@ -193,10 +221,10 @@
     const exists = set.has(normalize(v));
 
     if (WORDLIST_RULE === 'must-exist' && !exists) {
-      return `„${v}“ ist nicht in der ${lengthForThisColumn}-Buchstaben-Wortliste`;
+      return `❌ „${v}“ ist nicht in der ${lengthForThisColumn}-Buchstaben-Wortliste`;
     }
     if (WORDLIST_RULE === 'must-not-exist' && exists) {
-      return `„${v}“ existiert bereits in der ${lengthForThisColumn}-Buchstaben-Wortliste`;
+      return `❌ „${v}“ existiert bereits in der ${lengthForThisColumn}-Buchstaben-Wortliste`;
     }
     return null;
   }
@@ -370,7 +398,7 @@
               aria-invalid={dateMsg ? 'true' : 'false'}
             />
             {#if dateMsg}
-              <div class="text-xs text-red-700">{dateMsg}</div>
+              <div class="text-xs text-red-700 mt-2">{dateMsg}</div>
             {/if}
           </td>
 
@@ -379,26 +407,28 @@
             {@const colIndex = 1 + j}
             {@const msg = validateAgainstWordList(lvl, r[colIndex])}
             {@const dupMsg = validateAgainstExistingSolutions(lvl, r[colIndex])}
+            {@const tableDupMsg = validateWithinTableDuplicates(lvl, r[colIndex], i, colIndex)}
             <td class="px-2 py-1">
               <input
                 type="text"
                 class={`border px-2 py-1 w-40 font-mono
-                ${msg ? 'border-red-500' : ''}
-                ${dupMsg ? 'border-amber-400' : ''}
-                `}
+                  ${msg ? 'border-red-500' : dupMsg || tableDupMsg ? 'border-amber-400' : ''}`}
                 bind:value={r[colIndex]}
                 placeholder={`(${expected ?? '?'} chars)`}
                 aria-label={`Level ${lvl} Lösung`}
                 aria-invalid={msg ? 'true' : 'false'}
               />
               {#if r[colIndex] && expected && r[colIndex].length !== expected}
-                <div class="text-xs text-amber-700">Erwartet: {expected} Zeichen</div>
+                <div class="text-xs text-amber-700 mt-2">Erwartet: {expected} Zeichen</div>
               {/if}
               {#if msg}
-                <div class="text-xs text-red-700">{msg}</div>
+                <div class="text-xs text-red-700 mt-2">{msg}</div>
               {/if}
               {#if dupMsg}
-                <div class="text-xs text-amber-700">{dupMsg}</div>
+                <div class="text-xs text-amber-700 mt-2">{dupMsg}</div>
+              {/if}
+              {#if tableDupMsg}
+                <div class="text-xs text-amber-700 mt-2">{tableDupMsg}</div>
               {/if}
             </td>
           {/each}
