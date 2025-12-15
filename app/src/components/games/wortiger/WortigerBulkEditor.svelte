@@ -158,7 +158,7 @@
     // Optional: include the first known date and a “+N×” suffix if repeated
     const suffix = hit.count > 1 ? ` (+${hit.count - 1}×)` : '';
     const when = hit.first_date ? ` — zuletzt am ${hit.first_date}` : '';
-    return `„${v}“ wurde schon verwendet${when}${suffix}`;
+    return `„⚠️ ${v}“ wurde schon verwendet${when}${suffix}`;
   }
 
   /** Validate a row's release date against DB + within-table duplicates */
@@ -201,17 +201,6 @@
     return null;
   }
 
-  let hasExistingDuplicates = $derived(() => {
-    return rows.some(r => {
-      const [_date, ...solutions] = r;
-      return solutions.some((val, idx) => {
-        const len = levels[idx];
-        const msg = validateAgainstExistingSolutions(len, val);
-        return !!msg;
-      });
-    });
-  });
-
   let hasDateConflicts = $derived(() => rows.some((r, i) => !!validateReleaseDate(r[0], i)));
 
   let hasWordListViolations = $derived(() => {
@@ -232,7 +221,8 @@
       return solutions.some(cell => !cell.trim() || cell.trim().length <= 3);
     });
 
-    return baseInvalid || hasWordListViolations() || hasExistingDuplicates() || hasDateConflicts();
+    // Allow repeated words but keep errors for missing/invalid entries, word list violations, and date conflicts.
+    return baseInvalid || hasWordListViolations() || hasDateConflicts();
   });
 
   function addEmptyRow() {
@@ -319,6 +309,7 @@
     }
   }
 
+  // svelte-ignore state_referenced_locally
   const headers = ['Release_Date', ...levels.map(l => `Level_${l}`)];
 
   const handleBackToDashboard = () => {
@@ -373,7 +364,7 @@
           <td class="px-2 py-1 w-[170px]">
             <input
               type="date"
-              class="border px-2 py-1 w-[160px]"
+              class="border px-2 py-1 w-40"
               bind:value={r[0]}
               aria-label="Release date"
               aria-invalid={dateMsg ? 'true' : 'false'}
@@ -390,7 +381,11 @@
             {@const dupMsg = validateAgainstExistingSolutions(lvl, r[colIndex])}
             <td class="px-2 py-1">
               <input
-                class="border px-2 py-1 w-[160px] font-mono"
+                type="text"
+                class={`border px-2 py-1 w-40 font-mono
+                ${msg ? 'border-red-500' : ''}
+                ${dupMsg ? 'border-amber-400' : ''}
+                `}
                 bind:value={r[colIndex]}
                 placeholder={`(${expected ?? '?'} chars)`}
                 aria-label={`Level ${lvl} Lösung`}
@@ -403,7 +398,7 @@
                 <div class="text-xs text-red-700">{msg}</div>
               {/if}
               {#if dupMsg}
-                <div class="text-xs text-red-700">{dupMsg}</div>
+                <div class="text-xs text-amber-700">{dupMsg}</div>
               {/if}
             </td>
           {/each}
