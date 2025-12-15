@@ -15,6 +15,7 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
 
     // Only run for game routes
     if (!CONFIG_GAMES[gameType]) {
+        console.warn(`Game type "${gameType}" not found in configuration.`);
         return {};
     }
 
