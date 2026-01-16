@@ -233,4 +233,78 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
       ],
     },
   },
+  // TODO: Add configuration for Wortgeflecht game
+  wortgeflecht: {
+    label: 'wortgeflecht',
+    apiBase: '/backoffice/api/eckchen',
+    productionUrl: 'https://spiele.zeit.de/eckchen',
+    endpoints: {
+      games: {
+        name: 'game',
+        releaseDateField: 'release_date',
+      },
+    },
+    schemas: {
+      generateGameSchema: generateEckchenGameSchema as unknown as ZodValidationSchema,
+      saveGameFormSchema: saveEckchenGameFormSchema as unknown as ZodValidationSchema,
+    },
+    table: {
+      hasLiveView: true,
+      columns: [
+        {
+          key: 'name',
+          label: 'Name des Spiels',
+          getValue: game => (game as GameEckchenComplete).name,
+          searchable: true,
+          sortable: true,
+        },
+        {
+          key: 'id',
+          label: 'ID',
+          getValue: game => game.id,
+          searchable: true,
+          sortable: true,
+        },
+        {
+          key: 'release_date',
+          label: 'Veröffentlichungsdatum',
+          getValue: game => (game as GameEckchenComplete).release_date,
+          getDisplayValue: game => transformedPublishedData((game as GameEckchenComplete).release_date),
+          searchable: true,
+          sortable: true,
+        },
+        {
+          key: 'active',
+          label: 'Aktiv',
+          getValue: game => (isGameActive(game) ? 'active' : 'inactive'),
+          searchable: false,
+          sortable: false,
+        },
+      ],
+    },
+    form: {
+      hasQuestionsTable: true,
+      fields: [
+        {
+          key: 'name',
+          label: 'Name',
+          type: 'text',
+          placeholder: 'GameXXXX',
+          required: true,
+        },
+        {
+          key: 'release_date',
+          label: 'Veröffentlichungsdatum',
+          type: 'date',
+          required: true,
+        },
+        {
+          key: 'published',
+          label: 'Aktiv',
+          type: 'checkbox',
+          required: false,
+        },
+      ],
+    },
+  },
 };
