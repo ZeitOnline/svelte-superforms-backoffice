@@ -29,7 +29,7 @@
     "eslint": "^9.30.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-svelte": "^3.9.2",
-    "globals": "^16.0.0",
+    "globals": "^17.0.0",
     "jsdom": "^27.0.0",
     "postcss": "^8.4.41",
     "prettier": "^3.5.3",
