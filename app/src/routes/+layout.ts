@@ -2,10 +2,10 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { CONFIG_GAMES } from '$config/games.config';
-import { getAllGames } from '$lib/queries';
+import { getAllGames, getLatestActiveGameIds } from '$lib/queries';
 
 import type { LayoutLoad } from './$types';
-import type { GameType, GameComplete } from '$types';
+import type { GameType } from '$types';
 
 export const ssr = false;
 
@@ -14,24 +14,84 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
     const gameType = url.pathname.split('/')[2] as GameType;
 
     // Only run for game routes
-    if (!CONFIG_GAMES[gameType]) {
+    const config = CONFIG_GAMES[gameType];
+    if (!config) {
         return {};
     }
 
-    const { schemas } = CONFIG_GAMES[gameType];
+    const { schemas } = config;
 
-    const generateGameForm = await superValidate(zod4(schemas.generateGameSchema));
-    const saveGameForm = await superValidate(zod4(schemas.saveGameFormSchema));
+    const pageParam = url.searchParams.get('page');
+    const searchParam = url.searchParams.get('q') ?? '';
+    const sortParam = url.searchParams.get('sort');
+    const activeParam = url.searchParams.get('active');
 
-    const games: GameComplete[] = await getAllGames({
-        gameName: gameType,
-        fetch,
-    });
+    const pageSize = 10;
+    let page = Math.max(1, Number(pageParam) || 1);
+    const sort =
+        sortParam === 'az' || sortParam === 'za' || sortParam === 'dateAsc' || sortParam === 'dateDesc'
+            ? sortParam
+            : 'dateDesc';
+    const hasActiveColumn = config.table.columns.some(col => col.key === 'active');
+    const activeFilter =
+        hasActiveColumn && (activeParam === 'active' || activeParam === 'notActive')
+            ? activeParam
+            : null;
+
+    const [generateGameForm, saveGameForm, initialGames] = await Promise.all([
+        superValidate(zod4(schemas.generateGameSchema)),
+        superValidate(zod4(schemas.saveGameFormSchema)),
+        getAllGames({
+            gameName: gameType,
+            fetch,
+            page,
+            pageSize,
+            search: searchParam,
+            sort,
+            activeFilter,
+        }),
+    ]);
+
+    let { games, total } = initialGames;
+
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+    if (page > totalPages && totalPages > 0) {
+        page = totalPages;
+        const result = await getAllGames({
+            gameName: gameType,
+            fetch,
+            page,
+            pageSize,
+            search: searchParam,
+            sort,
+            activeFilter,
+        });
+        games = result.games;
+        total = result.total;
+    }
+
+    const latestActiveGameIds = hasActiveColumn
+        ? await getLatestActiveGameIds({
+              gameName: gameType,
+              fetch,
+          })
+        : [];
 
     return {
         gameType,
         generateGameForm,
         saveGameForm,
         games,
+        gamesPage: {
+            page,
+            pageSize,
+            total,
+            totalPages,
+            search: searchParam,
+            sort,
+            activeFilter,
+        },
+        latestActiveGameIds,
     };
 }

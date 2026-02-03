@@ -73,11 +73,23 @@ export type GameComplete = GameEckchenComplete | GameWortigerComplete | GameSpel
 
 export type DataProps = {
   games: GameComplete[];
+  gamesPage: GamesPageInfo;
+  latestActiveGameIds: number[];
   saveGameForm: SuperValidated<GameEckchen | GameWortiger>;
   generateGameForm: SuperValidated<{
     csv: File;
   }>;
   gameType: GameType;
+};
+
+export type GamesPageInfo = {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  search: string;
+  sort: 'az' | 'za' | 'dateAsc' | 'dateDesc';
+  activeFilter: 'active' | 'notActive' | null;
 };
 
 export type ToastType = {
