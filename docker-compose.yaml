@@ -61,6 +61,7 @@ services:
       - app_network
 
   # Nginx reverse proxy for API routing
+  # It applies only when using all services from docker-compose, i.e., not working with npm run dev etc.
   nginx:
     image: nginx:alpine
     container_name: nginx_proxy
