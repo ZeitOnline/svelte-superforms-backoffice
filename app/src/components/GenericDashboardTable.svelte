@@ -28,21 +28,14 @@
   let { games, gameName, gamesPage, latestActiveGameIds }: Props = $props();
 
   let currentGameConfig = $derived(CONFIG_GAMES[gameName]);
-  let searchTerm = $derived(gamesPage.search ?? '');
-  let debouncedSearchTerm = $derived(gamesPage.search ?? '');
-  let currentPage = $derived(gamesPage.page);
-  let syncingFromPage = $state(false);
-  let lastSearch = $derived(gamesPage.search ?? '');
-  let lastPage = $derived(gamesPage.page);
+  let searchTerm = $state(gamesPage.search ?? '');
+  let debouncedSearchTerm = $state(gamesPage.search ?? '');
+  let currentPage = $state(gamesPage.page);
 
   $effect(() => {
-    syncingFromPage = true;
     searchTerm = gamesPage.search ?? '';
     debouncedSearchTerm = gamesPage.search ?? '';
     currentPage = gamesPage.page;
-    lastSearch = gamesPage.search ?? '';
-    lastPage = gamesPage.page;
-    syncingFromPage = false;
   });
 
   afterNavigate(() => {
@@ -55,30 +48,9 @@
     }
   });
 
-  let filters = $state({
-    az: false,
-    za: false,
-    dateAsc: false,
-    dateDesc: true,
-    active: false,
-    notActive: false,
-  });
-
   const hasActiveColumn = $derived(
     currentGameConfig.table.columns.some(column => column.key === 'active'),
   );
-
-  $effect(() => {
-    const sort = gamesPage.sort ?? 'dateDesc';
-    filters = {
-      az: sort === 'az',
-      za: sort === 'za',
-      dateAsc: sort === 'dateAsc',
-      dateDesc: sort === 'dateDesc',
-      active: hasActiveColumn && gamesPage.activeFilter === 'active',
-      notActive: hasActiveColumn && gamesPage.activeFilter === 'notActive',
-    };
-  });
 
   const totalPages = $derived(gamesPage.totalPages);
 
@@ -145,16 +117,12 @@
   }, 400);
 
   $effect(() => {
-    if (syncingFromPage) return;
-    if (searchTerm === lastSearch) return;
-    lastSearch = searchTerm;
+    if (searchTerm === (gamesPage.search ?? '')) return;
     handleSearch(searchTerm);
   });
 
   $effect(() => {
-    if (syncingFromPage) return;
-    if (currentPage === lastPage) return;
-    lastPage = currentPage;
+    if (currentPage === gamesPage.page) return;
     updateQuery({ page: currentPage });
   });
 
@@ -164,17 +132,17 @@
 
   function toggleFilter(filter: string) {
     if (filter === 'az' || filter === 'za' || filter === 'dateAsc' || filter === 'dateDesc') {
-      const isActive = filters[filter as keyof typeof filters];
+      const isActive = gamesPage.sort === filter;
       const nextSort = isActive ? 'dateDesc' : (filter as GamesPageInfo['sort']);
       updateQuery({ sort: nextSort, page: 1 }, true);
       return;
     }
 
     if (filter === 'active') {
-      const nextActive = filters.active ? null : 'active';
+      const nextActive = gamesPage.activeFilter === 'active' ? null : 'active';
       updateQuery({ active: nextActive, page: 1 }, true);
     } else if (filter === 'notActive') {
-      const nextActive = filters.notActive ? null : 'notActive';
+      const nextActive = gamesPage.activeFilter === 'notActive' ? null : 'notActive';
       updateQuery({ active: nextActive, page: 1 }, true);
     }
   }
@@ -205,24 +173,32 @@
 {#snippet popoverContent()}
   <div class="flex flex-wrap gap-3 mt-12">
     <div class="flex flex-col gap-2">
-      <button class="filter-button" class:active={filters.az} onclick={() => toggleFilter('az')}>
+      <button
+        class="filter-button"
+        class:active={gamesPage.sort === 'az'}
+        onclick={() => toggleFilter('az')}
+      >
         A-Z
       </button>
-      <button class="filter-button" class:active={filters.za} onclick={() => toggleFilter('za')}>
+      <button
+        class="filter-button"
+        class:active={gamesPage.sort === 'za'}
+        onclick={() => toggleFilter('za')}
+      >
         Z-A
       </button>
     </div>
     <div class="flex flex-col gap-2">
       <button
         class="filter-button"
-        class:active={filters.dateAsc}
+        class:active={gamesPage.sort === 'dateAsc'}
         onclick={() => toggleFilter('dateAsc')}
       >
         aufsteigendes Datum
       </button>
       <button
         class="filter-button"
-        class:active={filters.dateDesc}
+        class:active={gamesPage.sort === 'dateDesc'}
         onclick={() => toggleFilter('dateDesc')}
       >
         absteigendes Datum
@@ -232,14 +208,14 @@
       <div class="flex flex-col gap-2">
         <button
           class="filter-button text-z-ds-color-success-100"
-          class:active={filters.active}
+          class:active={gamesPage.activeFilter === 'active'}
           onclick={() => toggleFilter('active')}
         >
           <TickIcon extraClasses="text-z-ds-color-success-100" />
         </button>
         <button
           class="filter-button"
-          class:active={filters.notActive}
+          class:active={gamesPage.activeFilter === 'notActive'}
           onclick={() => toggleFilter('notActive')}
         >
           <CloseIcon extraClasses="text-z-ds-color-error-70" />
