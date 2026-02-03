@@ -269,11 +269,11 @@
 
 <TableFilters {resetAllFilters} idButtonOpener="filter-opener" {popoverContent} {popoverOpener} />
 
-<div class="text-xs text-z-ds-color-black-80 mt-3">
+<div class="text-xs text-z-ds-color-black-80 mt-3 flex justify-end">
   {#if gamesPage.total === 0}
     0 Ergebnisse
   {:else}
-    {gamesPage.total} Ergebnisse · Seite {gamesPage.page} von {gamesPage.totalPages}
+    {gamesPage.total} Ergebnisse
   {/if}
 </div>
 
