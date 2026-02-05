@@ -82,14 +82,18 @@ export type DataProps = {
   gameType: GameType;
 };
 
+export type SortOption = 'az' | 'za' | 'dateAsc' | 'dateDesc';
+export type ActiveFilterOption = 'active' | 'notActive';
+export type ActiveFilter = ActiveFilterOption | null;
+
 export type GamesPageInfo = {
   page: number;
   pageSize: number;
   total: number;
   totalPages: number;
   search: string;
-  sort: 'az' | 'za' | 'dateAsc' | 'dateDesc';
-  activeFilter: 'active' | 'notActive' | null;
+  sort: SortOption;
+  activeFilter: ActiveFilter;
 };
 
 export type ToastType = {
