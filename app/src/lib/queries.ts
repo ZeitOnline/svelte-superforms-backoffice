@@ -1,4 +1,5 @@
-import type { GameComplete, GameType } from '$types';
+import type { ActiveFilter, GameComplete, GameType, SortOption } from '$types';
+import { DEFAULT_SORT } from '$lib/game-table-utils';
 import type { LoadEvent } from '@sveltejs/kit';
 import { CONFIG_GAMES } from '../config/games.config';
 import { deleteEckchenGame } from './games/eckchen';
@@ -11,6 +12,97 @@ import { deleteSpellingBeeGame } from './games/spelling-bee';
  */
 export const SHOULD_DELETE_STATE = false;
 
+const setOrderParam = ({
+  params,
+  gameName,
+  sort,
+}: {
+  params: URLSearchParams;
+  gameName: GameType;
+  sort: SortOption;
+}) => {
+  const sortableColumn = CONFIG_GAMES[gameName].table.columns.find(col => col.sortable);
+  const dateField = CONFIG_GAMES[gameName].endpoints.games.releaseDateField;
+  const releaseDatePart = `${dateField}.desc`;
+
+  let orderParam = releaseDatePart;
+  if (sort === 'az' && sortableColumn) {
+    orderParam = `${sortableColumn.key}.asc`;
+  } else if (sort === 'za' && sortableColumn) {
+    orderParam = `${sortableColumn.key}.desc`;
+  } else if (sort === 'dateAsc') {
+    orderParam = `${dateField}.asc`;
+  } else if (sort === 'dateDesc') {
+    orderParam = `${dateField}.desc`;
+  }
+
+  params.set('order', orderParam);
+};
+
+const setActiveParam = ({
+  params,
+  gameName,
+  activeFilter,
+}: {
+  params: URLSearchParams;
+  gameName: GameType;
+  activeFilter: ActiveFilter;
+}) => {
+  const hasActiveColumn = CONFIG_GAMES[gameName].table.columns.some(col => col.key === 'active');
+  if (!hasActiveColumn) return;
+
+  if (activeFilter === 'active') {
+    params.set('active', 'eq.true');
+  } else if (activeFilter === 'notActive') {
+    params.set('active', 'eq.false');
+  }
+};
+
+const setSearchParam = ({
+  params,
+  gameName,
+  search,
+}: {
+  params: URLSearchParams;
+  gameName: GameType;
+  search: string;
+}) => {
+  const trimmedSearch = search.trim();
+  if (!trimmedSearch) return;
+
+  const searchableColumns = CONFIG_GAMES[gameName].table.columns.filter(col => col.searchable);
+  const numericColumns = new Set(['id', 'level']);
+  const dateColumns = new Set(['release_date', 'start_time']);
+
+  const isNumeric = /^[0-9]+$/.test(trimmedSearch);
+  const isDateLike = /^[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(trimmedSearch);
+
+  const filters: string[] = [];
+
+  for (const column of searchableColumns) {
+    const key = column.key;
+    if (numericColumns.has(key)) {
+      if (isNumeric) {
+        filters.push(`${key}.eq.${trimmedSearch}`);
+      }
+      continue;
+    }
+
+    if (dateColumns.has(key)) {
+      if (isDateLike) {
+        filters.push(`${key}.eq.${trimmedSearch}`);
+      }
+      continue;
+    }
+
+    filters.push(`${key}.ilike.*${trimmedSearch}*`);
+  }
+
+  if (filters.length > 0) {
+    params.set('or', `(${filters.join(',')})`);
+  }
+};
+
 /**
  * Get all games from the backend.
  * @returns all games
@@ -21,7 +113,7 @@ export const getAllGames = async ({
   page = 1,
   pageSize = 10,
   search = '',
-  sort = 'dateDesc',
+  sort = DEFAULT_SORT,
   activeFilter = null,
 }: {
   gameName: GameType;
@@ -29,11 +121,9 @@ export const getAllGames = async ({
   page?: number;
   pageSize?: number;
   search?: string;
-  sort?: 'az' | 'za' | 'dateAsc' | 'dateDesc';
-  activeFilter?: 'active' | 'notActive' | null;
+  sort?: SortOption;
+  activeFilter?: ActiveFilter;
 }) => {
-  const releaseDatePart = `${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}.desc`;
-
   // If this is spelling-bee, embed solutions directly
   const selectParam =
     gameName === 'spelling-bee'
@@ -48,63 +138,9 @@ export const getAllGames = async ({
   params.set('limit', String(pageSize));
   params.set('offset', String(offset));
 
-  const sortableColumn = CONFIG_GAMES[gameName].table.columns.find(col => col.sortable);
-  const dateField = CONFIG_GAMES[gameName].endpoints.games.releaseDateField;
-  let orderParam = releaseDatePart;
-  if (sort === 'az' && sortableColumn) {
-    orderParam = `${sortableColumn.key}.asc`;
-  } else if (sort === 'za' && sortableColumn) {
-    orderParam = `${sortableColumn.key}.desc`;
-  } else if (sort === 'dateAsc') {
-    orderParam = `${dateField}.asc`;
-  } else if (sort === 'dateDesc') {
-    orderParam = `${dateField}.desc`;
-  }
-  params.set('order', orderParam);
-
-  const hasActiveColumn = CONFIG_GAMES[gameName].table.columns.some(col => col.key === 'active');
-  if (hasActiveColumn) {
-    if (activeFilter === 'active') {
-      params.set('active', 'eq.true');
-    } else if (activeFilter === 'notActive') {
-      params.set('active', 'eq.false');
-    }
-  }
-
-  const trimmedSearch = search.trim();
-  if (trimmedSearch) {
-    const searchableColumns = CONFIG_GAMES[gameName].table.columns.filter(col => col.searchable);
-    const numericColumns = new Set(['id', 'level']);
-    const dateColumns = new Set(['release_date', 'start_time']);
-
-    const isNumeric = /^[0-9]+$/.test(trimmedSearch);
-    const isDateLike = /^[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(trimmedSearch);
-
-    const filters: string[] = [];
-
-    for (const column of searchableColumns) {
-      const key = column.key;
-      if (numericColumns.has(key)) {
-        if (isNumeric) {
-          filters.push(`${key}.eq.${trimmedSearch}`);
-        }
-        continue;
-      }
-
-      if (dateColumns.has(key)) {
-        if (isDateLike) {
-          filters.push(`${key}.eq.${trimmedSearch}`);
-        }
-        continue;
-      }
-
-      filters.push(`${key}.ilike.*${trimmedSearch}*`);
-    }
-
-    if (filters.length > 0) {
-      params.set('or', `(${filters.join(',')})`);
-    }
-  }
+  setOrderParam({ params, gameName, sort });
+  setActiveParam({ params, gameName, activeFilter });
+  setSearchParam({ params, gameName, search });
 
   const URL = `${baseUrl}?${params.toString()}`;
   const response = await fetch(URL, {
@@ -117,8 +153,7 @@ export const getAllGames = async ({
   }
 
   const data = await response.json();
-  const contentRange =
-    response.headers.get('content-range') ?? response.headers.get('Content-Range');
+  const contentRange = response.headers.get('content-range');
   let total = data.length;
   if (contentRange) {
     const [, totalStr] = contentRange.split('/');
