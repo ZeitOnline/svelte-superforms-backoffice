@@ -4,8 +4,12 @@
     GameSpellingBeeComplete,
     GameType,
     GamesPageInfo,
+    ActiveFilter,
+    ActiveFilterOption,
+    SortOption,
     TableColumn,
   } from '$types';
+  import { DEFAULT_SORT, isSortOption } from '$lib/game-table-utils';
   import { cubicInOut } from 'svelte/easing';
   import { view } from '$stores/view-state-store.svelte';
   import { debounce, highlightMatch, isGameActive, isSpellingBeeGame } from '$utils';
@@ -28,14 +32,21 @@
   let { games, gameName, gamesPage, latestActiveGameIds }: Props = $props();
 
   let currentGameConfig = $derived(CONFIG_GAMES[gameName]);
-  let searchTerm = $state(gamesPage.search ?? '');
-  let debouncedSearchTerm = $state(gamesPage.search ?? '');
-  let currentPage = $state(gamesPage.page);
+  const normalizedGamesPage = $derived({
+    page: gamesPage.page ?? 1,
+    totalPages: gamesPage.totalPages ?? 1,
+    search: gamesPage.search ?? '',
+    sort: gamesPage.sort ?? DEFAULT_SORT,
+    activeFilter: gamesPage.activeFilter ?? null,
+  });
+  let searchTerm = $derived(normalizedGamesPage.search);
+  let debouncedSearchTerm = $derived(normalizedGamesPage.search);
+  let currentPage = $derived(normalizedGamesPage.page);
 
   $effect(() => {
-    searchTerm = gamesPage.search ?? '';
-    debouncedSearchTerm = gamesPage.search ?? '';
-    currentPage = gamesPage.page;
+    searchTerm = normalizedGamesPage.search;
+    debouncedSearchTerm = normalizedGamesPage.search;
+    currentPage = normalizedGamesPage.page;
   });
 
   afterNavigate(() => {
@@ -52,7 +63,9 @@
     currentGameConfig.table.columns.some(column => column.key === 'active'),
   );
 
-  const totalPages = $derived(gamesPage.totalPages);
+  const totalPages = $derived(normalizedGamesPage.totalPages);
+  const totalResults = $derived(gamesPage.total ?? 0);
+  const resultsLabel = $derived(totalResults === 1 ? 'Ergebnis' : 'Ergebnisse');
 
   const handleEditGame = (id: number) => {
     view.updateView('edit-game');
@@ -68,8 +81,8 @@
     next: {
       page?: number;
       search?: string;
-      sort?: 'az' | 'za' | 'dateAsc' | 'dateDesc';
-      active?: 'active' | 'notActive' | null;
+      sort?: SortOption;
+      active?: ActiveFilter;
     },
     replaceState = false,
   ) {
@@ -117,32 +130,32 @@
   }, 400);
 
   $effect(() => {
-    if (searchTerm === (gamesPage.search ?? '')) return;
+    if (searchTerm === normalizedGamesPage.search) return;
     handleSearch(searchTerm);
   });
 
   $effect(() => {
-    if (currentPage === gamesPage.page) return;
+    if (currentPage === normalizedGamesPage.page) return;
     updateQuery({ page: currentPage });
   });
 
   function resetAllFilters() {
-    updateQuery({ sort: 'dateDesc', active: null, page: 1 }, true);
+    updateQuery({ sort: DEFAULT_SORT, active: null, page: 1 }, true);
   }
 
-  function toggleFilter(filter: string) {
-    if (filter === 'az' || filter === 'za' || filter === 'dateAsc' || filter === 'dateDesc') {
-      const isActive = gamesPage.sort === filter;
-      const nextSort = isActive ? 'dateDesc' : (filter as GamesPageInfo['sort']);
+  function toggleFilter(filter: SortOption | ActiveFilterOption) {
+    if (isSortOption(filter)) {
+      const isActive = normalizedGamesPage.sort === filter;
+      const nextSort = isActive ? DEFAULT_SORT : (filter as GamesPageInfo['sort']);
       updateQuery({ sort: nextSort, page: 1 }, true);
       return;
     }
 
-    if (filter === 'active') {
-      const nextActive = gamesPage.activeFilter === 'active' ? null : 'active';
+    if (filter === "active") {
+      const nextActive = normalizedGamesPage.activeFilter === 'active' ? null : 'active';
       updateQuery({ active: nextActive, page: 1 }, true);
     } else if (filter === 'notActive') {
-      const nextActive = gamesPage.activeFilter === 'notActive' ? null : 'notActive';
+      const nextActive = normalizedGamesPage.activeFilter === 'notActive' ? null : 'notActive';
       updateQuery({ active: nextActive, page: 1 }, true);
     }
   }
@@ -175,14 +188,14 @@
     <div class="flex flex-col gap-2">
       <button
         class="filter-button"
-        class:active={gamesPage.sort === 'az'}
+        class:active={normalizedGamesPage.sort === 'az'}
         onclick={() => toggleFilter('az')}
       >
         A-Z
       </button>
       <button
         class="filter-button"
-        class:active={gamesPage.sort === 'za'}
+        class:active={normalizedGamesPage.sort === 'za'}
         onclick={() => toggleFilter('za')}
       >
         Z-A
@@ -191,14 +204,14 @@
     <div class="flex flex-col gap-2">
       <button
         class="filter-button"
-        class:active={gamesPage.sort === 'dateAsc'}
+        class:active={normalizedGamesPage.sort === 'dateAsc'}
         onclick={() => toggleFilter('dateAsc')}
       >
         aufsteigendes Datum
       </button>
       <button
         class="filter-button"
-        class:active={gamesPage.sort === 'dateDesc'}
+        class:active={normalizedGamesPage.sort === 'dateDesc'}
         onclick={() => toggleFilter('dateDesc')}
       >
         absteigendes Datum
@@ -208,14 +221,14 @@
       <div class="flex flex-col gap-2">
         <button
           class="filter-button text-z-ds-color-success-100"
-          class:active={gamesPage.activeFilter === 'active'}
+          class:active={normalizedGamesPage.activeFilter === 'active'}
           onclick={() => toggleFilter('active')}
         >
           <TickIcon extraClasses="text-z-ds-color-success-100" />
         </button>
         <button
           class="filter-button"
-          class:active={gamesPage.activeFilter === 'notActive'}
+          class:active={normalizedGamesPage.activeFilter === 'notActive'}
           onclick={() => toggleFilter('notActive')}
         >
           <CloseIcon extraClasses="text-z-ds-color-error-70" />
@@ -246,10 +259,10 @@
 <TableFilters {resetAllFilters} idButtonOpener="filter-opener" {popoverContent} {popoverOpener} />
 
 <div class="text-xs text-z-ds-color-black-80 mt-3 flex justify-end">
-  {#if gamesPage.total === 0}
+  {#if totalResults === 0}
     0 Ergebnisse
   {:else}
-    {gamesPage.total} Ergebnisse
+    {totalResults} {resultsLabel}
   {/if}
 </div>
 

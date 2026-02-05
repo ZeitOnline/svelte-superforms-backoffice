@@ -2,6 +2,7 @@ import { getByRole, render } from '@testing-library/svelte';
 import { describe, expect, it, vi } from 'vitest';
 import { MOCK_GAMES } from '../../data/mock';
 import App from '$components/App.svelte';
+import { DEFAULT_SORT } from '$lib/game-table-utils';
 
 vi.mock('$lib/queries', () => ({
   getAllGames: vi.fn().mockResolvedValue({ games: MOCK_GAMES.ECKCHEN, total: MOCK_GAMES.ECKCHEN.length }),
@@ -36,7 +37,7 @@ const fakeData = {
     total: MOCK_GAMES.ECKCHEN.length,
     totalPages: 1,
     search: '',
-    sort: 'dateDesc' as const,
+    sort: DEFAULT_SORT,
     activeFilter: null,
   },
   latestActiveGameIds: MOCK_GAMES.ECKCHEN.map(game => game.id),

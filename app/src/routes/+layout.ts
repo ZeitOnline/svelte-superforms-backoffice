@@ -6,6 +6,7 @@ import { getAllGames, getLatestActiveGameIds } from '$lib/queries';
 
 import type { LayoutLoad } from './$types';
 import type { GameType } from '$types';
+import { DEFAULT_SORT, isActiveFilterOption, isSortOption } from '$lib/game-table-utils';
 
 export const ssr = false;
 
@@ -28,15 +29,10 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
 
     const pageSize = 10;
     let page = Math.max(1, Number(pageParam) || 1);
-    const sort =
-        sortParam === 'az' || sortParam === 'za' || sortParam === 'dateAsc' || sortParam === 'dateDesc'
-            ? sortParam
-            : 'dateDesc';
+    const sort = isSortOption(sortParam) ? sortParam : DEFAULT_SORT;
     const hasActiveColumn = config.table.columns.some(col => col.key === 'active');
     const activeFilter =
-        hasActiveColumn && (activeParam === 'active' || activeParam === 'notActive')
-            ? activeParam
-            : null;
+        hasActiveColumn && isActiveFilterOption(activeParam) ? activeParam : null;
 
     const [generateGameForm, saveGameForm, initialGames] = await Promise.all([
         superValidate(zod4(schemas.generateGameSchema)),
