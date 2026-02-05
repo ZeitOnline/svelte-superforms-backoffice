@@ -1,13 +1,12 @@
 import { getByRole, render } from '@testing-library/svelte';
 import { describe, expect, it, vi } from 'vitest';
 import { MOCK_GAMES } from '../../data/mock';
+import App from '$components/App.svelte';
+import { DEFAULT_SORT } from '$lib/game-table-utils';
 
 vi.mock('$lib/queries', () => ({
-  getAllGames: vi.fn().mockResolvedValue(MOCK_GAMES),
+  getAllGames: vi.fn().mockResolvedValue({ games: MOCK_GAMES.ECKCHEN, total: MOCK_GAMES.ECKCHEN.length }),
 }));
-
-import { getAllGames } from '$lib/queries';
-import App from '$components/App.svelte';
 
 const fakeData = {
   generateGameForm: {
@@ -31,7 +30,18 @@ const fakeData = {
       questions: [], // Empty array as per your test
     },
   },
-  games: await getAllGames(),
+  games: MOCK_GAMES.ECKCHEN,
+  gamesPage: {
+    page: 1,
+    pageSize: 10,
+    total: MOCK_GAMES.ECKCHEN.length,
+    totalPages: 1,
+    search: '',
+    sort: DEFAULT_SORT,
+    activeFilter: null,
+  },
+  latestActiveGameIds: MOCK_GAMES.ECKCHEN.map(game => game.id),
+  gameType: 'eckchen' as const,
 };
 
 describe('App', () => {

@@ -1,34 +1,53 @@
 <script lang="ts">
-  import type { GameComplete, GameSpellingBeeComplete, GameType, TableColumn } from '$types';
+  import type {
+    GameComplete,
+    GameSpellingBeeComplete,
+    GameType,
+    GamesPageInfo,
+    ActiveFilter,
+    ActiveFilterOption,
+    SortOption,
+    TableColumn,
+  } from '$types';
+  import { DEFAULT_SORT, isSortOption } from '$lib/game-table-utils';
   import { cubicInOut } from 'svelte/easing';
   import { view } from '$stores/view-state-store.svelte';
-  import { debounce, highlightMatch, searchInGame, isGameActive, isSpellingBeeGame } from '$utils';
+  import { debounce, highlightMatch, isGameActive, isSpellingBeeGame } from '$utils';
   import { blur } from 'svelte/transition';
   import IconHandler from './icons/IconHandler.svelte';
   import { TableFilters, TableSearch, TablePagination } from './table';
   import { CloseIcon, EyeIcon, TickIcon } from './icons';
-  import { afterNavigate } from '$app/navigation';
+  import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
   import { CONFIG_GAMES } from '../config/games.config';
   import { spellingBeeStore, toggleLegend } from '$stores/spelling-bee-word.svelte';
 
-  const ITEMS_PER_PAGE = 10;
-
   type Props = {
     games: GameComplete[];
     gameName: GameType;
+    gamesPage: GamesPageInfo;
+    latestActiveGameIds: number[];
   };
 
-  let { games, gameName }: Props = $props();
+  let { games, gameName, gamesPage, latestActiveGameIds }: Props = $props();
 
-  let currentGameConfig = $state(CONFIG_GAMES[gameName]);
-  let searchTerm = $state('');
-  let debouncedSearchTerm = $state('');
+  let currentGameConfig = $derived(CONFIG_GAMES[gameName]);
+  const normalizedGamesPage = $derived({
+    page: gamesPage.page ?? 1,
+    totalPages: gamesPage.totalPages ?? 1,
+    search: gamesPage.search ?? '',
+    sort: gamesPage.sort ?? DEFAULT_SORT,
+    activeFilter: gamesPage.activeFilter ?? null,
+  });
+  let searchTerm = $derived(normalizedGamesPage.search);
+  let debouncedSearchTerm = $derived(normalizedGamesPage.search);
+  let currentPage = $derived(normalizedGamesPage.page);
 
-  function getDateValue(game: GameComplete, field: string): Date {
-    const value = (game as Record<string, unknown>)[field];
-    return new Date(String(value));
-  }
+  $effect(() => {
+    searchTerm = normalizedGamesPage.search;
+    debouncedSearchTerm = normalizedGamesPage.search;
+    currentPage = normalizedGamesPage.page;
+  });
 
   afterNavigate(() => {
     if (page.route.id === '/wortiger') {
@@ -40,86 +59,13 @@
     }
   });
 
-  let items = $state(games);
-
-  let filters = $state({
-    az: false,
-    za: false,
-    dateAsc: false,
-    dateDesc: true,
-    active: false,
-    notActive: false,
-  });
-
-  // Generic sorting logic
-  let filteredByOptionsItems = $derived(() => {
-    let filteredItems = [...items];
-
-    const firstColumn = currentGameConfig.table.columns.find((col: TableColumn) => col.sortable);
-    if (firstColumn) {
-      if (filters.az) {
-        filteredItems.sort((a, b) => {
-          const aVal = firstColumn.getValue(a).toString();
-          const bVal = firstColumn.getValue(b).toString();
-          return aVal.localeCompare(bVal);
-        });
-      } else if (filters.za) {
-        filteredItems.sort((a, b) => {
-          const aVal = firstColumn.getValue(a).toString();
-          const bVal = firstColumn.getValue(b).toString();
-          return bVal.localeCompare(aVal);
-        });
-      }
-    }
-
-    // Date sorting
-    const dateField = currentGameConfig.endpoints.games.releaseDateField as keyof GameComplete;
-
-    if (filters.dateAsc) {
-      filteredItems.sort(
-        (a, b) => getDateValue(a, dateField).getTime() - getDateValue(b, dateField).getTime(),
-      );
-    } else if (filters.dateDesc) {
-      filteredItems.sort(
-        (a, b) => getDateValue(b, dateField).getTime() - getDateValue(a, dateField).getTime(),
-      );
-    }
-
-    // Active status filtering
-    if (filters.active) {
-      filteredItems = filteredItems.filter(item => isGameActive(item));
-    } else if (filters.notActive) {
-      filteredItems = filteredItems.filter(item => !isGameActive(item));
-    }
-    return filteredItems;
-  });
-
-  // Generic search logic using the configuration
-  let filteredBySearchItems = $derived(() => {
-    return filteredByOptionsItems().filter(item =>
-      searchInGame(item, debouncedSearchTerm, currentGameConfig.table.columns),
-    );
-  });
-
-  let currentPage: number = $state(1);
-  let totalPages: number = $derived(Math.ceil(filteredBySearchItems().length / ITEMS_PER_PAGE));
-
-  let paginatedItems = $derived(
-    filteredBySearchItems().slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE),
+  const hasActiveColumn = $derived(
+    currentGameConfig.table.columns.some(column => column.key === 'active'),
   );
 
-  // Only for Eckchen - twenty latest active games for the eye icon
-  let twentyLatestActiveGames = $derived(() => {
-    if (!currentGameConfig.table.hasLiveView) return [];
-
-    return items
-      .filter(item => isGameActive(item))
-      .sort(
-        (a, b) =>
-          getDateValue(b, 'release_date').getTime() - getDateValue(a, 'release_date').getTime(),
-      )
-      .slice(0, 20);
-  });
+  const totalPages = $derived(normalizedGamesPage.totalPages);
+  const totalResults = $derived(gamesPage.total ?? 0);
+  const resultsLabel = $derived(totalResults === 1 ? 'Ergebnis' : 'Ergebnisse');
 
   const handleEditGame = (id: number) => {
     view.updateView('edit-game');
@@ -131,49 +77,86 @@
     view.updateView('delete-game');
   };
 
+  function updateQuery(
+    next: {
+      page?: number;
+      search?: string;
+      sort?: SortOption;
+      active?: ActiveFilter;
+    },
+    replaceState = false,
+  ) {
+    const url = new URL(page.url);
+    const params = url.searchParams;
+
+    if (next.page !== undefined) {
+      if (next.page <= 1) {
+        params.delete('page');
+      } else {
+        params.set('page', String(next.page));
+      }
+    }
+
+    if (next.search !== undefined) {
+      const value = next.search.trim();
+      if (value) {
+        params.set('q', value);
+      } else {
+        params.delete('q');
+      }
+    }
+
+    if (next.sort !== undefined) {
+      params.set('sort', next.sort);
+    }
+
+    if (next.active !== undefined) {
+      if (next.active) {
+        params.set('active', next.active);
+      } else {
+        params.delete('active');
+      }
+    }
+
+    goto(`${url.pathname}?${params.toString()}`, {
+      replaceState,
+      keepFocus: true,
+      noScroll: true,
+    });
+  }
+
   const handleSearch = debounce((value: string) => {
-    debouncedSearchTerm = value;
-    currentPage = 1;
+    updateQuery({ search: value, page: 1 }, true);
   }, 400);
 
   $effect(() => {
+    if (searchTerm === normalizedGamesPage.search) return;
     handleSearch(searchTerm);
   });
 
+  $effect(() => {
+    if (currentPage === normalizedGamesPage.page) return;
+    updateQuery({ page: currentPage });
+  });
+
   function resetAllFilters() {
-    filters = {
-      az: false,
-      za: false,
-      dateAsc: false,
-      dateDesc: true,
-      active: false,
-      notActive: false,
-    };
-    currentPage = 1;
+    updateQuery({ sort: DEFAULT_SORT, active: null, page: 1 }, true);
   }
 
-  function toggleFilter(filter: string) {
-    currentPage = 1;
+  function toggleFilter(filter: SortOption | ActiveFilterOption) {
+    if (isSortOption(filter)) {
+      const isActive = normalizedGamesPage.sort === filter;
+      const nextSort = isActive ? DEFAULT_SORT : (filter as GamesPageInfo['sort']);
+      updateQuery({ sort: nextSort, page: 1 }, true);
+      return;
+    }
 
-    // Some of the filter should have mutual exclusivity
-    if (filter === 'az') {
-      filters.az = !filters.az;
-      if (filters.az) filters.za = false;
-    } else if (filter === 'za') {
-      filters.za = !filters.za;
-      if (filters.za) filters.az = false;
-    } else if (filter === 'dateAsc') {
-      filters.dateAsc = !filters.dateAsc;
-      if (filters.dateAsc) filters.dateDesc = false;
-    } else if (filter === 'dateDesc') {
-      filters.dateDesc = !filters.dateDesc;
-      if (filters.dateDesc) filters.dateAsc = false;
-    } else if (filter === 'active') {
-      filters.active = !filters.active;
-      if (filters.active) filters.notActive = false;
+    if (filter === "active") {
+      const nextActive = normalizedGamesPage.activeFilter === 'active' ? null : 'active';
+      updateQuery({ active: nextActive, page: 1 }, true);
     } else if (filter === 'notActive') {
-      filters.notActive = !filters.notActive;
-      if (filters.notActive) filters.active = false;
+      const nextActive = normalizedGamesPage.activeFilter === 'notActive' ? null : 'notActive';
+      updateQuery({ active: nextActive, page: 1 }, true);
     }
   }
 
@@ -203,45 +186,55 @@
 {#snippet popoverContent()}
   <div class="flex flex-wrap gap-3 mt-12">
     <div class="flex flex-col gap-2">
-      <button class="filter-button" class:active={filters.az} onclick={() => toggleFilter('az')}>
+      <button
+        class="filter-button"
+        class:active={normalizedGamesPage.sort === 'az'}
+        onclick={() => toggleFilter('az')}
+      >
         A-Z
       </button>
-      <button class="filter-button" class:active={filters.za} onclick={() => toggleFilter('za')}>
+      <button
+        class="filter-button"
+        class:active={normalizedGamesPage.sort === 'za'}
+        onclick={() => toggleFilter('za')}
+      >
         Z-A
       </button>
     </div>
     <div class="flex flex-col gap-2">
       <button
         class="filter-button"
-        class:active={filters.dateAsc}
+        class:active={normalizedGamesPage.sort === 'dateAsc'}
         onclick={() => toggleFilter('dateAsc')}
       >
         aufsteigendes Datum
       </button>
       <button
         class="filter-button"
-        class:active={filters.dateDesc}
+        class:active={normalizedGamesPage.sort === 'dateDesc'}
         onclick={() => toggleFilter('dateDesc')}
       >
         absteigendes Datum
       </button>
     </div>
-    <div class="flex flex-col gap-2">
-      <button
-        class="filter-button text-z-ds-color-success-100"
-        class:active={filters.active}
-        onclick={() => toggleFilter('active')}
-      >
-        <TickIcon extraClasses="text-z-ds-color-success-100" />
-      </button>
-      <button
-        class="filter-button"
-        class:active={filters.notActive}
-        onclick={() => toggleFilter('notActive')}
-      >
-        <CloseIcon extraClasses="text-z-ds-color-error-70" />
-      </button>
-    </div>
+    {#if hasActiveColumn}
+      <div class="flex flex-col gap-2">
+        <button
+          class="filter-button text-z-ds-color-success-100"
+          class:active={normalizedGamesPage.activeFilter === 'active'}
+          onclick={() => toggleFilter('active')}
+        >
+          <TickIcon extraClasses="text-z-ds-color-success-100" />
+        </button>
+        <button
+          class="filter-button"
+          class:active={normalizedGamesPage.activeFilter === 'notActive'}
+          onclick={() => toggleFilter('notActive')}
+        >
+          <CloseIcon extraClasses="text-z-ds-color-error-70" />
+        </button>
+      </div>
+    {/if}
   </div>
 {/snippet}
 
@@ -265,6 +258,14 @@
 
 <TableFilters {resetAllFilters} idButtonOpener="filter-opener" {popoverContent} {popoverOpener} />
 
+<div class="text-xs text-z-ds-color-black-80 mt-3 flex justify-end">
+  {#if totalResults === 0}
+    0 Ergebnisse
+  {:else}
+    {totalResults} {resultsLabel}
+  {/if}
+</div>
+
 <div class="relative overflow-x-auto py-z-ds-8 my-z-ds-24" aria-live="polite">
   <table
     id="search-results-table"
@@ -282,11 +283,11 @@
       </tr>
     </thead>
     <tbody>
-      {#if paginatedItems.length > 0}
-        {#each paginatedItems as item (item.id)}
+      {#if games.length > 0}
+        {#each games as item (item.id)}
           {@const isOneOfTwentyLatestActiveGames =
             currentGameConfig.table.hasLiveView &&
-            twentyLatestActiveGames().some(game => game.id === item.id)}
+            latestActiveGameIds.includes(item.id)}
 
           <tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
             <!-- Generate cells dynamically from configuration -->

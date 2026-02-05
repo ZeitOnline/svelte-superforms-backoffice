@@ -1,4 +1,5 @@
-import type { GameComplete, GameType } from '$types';
+import type { ActiveFilter, GameComplete, GameType, SortOption } from '$types';
+import { DEFAULT_SORT } from '$lib/game-table-utils';
 import type { LoadEvent } from '@sveltejs/kit';
 import { CONFIG_GAMES } from '../config/games.config';
 import { deleteEckchenGame } from './games/eckchen';
@@ -11,6 +12,97 @@ import { deleteSpellingBeeGame } from './games/spelling-bee';
  */
 export const SHOULD_DELETE_STATE = false;
 
+const setOrderParam = ({
+  params,
+  gameName,
+  sort,
+}: {
+  params: URLSearchParams;
+  gameName: GameType;
+  sort: SortOption;
+}) => {
+  const sortableColumn = CONFIG_GAMES[gameName].table.columns.find(col => col.sortable);
+  const dateField = CONFIG_GAMES[gameName].endpoints.games.releaseDateField;
+  const releaseDatePart = `${dateField}.desc`;
+
+  let orderParam = releaseDatePart;
+  if (sort === 'az' && sortableColumn) {
+    orderParam = `${sortableColumn.key}.asc`;
+  } else if (sort === 'za' && sortableColumn) {
+    orderParam = `${sortableColumn.key}.desc`;
+  } else if (sort === 'dateAsc') {
+    orderParam = `${dateField}.asc`;
+  } else if (sort === 'dateDesc') {
+    orderParam = `${dateField}.desc`;
+  }
+
+  params.set('order', orderParam);
+};
+
+const setActiveParam = ({
+  params,
+  gameName,
+  activeFilter,
+}: {
+  params: URLSearchParams;
+  gameName: GameType;
+  activeFilter: ActiveFilter;
+}) => {
+  const hasActiveColumn = CONFIG_GAMES[gameName].table.columns.some(col => col.key === 'active');
+  if (!hasActiveColumn) return;
+
+  if (activeFilter === 'active') {
+    params.set('active', 'eq.true');
+  } else if (activeFilter === 'notActive') {
+    params.set('active', 'eq.false');
+  }
+};
+
+const setSearchParam = ({
+  params,
+  gameName,
+  search,
+}: {
+  params: URLSearchParams;
+  gameName: GameType;
+  search: string;
+}) => {
+  const trimmedSearch = search.trim();
+  if (!trimmedSearch) return;
+
+  const searchableColumns = CONFIG_GAMES[gameName].table.columns.filter(col => col.searchable);
+  const numericColumns = new Set(['id', 'level']);
+  const dateColumns = new Set(['release_date', 'start_time']);
+
+  const isNumeric = /^[0-9]+$/.test(trimmedSearch);
+  const isDateLike = /^[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(trimmedSearch);
+
+  const filters: string[] = [];
+
+  for (const column of searchableColumns) {
+    const key = column.key;
+    if (numericColumns.has(key)) {
+      if (isNumeric) {
+        filters.push(`${key}.eq.${trimmedSearch}`);
+      }
+      continue;
+    }
+
+    if (dateColumns.has(key)) {
+      if (isDateLike) {
+        filters.push(`${key}.eq.${trimmedSearch}`);
+      }
+      continue;
+    }
+
+    filters.push(`${key}.ilike.*${trimmedSearch}*`);
+  }
+
+  if (filters.length > 0) {
+    params.set('or', `(${filters.join(',')})`);
+  }
+};
+
 /**
  * Get all games from the backend.
  * @returns all games
@@ -18,28 +110,89 @@ export const SHOULD_DELETE_STATE = false;
 export const getAllGames = async ({
   gameName,
   fetch,
-  limit = 100,
+  page = 1,
+  pageSize = 10,
+  search = '',
+  sort = DEFAULT_SORT,
+  activeFilter = null,
 }: {
   gameName: GameType;
   fetch: LoadEvent['fetch'];
-  limit?: number;
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  sort?: SortOption;
+  activeFilter?: ActiveFilter;
 }) => {
-  const releaseDatePart = `${CONFIG_GAMES[gameName].endpoints.games.releaseDateField}.desc`;
-
   // If this is spelling-bee, embed solutions directly
   const selectParam =
     gameName === 'spelling-bee'
       ? 'id,name,start_time,wordcloud,game_solution(solution,points,solution_type,solution_explanation)'
       : '*';
 
-  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?select=${selectParam}&limit=${limit}&order=${releaseDatePart}`;
-  const response = await fetch(URL);
+  const baseUrl = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
+  const offset = (page - 1) * pageSize;
+
+  const params = new URLSearchParams();
+  params.set('select', selectParam);
+  params.set('limit', String(pageSize));
+  params.set('offset', String(offset));
+
+  setOrderParam({ params, gameName, sort });
+  setActiveParam({ params, gameName, activeFilter });
+  setSearchParam({ params, gameName, search });
+
+  const URL = `${baseUrl}?${params.toString()}`;
+  const response = await fetch(URL, {
+    headers: {
+      Prefer: 'count=exact',
+    },
+  });
   if (!response.ok) {
     throw new Error(`Failed to fetch ${gameName} games: ${response.status}`);
   }
 
   const data = await response.json();
-  return data;
+  const contentRange = response.headers.get('content-range');
+  let total = data.length;
+  if (contentRange) {
+    const [, totalStr] = contentRange.split('/');
+    const parsed = Number(totalStr);
+    if (Number.isFinite(parsed)) {
+      total = parsed;
+    }
+  }
+
+  return { games: data, total };
+};
+
+export const getLatestActiveGameIds = async ({
+  gameName,
+  fetch,
+  limit = 20,
+}: {
+  gameName: GameType;
+  fetch: LoadEvent['fetch'];
+  limit?: number;
+}) => {
+  const hasActiveColumn = CONFIG_GAMES[gameName].table.columns.some(col => col.key === 'active');
+  if (!hasActiveColumn) {
+    return [];
+  }
+  const baseUrl = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
+  const dateField = CONFIG_GAMES[gameName].endpoints.games.releaseDateField;
+  const params = new URLSearchParams();
+  params.set('select', 'id');
+  params.set('active', 'eq.true');
+  params.set('order', `${dateField}.desc`);
+  params.set('limit', String(limit));
+
+  const response = await fetch(`${baseUrl}?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch latest active ${gameName} games: ${response.status}`);
+  }
+  const data = (await response.json()) as Array<{ id: number }>;
+  return data.map(row => row.id);
 };
 
 /**
