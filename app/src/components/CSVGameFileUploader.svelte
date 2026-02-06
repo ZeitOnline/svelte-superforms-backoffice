@@ -43,9 +43,11 @@
   let isDragging = $state(false);
   let fileInput = $state<HTMLInputElement | null>(null);
 
-  const generateGameSchema = CONFIG_GAMES[gameName].schemas
-    .generateGameSchema as unknown as ZodObjectType;
+  const generateGameSchema = $derived(
+    CONFIG_GAMES[gameName].schemas.generateGameSchema as unknown as ZodObjectType,
+  );
 
+  // svelte-ignore state_referenced_locally
   const { form, errors, enhance, isTainted, reset } = superForm(data.generateGameForm, {
     resetForm: false,
     validators: zodClient(generateGameSchema),
