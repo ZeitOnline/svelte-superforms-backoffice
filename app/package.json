@@ -49,6 +49,7 @@
   "type": "module",
   "dependencies": {
     "@sveltejs/adapter-auto": "^7.0.0",
-    "papaparse": "^5.5.3"
+    "papaparse": "^5.5.3",
+    "valibot": "^1.2.0"
   }
 }
