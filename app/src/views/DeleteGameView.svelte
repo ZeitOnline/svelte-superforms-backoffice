@@ -46,7 +46,7 @@
     }
   };
 
-  const game = games.find((game: GameComplete) => game.id === view.selectedGameId);
+  const game = $derived(games.find((game: GameComplete) => game.id === view.selectedGameId));
 </script>
 
 <ViewWrapper>

@@ -9,7 +9,7 @@
   let { data, gameName } = $props();
 
   let beginning_option: BeginningOptions = $state('edit');
-  const game = data.games.find((game: GameComplete) => game.id === view.selectedGameId);
+  const game = $derived(data.games.find((game: GameComplete) => game.id === view.selectedGameId));
 
   let isLoaded = $state(false);
 
