@@ -47,13 +47,13 @@
   }: EckchenGameFormProps = $props();
 
   const toastManager = getToastState();
-  let isSubmitted = false;
+  let isSubmitted = $state(false);
 
   // Assert the correct form type for Eckchen
-  const eckchenForm = data.saveGameForm as SuperValidated<SaveEckchenGameFormSchema>;
   const saveGameFormSchema = CONFIG_GAMES['eckchen'].schemas.saveGameFormSchema;
 
-  const superform = superForm(eckchenForm, {
+  // svelte-ignore state_referenced_locally
+  const superform = superForm(data.saveGameForm as SuperValidated<SaveEckchenGameFormSchema>, {
     validators: zodClient(saveGameFormSchema as unknown as ZodObjectType),
     SPA: true,
     resetForm: false,

@@ -48,16 +48,16 @@
   }: SpellingBeeGameFormProps = $props();
 
   const toastManager = getToastState();
-  let isSubmitted = false;
+  let isSubmitted = $state(false);
   const compatibilityErrorText = 'Lösung lässt sich nicht mit den Buchstaben der Wortwolke bilden.';
-  let hasCheckedWordcloudCompatibility = false;
+  let hasCheckedWordcloudCompatibility = $state(false);
   let incompatibleSolutionIndexes: number[] = [];
   let solutionsFitWordcloud = $derived(validateSolutionsWithWordcloud());
 
-  const spellingBeeForm = data.saveGameForm as SuperValidated<SaveSpellingBeeGameFormSchema>;
   const saveGameFormSchema = CONFIG_GAMES['spelling-bee'].schemas.saveGameFormSchema;
 
-  const superform = superForm(spellingBeeForm, {
+  // svelte-ignore state_referenced_locally
+    const superform = superForm(data.saveGameForm as SuperValidated<SaveSpellingBeeGameFormSchema>, {
     validators: zodClient(saveGameFormSchema as unknown as ZodObjectType),
     SPA: true,
     resetForm: false,
