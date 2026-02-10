@@ -25,7 +25,9 @@ export function validateAgainstWordList(options: {
   if (!length) return null;
 
   const set = options.wordSets[length];
-  if (!set || set.size === 0) return null;
+  if (!set || set.size === 0) {
+    return `❌ Wortliste für ${length} Buchstaben ist noch nicht geladen`;
+  }
 
   const exists = set.has(normalizeWortigerWord(v));
   if (options.rule === 'must-exist' && !exists) {

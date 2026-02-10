@@ -68,11 +68,11 @@ describe('wortiger-validation', () => {
   });
 
   it('validates against word list (must-exist)', () => {
-    const wordSets = {
-      4: new Set(['wort']),
-      5: new Set(),
-      6: new Set(),
-      7: new Set(),
+    const wordSets: Record<number, Set<string>> = {
+      4: new Set<string>(['wort']),
+      5: new Set<string>(),
+      6: new Set<string>(),
+      7: new Set<string>(),
     };
 
     expect(
@@ -83,12 +83,30 @@ describe('wortiger-validation', () => {
     ).toMatch(/nicht in der 4-Buchstaben-Wortliste/i);
   });
 
+  it('blocks when word list is missing and policy is block', () => {
+    const wordSets: Record<number, Set<string>> = {
+      4: new Set<string>(),
+      5: new Set<string>(),
+      6: new Set<string>(),
+      7: new Set<string>(),
+    };
+
+    expect(
+      validateAgainstWordList({
+        level: 4,
+        value: 'WORT',
+        wordSets,
+        rule: 'must-exist',
+      }),
+    ).toMatch(/noch nicht geladen/i);
+  });
+
   it('validates against word list (must-not-exist)', () => {
-    const wordSets = {
-      4: new Set(['wort']),
-      5: new Set(),
-      6: new Set(),
-      7: new Set(),
+    const wordSets: Record<number, Set<string>> = {
+      4: new Set<string>(['wort']),
+      5: new Set<string>(),
+      6: new Set<string>(),
+      7: new Set<string>(),
     };
 
     expect(
