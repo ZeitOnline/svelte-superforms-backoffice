@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { GameComplete, GameWortiger } from '$types';
+  import type { GameComplete, GameWortiger, GameWortigerComplete } from '$types';
   import { superForm, setError } from 'sveltekit-superforms';
   import type { SuperValidated } from 'sveltekit-superforms';
   import { blur } from 'svelte/transition';
@@ -15,10 +15,17 @@
   import { getToastState } from '$lib/toast-state.svelte';
   import { saveWortigerGameFormSchema, type SaveWortigerGameFormSchema } from '$schemas/wortiger';
   import { isWortigerGame } from '$utils';
+  import {
+    fetchWordSetForLength,
+    getLastUsedInfo,
+    validateAgainstWordList,
+  } from '$lib/games/wortiger-validation';
   import { SvelteDate } from 'svelte/reactivity';
+  import { CONFIG_GAMES } from '$config/games.config';
+  import { MAP_LEVEL_CHARACTERS } from '$lib/games/wortiger';
 
   type DataProps = {
-    games: GameWortiger[];
+    games: GameWortigerComplete[];
     generateGameForm: SuperValidated<SaveWortigerGameFormSchema>;
     saveGameForm: SuperValidated<SaveWortigerGameFormSchema>;
   };
@@ -33,6 +40,52 @@
 
   const toastManager = getToastState();
   let isSubmitted = false;
+  const WORDLIST_RULE: 'must-exist' | 'must-not-exist' = 'must-exist';
+
+  let wordSets = $state<Record<number, Set<string>>>({
+    4: new Set(),
+    5: new Set(),
+    6: new Set(),
+    7: new Set(),
+  });
+
+  const levelToLength = (level: number) => MAP_LEVEL_CHARACTERS[level];
+
+  async function ensureWordSetForLevel(level: number) {
+    const length = levelToLength(level);
+    if (!length) return;
+    const existing = wordSets[length];
+    if (existing && existing.size > 0) return;
+    try {
+      const set = await fetchWordSetForLength({
+        apiBase: CONFIG_GAMES.wortiger.apiBase,
+        endpointName: CONFIG_GAMES.wortiger.endpoints.wordList!.name,
+        length,
+      });
+      const next = { ...wordSets };
+      next[length] = set;
+      wordSets = next;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function validateAgainstWordListForForm(level: number, value: string): string | null {
+    return validateAgainstWordList({
+      level,
+      value,
+      wordSets,
+      rule: WORDLIST_RULE,
+    });
+  }
+
+  const computeLastUsed = (level: number, value: string) =>
+    getLastUsedInfo({
+      games: data.games,
+      level,
+      value,
+      excludeId: beginning_option === 'edit' && game ? game.id : undefined,
+    });
 
   // svelte-ignore state_referenced_locally
   const wortigerForm = data.saveGameForm;
@@ -44,6 +97,12 @@
     taintedMessage: isSubmitted ? false : true,
     async onUpdate({ form }) {
       try {
+        const wordListMsg = validateAgainstWordListForForm(form.data.level, form.data.solution);
+        if (wordListMsg) {
+          setError(form, 'solution', wordListMsg);
+          return;
+        }
+
         // Build final data for Wortiger
         const finalData = {
           level: form.data.level,
@@ -153,6 +212,13 @@
     if ($form.release_date === '') {
       addCustomDate();
     }
+
+  });
+
+  $effect(() => {
+    if ($form.level) {
+      ensureWordSetForLevel($form.level);
+    }
   });
 
   const addCustomDate = async () => {
@@ -166,6 +232,8 @@
       console.error('Error fetching next available date:', error);
     }
   };
+
+  const lastUsed = $derived.by(() => computeLastUsed($form.level, $form.solution));
 
   function resetAll() {
     reset();
@@ -211,7 +279,7 @@
     <label class="text-md font-bold" for="level">Level:</label>
     <div class="relative">
       <select
-        class="border py-z-ds-8 w-full sm:w-[250px] px-z-ds-12 invalid:border-red-600 border-black text-md"
+        class="border py-z-ds-8 w-full sm:w-62.5 px-z-ds-12 invalid:border-red-600 border-black text-md"
         name="level"
         id="level"
         aria-invalid={$errors.level ? 'true' : undefined}
@@ -226,7 +294,7 @@
       {#if $errors.level}
         <div
           in:blur
-          class="text-red-500 invalid flex items-center gap-z-ds-4 text-xs sm:max-w-[250px] mt-2"
+          class="text-red-500 invalid flex items-center gap-z-ds-4 text-xs sm:max-w-62.5 mt-2"
         >
           <IconHandler
             iconName="error"
@@ -245,7 +313,7 @@
     <label class="text-md font-bold" for="solution">Lösung:</label>
     <div class="relative">
       <input
-        class="border py-z-ds-8 w-full sm:w-[250px] px-z-ds-12 invalid:border-red-600 border-black text-md"
+        class="border py-z-ds-8 w-full sm:w-62.5 px-z-ds-12 invalid:border-red-600 border-black text-md"
         name="solution"
         id="solution"
         type="text"
@@ -257,13 +325,26 @@
       {#if $errors.solution}
         <div
           in:blur
-          class="text-red-500 invalid flex items-center gap-z-ds-4 text-xs sm:max-w-[250px] mt-2"
+          class="text-red-500 invalid flex items-center gap-z-ds-4 text-xs sm:max-w-62.5 mt-2"
         >
           <IconHandler
             iconName="error"
             extraClasses="min-w-4 min-h-4 w-4 h-4 text-z-ds-color-accent-100"
           />
           <span class="text-xs">{$errors.solution}</span>
+        </div>
+      {/if}
+
+      {#if lastUsed}
+        <div class="text-amber-700 flex items-center gap-z-ds-4 text-xs sm:max-w-62.5 mt-2">
+          <IconHandler
+            iconName="error"
+            extraClasses="min-w-4 min-h-4 w-4 h-4 text-amber-600"
+          />
+          <span class="text-xs">
+            „{$form.solution}“ wurde zuletzt am {lastUsed.lastDate ?? 'unbekannt'} verwendet
+            {lastUsed.count > 1 ? ` (${lastUsed.count}×)` : ''}.
+          </span>
         </div>
       {/if}
     </div>
@@ -276,7 +357,7 @@
     <label class="text-md font-bold" for="release_date">Veröffentlichungsdatum:</label>
     <div class="relative">
       <input
-        class="border py-z-ds-8 w-full sm:w-[250px] px-z-ds-12 border-black text-md"
+        class="border py-z-ds-8 w-full sm:w-62.5 px-z-ds-12 border-black text-md"
         name="release_date"
         id="release_date"
         type="date"
@@ -287,7 +368,7 @@
       {#if $errors.release_date}
         <div
           in:blur
-          class="text-red-500 invalid flex items-center gap-z-ds-4 text-xs sm:max-w-[250px] mt-2"
+          class="text-red-500 invalid flex items-center gap-z-ds-4 text-xs sm:max-w-62.5 mt-2"
         >
           <IconHandler
             iconName="error"
