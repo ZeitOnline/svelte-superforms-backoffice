@@ -1,6 +1,6 @@
 <script lang="ts">
   import ViewWrapper from '$components/ViewWrapper.svelte';
-  import type { BeginningOptions, GameComplete, QuestionComplete } from '$types';
+  import type { BeginningOptions, GameComplete } from '$types';
   import GameTableWrapper from '$components/GameTableWrapper.svelte';
   import { onMount } from 'svelte';
   import { getResultBodyForGame } from '$lib/games/eckchen';

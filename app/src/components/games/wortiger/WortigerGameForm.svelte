@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { GameComplete, GameWortiger, GameWortigerComplete } from '$types';
+  import type { GameComplete, GameWortigerComplete } from '$types';
   import { superForm, setError } from 'sveltekit-superforms';
   import type { SuperValidated } from 'sveltekit-superforms';
   import { blur } from 'svelte/transition';
@@ -20,7 +20,7 @@
     getLastUsedInfo,
     validateAgainstWordList,
   } from '$lib/games/wortiger-validation';
-  import { SvelteDate } from 'svelte/reactivity';
+  import { SvelteDate, SvelteMap } from 'svelte/reactivity';
   import { CONFIG_GAMES } from '$config/games.config';
   import { MAP_LEVEL_CHARACTERS } from '$lib/games/wortiger';
 
@@ -48,6 +48,7 @@
     6: new Set(),
     7: new Set(),
   });
+  const pendingWordSets = new SvelteMap<number, Promise<Set<string>>>();
 
   const levelToLength = (level: number) => MAP_LEVEL_CHARACTERS[level];
 
@@ -56,17 +57,34 @@
     if (!length) return;
     const existing = wordSets[length];
     if (existing && existing.size > 0) return;
+    const inFlight = pendingWordSets.get(length);
+    if (inFlight) {
+      await inFlight;
+      const after = wordSets[length];
+      if (!after || after.size === 0) {
+        throw new Error(`Wortliste für ${length} Buchstaben konnte nicht geladen werden`);
+      }
+      return;
+    }
     try {
-      const set = await fetchWordSetForLength({
+      const promise = fetchWordSetForLength({
         apiBase: CONFIG_GAMES.wortiger.apiBase,
         endpointName: CONFIG_GAMES.wortiger.endpoints.wordList!.name,
         length,
       });
+      pendingWordSets.set(length, promise);
+      const set = await promise;
       const next = { ...wordSets };
       next[length] = set;
       wordSets = next;
+      if (set.size === 0) {
+        throw new Error(`Wortliste für ${length} Buchstaben konnte nicht geladen werden`);
+      }
     } catch (e) {
       console.error(e);
+      throw e;
+    } finally {
+      pendingWordSets.delete(length);
     }
   }
 
@@ -97,6 +115,13 @@
     taintedMessage: isSubmitted ? false : true,
     async onUpdate({ form }) {
       try {
+        try {
+          await ensureWordSetForLevel(form.data.level);
+        } catch (e) {
+          setError(form, 'solution', 'Wortliste konnte nicht geladen werden.');
+          return;
+        }
+
         const wordListMsg = validateAgainstWordListForForm(form.data.level, form.data.solution);
         if (wordListMsg) {
           setError(form, 'solution', wordListMsg);
