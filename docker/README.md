@@ -3,10 +3,11 @@
 This Docker Compose setup provides a complete development environment with:
 
 - **SvelteKit App**: Your main application running on port 3000
-- **PostgreSQL**: Database with two schemas (eckchen, wortiger) on port 5432
+- **PostgreSQL**: Database with three schemas (eckchen, wortiger, spelling_bee) on port 5432
 - **PostgREST APIs**:
   - Eckchen API on port 3001
   - Wortiger API on port 3002
+  - SpellingBee API on port 3003
 - **Nginx Reverse Proxy**: Routes API requests on port 8080
 
 ## Quick Start
@@ -40,11 +41,13 @@ This Docker Compose setup provides a complete development environment with:
 
 - **Eckchen API**: http://localhost:8080/api/eckchen/
 - **Wortiger API**: http://localhost:8080/api/wortiger/
+- **SpellingBee API**: http://localhost:8080/api/spelling-bee/
 
 ### Direct API Access
 
 - **Eckchen PostgREST**: http://localhost:3001
 - **Wortiger PostgREST**: http://localhost:3002
+- **SpellingBee PostgREST**: http://localhost:3003
 
 ### Database
 
@@ -52,7 +55,7 @@ This Docker Compose setup provides a complete development environment with:
   - Database: `main`
   - Username: `postgres`
   - Password: `postgres`
-  - Schemas: `eckchen`, `wortiger`
+  - Schemas: `eckchen`, `wortiger`, `spelling_bee`
 
 ## API Usage Examples
 
@@ -92,6 +95,13 @@ curl -X POST http://localhost:8080/api/wortiger/words \
 curl http://localhost:8080/api/wortiger/categories
 ```
 
+### SpellingBee API
+
+```bash
+# Get all games
+curl http://localhost:8080/api/spelling-bee/game
+```
+
 ## Database Schema
 
 ### Eckchen Schema
@@ -129,6 +139,9 @@ curl http://localhost:3001/
 
 # Wortiger schema
 curl http://localhost:3002/
+
+# SpellingBee schema
+curl http://localhost:3003/
 ```
 
 ## Configuration
@@ -140,6 +153,7 @@ The app service has access to these environment variables:
 - `DATABASE_URL`: Direct PostgreSQL connection
 - `POSTGREST_ECKCHEN_URL`: Internal URL for Eckchen API
 - `POSTGREST_WORTIGER_URL`: Internal URL for Wortiger API
+- `POSTGREST_SPELLING_BEE_URL`: Internal URL for SpellingBee API
 
 ### Security Notes
 
@@ -161,6 +175,7 @@ docker compose ps
 docker compose logs postgres
 docker compose logs postgrest_eckchen
 docker compose logs postgrest_wortiger
+docker compose logs postgrest_spelling_bee
 docker compose logs app
 docker compose logs nginx
 ```

@@ -26,9 +26,8 @@ export default defineConfig({
         rewrite: path => path.replace(/^\/backoffice\/api\/wortiger/, ''),
       },
       '/backoffice/api/spelling-bee': {
-        target: 'https://spiele.staging.zeit.de/admin/api/spelling-bee',
+        target: 'http://localhost:3003',
         rewrite: path => path.replace(/^\/backoffice\/api\/spelling-bee/, ''),
-        changeOrigin: true,
       },
     },
   },
