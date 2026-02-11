@@ -5,6 +5,7 @@
 -- Create schemas
 CREATE SCHEMA IF NOT EXISTS eckchen;
 CREATE SCHEMA IF NOT EXISTS wortiger;
+CREATE SCHEMA IF NOT EXISTS spelling_bee;
 
 -- Create PostgREST role
 DO $$
@@ -18,6 +19,7 @@ $$;
 -- Grant schema usage
 GRANT USAGE ON SCHEMA eckchen TO web_anon;
 GRANT USAGE ON SCHEMA wortiger TO web_anon;
+GRANT USAGE ON SCHEMA spelling_bee TO web_anon;
 
 -- ================================
 -- ECKCHEN SCHEMA DEFINITIONS
@@ -68519,6 +68521,145 @@ SELECT pg_catalog.setval('wortiger.user_statistics_id_seq', 20, true);
 SELECT pg_catalog.setval('wortiger.wortiger_games_id_seq', 4607, true);
 
 -- ================================
+-- SPELLING_BEE SCHEMA
+-- ================================
+
+CREATE SEQUENCE spelling_bee.game_id_seq;
+CREATE SEQUENCE spelling_bee.game_solution_id_seq;
+
+CREATE TABLE spelling_bee.game (
+    id integer NOT NULL DEFAULT nextval('spelling_bee.game_id_seq'::regclass),
+    name text NOT NULL,
+    start_time date NOT NULL,
+    wordcloud text NOT NULL
+);
+
+CREATE TABLE spelling_bee.game_solution (
+    id integer NOT NULL DEFAULT nextval('spelling_bee.game_solution_id_seq'::regclass),
+    game_id integer NOT NULL,
+    solution text NOT NULL,
+    points integer NOT NULL,
+    solution_type text NOT NULL,
+    solution_explanation text NOT NULL
+);
+
+ALTER SEQUENCE spelling_bee.game_id_seq OWNED BY spelling_bee.game.id;
+ALTER SEQUENCE spelling_bee.game_solution_id_seq OWNED BY spelling_bee.game_solution.id;
+
+ALTER TABLE ONLY spelling_bee.game
+    ADD CONSTRAINT pk_spelling_bee_game PRIMARY KEY (id);
+
+ALTER TABLE ONLY spelling_bee.game_solution
+    ADD CONSTRAINT pk_spelling_bee_game_solution PRIMARY KEY (id);
+
+ALTER TABLE ONLY spelling_bee.game_solution
+    ADD CONSTRAINT fk_spelling_bee_game_solution_game_id
+    FOREIGN KEY (game_id) REFERENCES spelling_bee.game(id);
+
+-- Seed data
+COPY spelling_bee.game (id, name, start_time, wordcloud) FROM stdin;
+1	Buchstabiene Nr.001	2025-01-01	PULSKURTE
+2	Buchstabiene Nr.002	2025-01-02	CETTOKBIJ
+\.
+
+COPY spelling_bee.game_solution (id, game_id, solution, points, solution_type, solution_explanation) FROM stdin;
+1	1	SKULPTEUR	12	Nomen	Bildhauer
+2	1	SKULPTUR	8	Nomen	dreidimensionales (Kunst)Werk
+3	1	SKRUPEL	7	Nomen	Bedenken, Hemmung
+4	1	PULKES	6	Nomen	Gen. von "Pulk" (Anhäufung)
+5	1	SPUKET	6	Verbform	Imp. Pl. von "spuken", "spuket woanders!"
+6	1	SPUKTE	6	Verbform	von "spuken", "es spukte im Haus"
+7	1	KEULST	6	Verbform	von "keulen" (Tiere töten), "du keulst"
+8	1	KLERUS	6	Nomen	kath. Geistlichkeit
+9	1	KULTES	6	Nomen	Gen. von "Kult" (Verehrung)
+10	1	KULTUR	6	Nomen	Gesamtheit kreativer Schöpfungen etc. einer Gemeinschaft
+11	1	KULTUS	6	Nomen	Verehrung (=Kult)
+12	1	ULKEST	6	Verbform	von "ulken" (spaßen), "du sagst, du ulkest gern"
+13	1	KRUSTE	6	Nomen	hart gewordene Oberfläche
+14	1	KUREST	6	Verbform	von "kuren" (eine Kur machen), "du sagst, du kurest noch ein bisschen"
+15	1	PULKE	5	Nomen	Dat. von "Pulk" (Anhäufung)
+16	1	PULKS	5	Nomen	Gen. von "Pulk" (Anhäufung)
+17	1	SPUKE	5	Verbform	von "spuken", "ich spuke durchs Haus"
+18	1	SPUKT	5	Verbform	von "spuken", "es spukt im Haus"
+19	1	KELTS	5	Nomen	Gen. von "Kelt" (frühzeitl. Beil)
+20	1	KERLS	5	Nomen	Gen. von "Kerl"
+21	1	KEULT	5	Verbform	von "keulen" (Tiere töten), "sie keult"
+22	1	KULTE	5	Nomen	Dat. von "Kult" (Verehrung)
+23	1	KULTS	5	Nomen	Gen. von "Kult" (Verehrung)
+24	1	LUKES	5	Nomen	Gen. von "Luk" (Öffnung auf Schiffen)
+25	1	ULKES	5	Nomen	Gen. von "Ulk" (Spaß)
+26	1	ULKET	5	Verbform	Imp. Pl. von "ulken" (spaßen), "ulket doch mal wieder!"
+27	1	ULKST	5	Verbform	von "ulken" (spaßen), "du ulkst doch"
+28	1	ULKTE	5	Verbform	von "ulken" (spaßen), "sie ulkte wie ein Kind"
+29	1	ULKUS	5	Nomen	Geschwür
+30	1	KURET	5	Verbform	Imp. Pl. von "kuren" (eine Kur machen), "kuret bis zur Genesung!"
+31	1	KURSE	5	Nomen	Pl. von "Kurs" (Lehrgang, Richtung)
+32	1	KURST	5	Verbform	von "kuren" (eine Kur machen), "du kurst"
+33	1	KURTE	5	Verbform	von "kuren" (eine Kur machen), "er kurte wochenlang"
+34	1	KURUS	5	Nomen	Untereinheit der türk. Lira
+35	1	PULK	3	Nomen	Anhäufung
+36	1	SPUK	3	Nomen	Gespenst, gespenstische Szenerie
+37	1	KELT	3	Nomen	frühzeitl. Beil
+38	1	KERL	3	Nomen	ugs. für "Mann"
+39	1	KEUL	3	Verbform	Imp. von "keulen" (Tiere töten), "keul alle kranken Tiere!"
+40	1	KLUS	3	Nomen	schweiz. für schluchtenartiges Quertal
+41	1	KULT	3	Nomen	Verehrung
+42	1	LUKE	3	Nomen	Öffnung auf Schiffen (=Luk)
+43	1	LUKS	3	Nomen	Gen. von "Luk" (Öffnung auf Schiffen)
+44	1	ULKE	3	Verbform	von "ulken" (spaßen), "ich ulke doch nur"
+45	1	ULKS	3	Nomen	Gen. von "Ulk" (Spaß)
+46	1	ULKT	3	Verbform	von "ulken" (spaßen), "sie ulkt den ganzen Tag"
+47	1	KURE	3	Verbform	von "kuren" (eine Kur machen), "ich kure"
+48	1	KURS	3	Nomen	Lehrgang, Richtung
+49	1	KURT	3	Verbform	von "kuren" (eine Kur machen), "er kurt"
+50	1	KUTE	3	Nomen	nordd. für Graben
+51	1	SEKT	3	Nomen	alkoholh. Getränk
+52	1	STEK	3	Nomen	Knoten
+53	1	LEK	2	Nomen	Währungseinheit in Albanien
+54	1	LUK	2	Nomen	Öffnung auf Schiffen
+55	1	ULK	2	Nomen	Spaß
+56	1	KUR	2	Nomen	Erholungsaufenthalt
+57	2	JOBTICKET	12	Nomen	Beförderungsschein
+58	2	BOCKTET	7	Verbform	von "bocken" (bockig sein), "ihr bocktet"
+59	2	OBJEKT	6	Nomen	Gegenstand
+60	2	BOCKET	6	Verbform	Imp. Pl. von "bocken" (bockig sein), "bocket doch nicht so!"
+61	2	BOCKTE	6	Verbform	von "bocken" (bockig sein), "sie bockte"
+62	2	BOCKE	5	Verbform	von "bocken" (bockig sein), "ich bocke"
+63	2	BOCKT	5	Verbform	von "bocken" (bockig sein), "er bockt"
+64	2	BOJET	5	Verbform	Imp. Pl. von "ausbojen" (Fahrwasser markieren), "bojet die Elbe aus!"
+65	2	KOTET	5	Verbform	von "koten" (Kot ausscheiden), "ihr kotet"
+66	2	BOTET	5	Verbform	von "bieten", "ihr botet zu wenig"
+67	2	BOTTE	5	Nomen	Pl. von "Bott" (schweiz. für Mitgliederversammlung)
+68	2	TOBET	5	Verbform	von "toben", "ihr tobtet"
+69	2	TOBTE	5	Verbform	von "toben", "er tobte"
+70	2	BOCK	3	Nomen	männl. Tier
+71	2	KOJE	3	Nomen	Schlafplatz auf Schiffen
+72	2	BOJE	3	Nomen	verankerter Schwimmkörper
+73	2	COKE	3	Nomen	Kurzw. für Coca-Cola (Anm.: kein Name, da pluralfähig)
+74	2	KOTE	3	Nomen	nordd. für kleines Haus
+75	2	BOTE	3	Nomen	Überbringer
+76	2	BOTT	3	Nomen	schweiz. für Mitgliederversammlung
+77	2	TOBE	3	Verbform	von "toben", "ich tobe vor Wut"
+78	2	TOBT	3	Verbform	von "toben", "er tobt"
+79	2	TOTE	3	Nomen	leblose Person
+80	2	JOB	2	Nomen	Beruf, bezahlte Tätigkeit
+81	2	JOT	2	Nomen	ein Buchstabe (J)
+82	2	OJE	2	Interjektion	"oje!"
+83	2	KOI	2	Nomen	eine Karpfenart
+84	2	KOT	2	Nomen	Ausscheidung
+85	2	BEO	2	Nomen	ein Singvogel
+86	2	BIO	2	Nomen	Kurzw. für Biologieunterricht (Schülersprache)
+87	2	BOT	2	Verbform	von "bieten", "er bot zu wenig"
+88	2	OBI	2	Nomen	Kimonogürtel
+89	2	TOB	2	Verbform	Imp. von "toben", "tob doch nicht gleich!"
+90	2	OIE	2	Nomen	kleine Ostseeinsel
+91	2	TOT	2	Adjektiv	leblos
+\.
+
+SELECT pg_catalog.setval('spelling_bee.game_id_seq', 2, true);
+SELECT pg_catalog.setval('spelling_bee.game_solution_id_seq', 91, true);
+
+-- ================================
 -- POSTGREST PERMISSIONS
 -- ================================
 
@@ -68530,9 +68671,16 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA eckchen TO web_anon;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA wortiger TO web_anon;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA wortiger TO web_anon;
 
+-- Grant permissions for PostgREST on spelling_bee schema
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA spelling_bee TO web_anon;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA spelling_bee TO web_anon;
+
 -- Set default permissions for future tables
 ALTER DEFAULT PRIVILEGES IN SCHEMA eckchen GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO web_anon;
 ALTER DEFAULT PRIVILEGES IN SCHEMA eckchen GRANT USAGE, SELECT ON SEQUENCES TO web_anon;
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA wortiger GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO web_anon;
 ALTER DEFAULT PRIVILEGES IN SCHEMA wortiger GRANT USAGE, SELECT ON SEQUENCES TO web_anon;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA spelling_bee GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO web_anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA spelling_bee GRANT USAGE, SELECT ON SEQUENCES TO web_anon;
