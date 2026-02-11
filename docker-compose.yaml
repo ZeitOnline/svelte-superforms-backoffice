@@ -60,6 +60,26 @@ services:
     networks:
       - app_network
 
+  # PostgREST API for SpellingBee schema
+  postgrest_spelling_bee:
+    image: postgrest/postgrest:v13.0.4@sha256:a312f4b2e48530a01fc26f5310d547d6c26d087858360e164522e415723a7732
+    container_name: postgrest_spelling_bee
+    environment:
+      PGRST_DB_URI: postgres://postgres:postgres@postgres:5432/main
+      PGRST_DB_SCHEMAS: spelling_bee
+      PGRST_DB_ANON_ROLE: web_anon
+      PGRST_SERVER_HOST: "0.0.0.0"
+      PGRST_SERVER_PORT: 3000
+      PGRST_JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters
+      PGRST_DB_EXTRA_SEARCH_PATH: spelling_bee
+    ports:
+      - "3003:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app_network
+
   # Nginx reverse proxy for API routing
   # It applies only when using all services from docker-compose, i.e., not working with npm run dev etc.
   nginx:
@@ -72,6 +92,7 @@ services:
     depends_on:
       - postgrest_eckchen
       - postgrest_wortiger
+      - postgrest_spelling_bee
       - app
     networks:
       - app_network
@@ -90,6 +111,7 @@ services:
       # PostgREST endpoints for your app to use
       - POSTGREST_ECKCHEN_URL=http://postgrest_eckchen:3000
       - POSTGREST_WORTIGER_URL=http://postgrest_wortiger:3000
+      - POSTGREST_SPELLING_BEE_URL=http://postgrest_spelling_bee:3000
     ports:
       - "3000:3000"
     depends_on:
@@ -98,6 +120,8 @@ services:
       postgrest_eckchen:
         condition: service_started
       postgrest_wortiger:
+        condition: service_started
+      postgrest_spelling_bee:
         condition: service_started
     networks:
       - app_network
