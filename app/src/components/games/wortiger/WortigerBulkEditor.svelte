@@ -2,14 +2,19 @@
   import type { BeginningOptions, DataProps } from '$types';
   import { view } from '$stores/view-state-store.svelte';
   import { MAP_LEVEL_CHARACTERS } from '$lib/games/wortiger';
+  import {
+    fetchWordSetForLength,
+    normalizeWortigerWord,
+    validateAgainstWordList as validateAgainstWordListRule,
+  } from '$lib/games/wortiger-validation';
   import IconHandler from '$components/icons/IconHandler.svelte';
   import { createGamesBulk } from '$lib/queries';
   import { getToastState } from '$lib/toast-state.svelte';
   import { CONFIG_GAMES } from '$config/games.config';
   import { onMount } from 'svelte';
-  import { SvelteSet } from 'svelte/reactivity';
   import { isWortigerGame } from '$utils';
   import ViewNavigation from '$components/ViewNavigation.svelte';
+  import { SvelteSet } from 'svelte/reactivity';
 
   type Props = {
     data: DataProps;
@@ -99,31 +104,21 @@
   });
 
   /** Normalize for comparison (case-insensitive, trim). Adjust if you want strict case. */
-  const normalize = (s: string) => s.trim().toLocaleLowerCase('de-DE');
-
-  /** Fetch one list and return a Set of normalized words */
-  async function fetchWordSetForLength(length: number): Promise<Set<string>> {
-    const url = `${CONFIG_GAMES.wortiger.apiBase}/${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${length}?select=word`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Fetch failed for ${length}: ${res.status}`);
-    const data = await res.json();
-    const set = new SvelteSet<string>();
-    let i = 0;
-    while (data[i] !== undefined) {
-      const w = data[i]?.word;
-      if (w) {
-        set.add(normalize(w));
-      }
-      i++;
-    }
-    return set;
-  }
+  const normalize = normalizeWortigerWord;
 
   /** Fetch all lists required by the current "levels" columns */
   async function loadWordSets(levelLens: number[]) {
     try {
       const uniqueLens = Array.from(new Set(levelLens)).filter(n => [4, 5, 6, 7].includes(n));
-      const results = await Promise.all(uniqueLens.map(fetchWordSetForLength));
+      const results = await Promise.all(
+        uniqueLens.map(len =>
+          fetchWordSetForLength({
+            apiBase: CONFIG_GAMES.wortiger.apiBase,
+            endpointName: CONFIG_GAMES.wortiger.endpoints.wordList!.name,
+            length: len,
+          }),
+        ),
+      );
       const next: Record<number, Set<string>> = {
         4: new Set(),
         5: new Set(),
@@ -212,21 +207,13 @@
   }
 
   /** Validate a single solution cell against the corresponding word list */
-  function validateAgainstWordList(lengthForThisColumn: number, value: string): string | null {
-    const v = (value ?? '').trim();
-    if (!v) return null; // empty is handled elsewhere
-    const set = wordSets[lengthForThisColumn];
-    if (!set || set.size === 0) return null; // if not loaded yet, don’t block typing
-
-    const exists = set.has(normalize(v));
-
-    if (WORDLIST_RULE === 'must-exist' && !exists) {
-      return `❌ „${v}“ ist nicht in der ${lengthForThisColumn}-Buchstaben-Wortliste`;
-    }
-    if (WORDLIST_RULE === 'must-not-exist' && exists) {
-      return `❌ „${v}“ existiert bereits in der ${lengthForThisColumn}-Buchstaben-Wortliste`;
-    }
-    return null;
+  function validateAgainstWordListCell(lengthForThisColumn: number, value: string): string | null {
+    return validateAgainstWordListRule({
+      level: CHAR_TO_LEVEL[lengthForThisColumn] ?? lengthForThisColumn,
+      value,
+      wordSets,
+      rule: WORDLIST_RULE,
+    });
   }
 
   let hasDateConflicts = $derived(() => rows.some((r, i) => !!validateReleaseDate(r[0], i)));
@@ -236,7 +223,7 @@
       const [_date, ...solutions] = r;
       return solutions.some((val, idx) => {
         const len = levels[idx];
-        const msg = validateAgainstWordList(len, val);
+        const msg = validateAgainstWordListCell(len, val);
         return !!msg;
       });
     });
@@ -405,7 +392,7 @@
           {#each levels as lvl, j (lvl)}
             {@const expected = MAP_LEVEL_CHARACTERS[lvl]}
             {@const colIndex = 1 + j}
-            {@const msg = validateAgainstWordList(lvl, r[colIndex])}
+            {@const msg = validateAgainstWordListCell(lvl, r[colIndex])}
             {@const dupMsg = validateAgainstExistingSolutions(lvl, r[colIndex])}
             {@const tableDupMsg = validateWithinTableDuplicates(lvl, r[colIndex], i, colIndex)}
             <td class="px-2 py-1">
