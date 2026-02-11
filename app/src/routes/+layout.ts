@@ -26,11 +26,15 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
     const searchParam = url.searchParams.get('q') ?? '';
     const sortParam = url.searchParams.get('sort');
     const activeParam = url.searchParams.get('active');
+    const levelParam = url.searchParams.get('level');
 
     const pageSize = 10;
     let page = Math.max(1, Number(pageParam) || 1);
     const sort = isSortOption(sortParam) ? sortParam : DEFAULT_SORT;
     const hasActiveColumn = config.table.columns.some(col => col.key === 'active');
+    const levelLength = Number(levelParam);
+    const normalizedLevelLength =
+        gameType === 'wortiger' && [4, 5, 6, 7].includes(levelLength) ? levelLength : null;
     const activeFilter =
         hasActiveColumn && isActiveFilterOption(activeParam) ? activeParam : null;
 
@@ -45,6 +49,7 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
             search: searchParam,
             sort,
             activeFilter,
+            levelLength: normalizedLevelLength,
         }),
     ]);
 
@@ -62,6 +67,7 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
             search: searchParam,
             sort,
             activeFilter,
+            levelLength: normalizedLevelLength,
         });
         games = result.games;
         total = result.total;
@@ -87,6 +93,7 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
             search: searchParam,
             sort,
             activeFilter,
+            levelLength: normalizedLevelLength,
         },
         latestActiveGameIds,
     };

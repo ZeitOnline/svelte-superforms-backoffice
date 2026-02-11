@@ -5,6 +5,7 @@ import { CONFIG_GAMES } from '../config/games.config';
 import { deleteEckchenGame } from './games/eckchen';
 import { deleteWortigerGame } from './games/wortiger';
 import { deleteSpellingBeeGame } from './games/spelling-bee';
+import { MAP_LEVEL_CHARACTERS } from './games/wortiger';
 
 /**
  * Mock configuration to skip the deletion of game_state.
@@ -103,6 +104,25 @@ const setSearchParam = ({
   }
 };
 
+const LENGTH_TO_LEVEL: Record<number, number> = Object.fromEntries(
+  Object.entries(MAP_LEVEL_CHARACTERS).map(([level, length]) => [Number(length), Number(level)]),
+);
+
+const setWortigerLevelParam = ({
+  params,
+  gameName,
+  levelLength,
+}: {
+  params: URLSearchParams;
+  gameName: GameType;
+  levelLength: number | null;
+}) => {
+  if (gameName !== 'wortiger' || !levelLength) return;
+  const level = LENGTH_TO_LEVEL[levelLength];
+  if (!level) return;
+  params.set('level', `eq.${level}`);
+};
+
 /**
  * Get all games from the backend.
  * @returns all games
@@ -115,6 +135,7 @@ export const getAllGames = async ({
   search = '',
   sort = DEFAULT_SORT,
   activeFilter = null,
+  levelLength = null,
 }: {
   gameName: GameType;
   fetch: LoadEvent['fetch'];
@@ -123,6 +144,7 @@ export const getAllGames = async ({
   search?: string;
   sort?: SortOption;
   activeFilter?: ActiveFilter;
+  levelLength?: number | null;
 }) => {
   // If this is spelling-bee, embed solutions directly
   const selectParam =
@@ -140,7 +162,8 @@ export const getAllGames = async ({
 
   setOrderParam({ params, gameName, sort });
   setActiveParam({ params, gameName, activeFilter });
-  setSearchParam({ params, gameName, search });
+  setWortigerLevelParam({ params, gameName, levelLength });
+
 
   const URL = `${baseUrl}?${params.toString()}`;
   const response = await fetch(URL, {
