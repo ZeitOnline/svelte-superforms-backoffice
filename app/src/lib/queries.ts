@@ -73,6 +73,7 @@ const setSearchParam = ({
   const searchableColumns = CONFIG_GAMES[gameName].table.columns.filter(col => col.searchable);
   const numericColumns = new Set(['id', 'level']);
   const dateColumns = new Set(['release_date', 'start_time']);
+  const spellingBeeSolutionColumn = 'game_solution.solution';
 
   const isNumeric = /^[0-9]+$/.test(trimmedSearch);
   const isDateLike = /^[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(trimmedSearch);
@@ -96,6 +97,12 @@ const setSearchParam = ({
     }
 
     filters.push(`${key}.ilike.*${trimmedSearch}*`);
+  }
+
+  if (gameName === 'spelling-bee') {
+    filters.push(
+      `and(${spellingBeeSolutionColumn}=ilike.*${trimmedSearch}*,game_solution.points=eq.12)`,
+    );
   }
 
   if (filters.length > 0) {
@@ -124,23 +131,34 @@ export const getAllGames = async ({
   sort?: SortOption;
   activeFilter?: ActiveFilter;
 }) => {
+  const trimmedSearch = search.trim();
+  const useSpellingBeeSearchRpc =
+    gameName === 'spelling-bee' && !!trimmedSearch && import.meta.env.DEV;
+
   // If this is spelling-bee, embed solutions directly
   const selectParam =
     gameName === 'spelling-bee'
       ? 'id,name,start_time,wordcloud,game_solution(solution,points,solution_type,solution_explanation)'
       : '*';
 
-  const baseUrl = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
+  const baseUrl = useSpellingBeeSearchRpc
+    ? `${CONFIG_GAMES[gameName].apiBase}/rpc/search_spelling_bee`
+    : `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
   const offset = (page - 1) * pageSize;
 
   const params = new URLSearchParams();
   params.set('select', selectParam);
   params.set('limit', String(pageSize));
   params.set('offset', String(offset));
+  if (useSpellingBeeSearchRpc) {
+    params.set('term', trimmedSearch);
+  }
 
   setOrderParam({ params, gameName, sort });
   setActiveParam({ params, gameName, activeFilter });
-  setSearchParam({ params, gameName, search });
+  if (!useSpellingBeeSearchRpc) {
+    setSearchParam({ params, gameName, search });
+  }
 
   const URL = `${baseUrl}?${params.toString()}`;
   const response = await fetch(URL, {
@@ -347,9 +365,7 @@ export const getNextAvailableDateForGame = async (gameName: GameType, apiBaseUrl
   const lastFieldValue = data[0][dateField];
 
   const lastDateString =
-    gameName === 'spelling-bee'
-      ? lastFieldValue.split('T')[0]
-      : lastFieldValue;
+    gameName === 'spelling-bee' ? lastFieldValue.split('T')[0] : lastFieldValue;
 
   const today = new Date().toISOString().split('T')[0];
   const isDateInThePast = lastDateString < today;

@@ -68543,6 +68543,25 @@ CREATE TABLE spelling_bee.game_solution (
     solution_explanation text NOT NULL
 );
 
+CREATE OR REPLACE FUNCTION spelling_bee.search_spelling_bee(term text)
+RETURNS SETOF spelling_bee.game
+LANGUAGE sql
+STABLE
+AS $$
+    SELECT g.*
+    FROM spelling_bee.game g
+    WHERE g.name ILIKE '%' || term || '%'
+        OR g.wordcloud ILIKE '%' || term || '%'
+        OR EXISTS (
+            SELECT 1
+            FROM spelling_bee.game_solution s
+            WHERE s.game_id = g.id
+            AND s.points = 12
+            AND s.solution ILIKE '%' || term || '%'
+        );
+$$;
+
+
 ALTER SEQUENCE spelling_bee.game_id_seq OWNED BY spelling_bee.game.id;
 ALTER SEQUENCE spelling_bee.game_solution_id_seq OWNED BY spelling_bee.game_solution.id;
 
@@ -68674,6 +68693,7 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA wortiger TO web_anon;
 -- Grant permissions for PostgREST on spelling_bee schema
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA spelling_bee TO web_anon;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA spelling_bee TO web_anon;
+GRANT EXECUTE ON FUNCTION spelling_bee.search_spelling_bee(text) TO web_anon;
 
 -- Set default permissions for future tables
 ALTER DEFAULT PRIVILEGES IN SCHEMA eckchen GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO web_anon;
