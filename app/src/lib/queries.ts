@@ -3,7 +3,7 @@ import { DEFAULT_SORT } from '$lib/game-table-utils';
 import type { LoadEvent } from '@sveltejs/kit';
 import { CONFIG_GAMES } from '../config/games.config';
 import { deleteEckchenGame } from './games/eckchen';
-import { deleteWortigerGame } from './games/wortiger';
+import { deleteWortigerGame, LENGTH_TO_LEVEL } from './games/wortiger';
 import { deleteSpellingBeeGame } from './games/spelling-bee';
 
 /**
@@ -110,6 +110,21 @@ const setSearchParam = ({
   }
 };
 
+const setWortigerLevelParam = ({
+  params,
+  gameName,
+  levelLength,
+}: {
+  params: URLSearchParams;
+  gameName: GameType;
+  levelLength: number | null;
+}) => {
+  if (gameName !== 'wortiger' || !levelLength) return;
+  const level = LENGTH_TO_LEVEL[levelLength];
+  if (!level) return;
+  params.set('level', `eq.${level}`);
+};
+
 /**
  * Get all games from the backend.
  * @returns all games
@@ -122,6 +137,7 @@ export const getAllGames = async ({
   search = '',
   sort = DEFAULT_SORT,
   activeFilter = null,
+  levelLength = null,
 }: {
   gameName: GameType;
   fetch: LoadEvent['fetch'];
@@ -130,6 +146,7 @@ export const getAllGames = async ({
   search?: string;
   sort?: SortOption;
   activeFilter?: ActiveFilter;
+  levelLength?: number | null;
 }) => {
   const trimmedSearch = search.trim();
   const useSpellingBeeSearchRpc =
@@ -156,6 +173,8 @@ export const getAllGames = async ({
 
   setOrderParam({ params, gameName, sort });
   setActiveParam({ params, gameName, activeFilter });
+  setWortigerLevelParam({ params, gameName, levelLength });
+
   if (!useSpellingBeeSearchRpc) {
     setSearchParam({ params, gameName, search });
   }

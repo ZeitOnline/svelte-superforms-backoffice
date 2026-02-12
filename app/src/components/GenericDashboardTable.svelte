@@ -21,6 +21,7 @@
   import { page } from '$app/state';
   import { CONFIG_GAMES } from '../config/games.config';
   import { spellingBeeStore, toggleLegend } from '$stores/spelling-bee-word.svelte';
+  import WortigerLevelTabs from '$components/games/wortiger/WortigerLevelTabs.svelte';
 
   type Props = {
     games: GameComplete[];
@@ -38,6 +39,7 @@
     search: gamesPage.search ?? '',
     sort: gamesPage.sort ?? DEFAULT_SORT,
     activeFilter: gamesPage.activeFilter ?? null,
+    levelLength: gamesPage.levelLength ?? null,
   });
   let searchTerm = $derived(normalizedGamesPage.search);
   let debouncedSearchTerm = $derived(normalizedGamesPage.search);
@@ -83,6 +85,7 @@
       search?: string;
       sort?: SortOption;
       active?: ActiveFilter;
+      levelLength?: number | null;
     },
     replaceState = false,
   ) {
@@ -118,6 +121,14 @@
       }
     }
 
+    if (next.levelLength !== undefined) {
+      if (next.levelLength) {
+        params.set('level', String(next.levelLength));
+      } else {
+        params.delete('level');
+      }
+    }
+
     goto(`${url.pathname}?${params.toString()}`, {
       replaceState,
       keepFocus: true,
@@ -140,7 +151,7 @@
   });
 
   function resetAllFilters() {
-    updateQuery({ sort: DEFAULT_SORT, active: null, page: 1 }, true);
+    updateQuery({ sort: DEFAULT_SORT, active: null, levelLength: null, page: 1 }, true);
   }
 
   function toggleFilter(filter: SortOption | ActiveFilterOption) {
@@ -151,7 +162,7 @@
       return;
     }
 
-    if (filter === "active") {
+    if (filter === 'active') {
       const nextActive = normalizedGamesPage.activeFilter === 'active' ? null : 'active';
       updateQuery({ active: nextActive, page: 1 }, true);
     } else if (filter === 'notActive') {
@@ -159,6 +170,9 @@
       updateQuery({ active: nextActive, page: 1 }, true);
     }
   }
+
+  const updateWortigerLength = (length: number | null) =>
+    updateQuery({ levelLength: length, page: 1 }, true);
 
   // Helper function to render cell content with highlighting
   function renderCellContent(game: GameComplete, column: TableColumn): string | number {
@@ -256,7 +270,18 @@
   </svg>
 {/snippet}
 
-<TableFilters {resetAllFilters} idButtonOpener="filter-opener" {popoverContent} {popoverOpener} />
+<div class="flex items-center justify-between gap-3">
+  {#if gameName === 'wortiger'}
+    <WortigerLevelTabs
+      apiBase={currentGameConfig.apiBase}
+      endpointName={currentGameConfig.endpoints.games.name}
+      levelLength={normalizedGamesPage.levelLength}
+      onChange={updateWortigerLength}
+    />
+  {/if}
+
+  <TableFilters {resetAllFilters} idButtonOpener="filter-opener" {popoverContent} {popoverOpener} />
+</div>
 
 <div class="text-xs text-z-ds-color-black-80 mt-3 flex justify-end">
   {#if totalResults === 0}
@@ -286,8 +311,7 @@
       {#if games.length > 0}
         {#each games as item (item.id)}
           {@const isOneOfTwentyLatestActiveGames =
-            currentGameConfig.table.hasLiveView &&
-            latestActiveGameIds.includes(item.id)}
+            currentGameConfig.table.hasLiveView && latestActiveGameIds.includes(item.id)}
 
           <tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
             <!-- Generate cells dynamically from configuration -->
@@ -402,14 +426,3 @@
 </div>
 
 <TablePagination bind:currentPage {totalPages} />
-
-<style lang="postcss">
-  @reference "../app.css";
-
-  .filter-button {
-    @apply bg-white text-xs px-2 py-1 rounded-md cursor-pointer border border-black hover:bg-gray-200 focus:bg-gray-200;
-  }
-  .filter-button.active {
-    @apply bg-black text-white;
-  }
-</style>

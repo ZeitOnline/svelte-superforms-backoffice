@@ -94,6 +94,7 @@ export type GamesPageInfo = {
   search: string;
   sort: SortOption;
   activeFilter: ActiveFilter;
+  levelLength?: number | null;
 };
 
 export type ToastType = {

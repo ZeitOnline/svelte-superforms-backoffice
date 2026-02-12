@@ -5,17 +5,16 @@
   import IconHandler from '$components/icons/IconHandler.svelte';
   import { getToastState } from '$lib/toast-state.svelte';
   import { toCSV } from './utils';
-    import type { SortDirection } from '$types';
+  import type { SortDirection } from '$types';
+  import { WORTIGER_LENGTHS } from '$lib/games/wortiger';
 
-  let wordListNumber = $state<number>(4);
+  const DEFAULT_LENGTH = WORTIGER_LENGTHS[0] ?? 4;
+  const EMPTY_WORDS = Object.fromEntries(WORTIGER_LENGTHS.map(len => [len, [] as string[]]));
+
+  let wordListNumber = $state<number>(DEFAULT_LENGTH);
   let words = $state<string[]>([]);
-  let allWords = $state<{ [key: number]: string[] }>({
-    4: [],
-    5: [],
-    6: [],
-    7: [],
-  });
-  let activeTab = $state<number>(4);
+  let allWords = $state<Record<number, string[]>>({ ...EMPTY_WORDS });
+  let activeTab = $state<number>(DEFAULT_LENGTH);
   let loading = $state<boolean>(false);
   let search = $state('');
   let debouncedSearch = $state('');
@@ -375,7 +374,7 @@
 <!-- Tab Navigation -->
 <div class="tab-container">
   <nav class="tabs flex flex-col md:flex-row justify-center gap-3">
-    {#each [4, 5, 6, 7] as tabNum (tabNum)}
+    {#each WORTIGER_LENGTHS as tabNum (tabNum)}
       <button
         class="tab-button bg-gray-100 hover:bg-gray-300 text-xs px-3 py-1 border border-black cursor-pointer"
         class:!bg-gray-300={activeTab === tabNum}
