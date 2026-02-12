@@ -171,7 +171,6 @@
     }
   }
 
-  const selectedWortigerLength = $derived(normalizedGamesPage.levelLength ?? null);
   const updateWortigerLength = (length: number | null) =>
     updateQuery({ levelLength: length, page: 1 }, true);
 
@@ -276,7 +275,7 @@
     <WortigerLevelTabs
       apiBase={currentGameConfig.apiBase}
       endpointName={currentGameConfig.endpoints.games.name}
-      levelLength={selectedWortigerLength}
+      levelLength={normalizedGamesPage.levelLength}
       onChange={updateWortigerLength}
     />
   {/if}

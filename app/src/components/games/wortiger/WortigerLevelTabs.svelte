@@ -7,7 +7,7 @@
   type Props = {
     apiBase: string;
     endpointName: string;
-    levelLength: number | null;
+    levelLength: number | null | undefined;
     onChange: (length: number | null) => void;
   };
 
