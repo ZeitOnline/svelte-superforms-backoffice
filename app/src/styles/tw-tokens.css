@@ -1,0 +1,98 @@
+@theme {
+  --color-primary-main: var(--z-ds-color-focus-100);
+
+  --color-z-ds-general-black-40: var(--z-ds-color-general-black-40);
+  --color-z-ds-general-black-60: var(--z-ds-color-general-black-60);
+  --color-z-ds-general-black-80: var(--z-ds-color-general-black-80);
+  --color-z-ds-general-black-100: var(--z-ds-color-general-black-100);
+  --color-z-ds-general-black-100--rgb: var(--z-ds-color-general-black-100--rgb);
+
+  --color-z-ds-general-white-40: var(--z-ds-color-general-white-40);
+  --color-z-ds-general-white-60: var(--z-ds-color-general-white-60);
+  --color-z-ds-general-white-80: var(--z-ds-color-general-white-80);
+  --color-z-ds-general-white-100: var(--z-ds-color-general-white-100);
+  --color-z-ds-general-white-100--rgb: var(--z-ds-color-general-white-100--rgb);
+
+  --color-z-ds-color-background-0: var(--z-ds-color-background-0);
+  --color-z-ds-color-background-0--rgb: var(--z-ds-color-background-0--rgb);
+  --color-z-ds-color-background-10: var(--z-ds-color-background-10);
+  --color-z-ds-color-background-20: var(--z-ds-color-background-20);
+  --color-z-ds-color-background-modal: var(--z-ds-color-background-modal);
+  --color-z-ds-color-background-warning: var(--z-ds-color-background-warning);
+
+  --color-z-ds-color-text-40: var(--z-ds-color-text-40);
+  --color-z-ds-color-text-55: var(--z-ds-color-text-55);
+  --color-z-ds-color-text-70: var(--z-ds-color-text-70);
+  --color-z-ds-color-text-100: var(--z-ds-color-text-100);
+  --color-z-ds-color-text-100--rgb: var(--z-ds-color-text-100--rgb);
+
+  --color-z-ds-color-accent-70: var(--z-ds-color-accent-70);
+  --color-z-ds-color-accent-100: var(--z-ds-color-accent-100);
+
+  --color-z-ds-color-error-70: var(--z-ds-color-error-70);
+
+  --color-z-ds-color-focus-100: var(--z-ds-color-focus-100);
+
+  --color-z-ds-color-success-100: var(--z-ds-color-background-success);
+
+  --color-z-ds-color-border-70: var(--z-ds-color-border-70);
+  --color-z-ds-color-border-100: var(--z-ds-color-border-100);
+  --color-z-ds-color-border-hover: var(--z-ds-color-border-hover);
+
+  --color-z-ds-color-hey-studium-primary: var(--z-ds-color-hey-studium-primary);
+  --color-z-ds-color-hey-studium-button-default: var(--z-ds-color-hey-studium-button-default);
+  --color-z-ds-color-hey-studium-button-hover: var(--z-ds-color-hey-studium-button-hover);
+
+  --text-z-ds-12: var(--z-ds-fontsize-12);
+  --text-z-ds-14: var(--z-ds-fontsize-14);
+  --text-z-ds-16: var(--z-ds-fontsize-16);
+  --text-z-ds-18: var(--z-ds-fontsize-18);
+  --text-z-ds-20: var(--z-ds-fontsize-20);
+  --text-z-ds-22: var(--z-ds-fontsize-22);
+  --text-z-ds-24: var(--z-ds-fontsize-24);
+  --text-z-ds-26: var(--z-ds-fontsize-26);
+  --text-z-ds-30: var(--z-ds-fontsize-30);
+  --text-z-ds-32: var(--z-ds-fontsize-32);
+  --text-z-ds-34: var(--z-ds-fontsize-34);
+  --text-z-ds-36: var(--z-ds-fontsize-36);
+  --text-z-ds-42: var(--z-ds-fontsize-42);
+  --text-z-ds-46: var(--z-ds-fontsize-46);
+  --text-z-ds-54: var(--z-ds-fontsize-54);
+
+  --leading-z-ds-10: var(--z-ds-lineheight-10);
+  --leading-z-ds-11: var(--z-ds-lineheight-11);
+  --leading-z-ds-12: var(--z-ds-lineheight-12);
+  --leading-z-ds-15: var(--z-ds-lineheight-15);
+
+  --tracking-z-ds-1: var(--z-ds-letter-spacing-1);
+
+  --radius-z-ds-2: var(--z-ds-border-radius-2);
+  --radius-z-ds-4: var(--z-ds-border-radius-4);
+  --radius-z-ds-8: var(--z-ds-border-radius-8);
+
+  --shadow-z-ds-base: var(--z-ds-boxshadow-base);
+  --shadow-z-ds-tooltip: var(--z-ds-boxshadow-tooltip);
+
+  --drop-shadow-z-ds-tooltip: var(--z-ds-filter-tooltip);
+
+  --spacing-z-ds-4: var(--z-ds-space-4);
+  --spacing-z-ds-6: var(--z-ds-space-6);
+  --spacing-z-ds-8: var(--z-ds-space-8);
+  --spacing-z-ds-10: var(--z-ds-space-10);
+  --spacing-z-ds-12: var(--z-ds-space-12);
+  --spacing-z-ds-14: var(--z-ds-space-14);
+  --spacing-z-ds-16: var(--z-ds-space-16);
+  --spacing-z-ds-20: var(--z-ds-space-20);
+  --spacing-z-ds-24: var(--z-ds-space-24);
+  --spacing-z-ds-32: var(--z-ds-space-32);
+  --spacing-z-ds-54: var(--z-ds-space-54);
+  --spacing-z-ds-xxxs: var(--z-ds-space-xxxs);
+  --spacing-z-ds-xxs: var(--z-ds-space-xxs);
+  --spacing-z-ds-xs: var(--z-ds-space-xs);
+  --spacing-z-ds-s: var(--z-ds-space-s);
+  --spacing-z-ds-m: var(--z-ds-space-m);
+  --spacing-z-ds-l: var(--z-ds-space-l);
+  --spacing-z-ds-xl: var(--z-ds-space-xl);
+  --spacing-z-ds-xxl: var(--z-ds-space-xxl);
+  --spacing-z-ds-teaser: var(--z-ds-space-teaser);
+}
