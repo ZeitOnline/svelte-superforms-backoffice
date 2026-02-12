@@ -68543,6 +68543,8 @@ CREATE TABLE spelling_bee.game_solution (
     solution_explanation text NOT NULL
 );
 
+
+
 ALTER SEQUENCE spelling_bee.game_id_seq OWNED BY spelling_bee.game.id;
 ALTER SEQUENCE spelling_bee.game_solution_id_seq OWNED BY spelling_bee.game_solution.id;
 
