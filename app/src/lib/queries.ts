@@ -133,7 +133,7 @@ export const getAllGames = async ({
 }) => {
   const trimmedSearch = search.trim();
   const useSpellingBeeSearchRpc =
-    gameName === 'spelling-bee' && !!trimmedSearch && import.meta.env.DEV;
+    gameName === 'spelling-bee' && !!trimmedSearch;
 
   // If this is spelling-bee, embed solutions directly
   const selectParam =
