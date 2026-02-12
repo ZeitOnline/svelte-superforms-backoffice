@@ -1,7 +1,7 @@
 <script lang="ts">
   import IconHandler from '$components/icons/IconHandler.svelte';
   import { toCSV } from '$components/games/wortiger/utils';
-  import { MAP_LEVEL_CHARACTERS } from '$lib/games/wortiger';
+  import { MAP_LEVEL_CHARACTERS, WORTIGER_LENGTHS } from '$lib/games/wortiger';
   import { SvelteURLSearchParams } from 'svelte/reactivity';
 
   type Props = {
@@ -13,7 +13,6 @@
 
   let { apiBase, endpointName, levelLength, onChange }: Props = $props();
 
-  const WORTIGER_LENGTHS = [4, 5, 6, 7];
   const wortigerTabs = $derived<[string, number | null][]>([
     ['Alle', null],
     ...WORTIGER_LENGTHS.map(length => [`${length}er`, length] as [string, number]),

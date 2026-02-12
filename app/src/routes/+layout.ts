@@ -7,6 +7,7 @@ import { getAllGames, getLatestActiveGameIds } from '$lib/queries';
 import type { LayoutLoad } from './$types';
 import type { GameType } from '$types';
 import { DEFAULT_SORT, isActiveFilterOption, isSortOption } from '$lib/game-table-utils';
+import { isWortigerLength } from '$lib/games/wortiger';
 
 export const ssr = false;
 
@@ -34,7 +35,9 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
     const hasActiveColumn = config.table.columns.some(col => col.key === 'active');
     const levelLength = Number(levelParam);
     const normalizedLevelLength =
-        gameType === 'wortiger' && [4, 5, 6, 7].includes(levelLength) ? levelLength : null;
+        gameType === 'wortiger' && Number.isFinite(levelLength) && isWortigerLength(levelLength)
+            ? levelLength
+            : null;
     const activeFilter =
         hasActiveColumn && isActiveFilterOption(activeParam) ? activeParam : null;
 

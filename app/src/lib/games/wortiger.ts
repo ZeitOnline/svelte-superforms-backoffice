@@ -10,6 +10,15 @@ export const MAP_LEVEL_CHARACTERS: Record<number, number> = {
   4: 4,
 };
 
+export const WORTIGER_LENGTHS = Object.values(MAP_LEVEL_CHARACTERS).sort((a, b) => a - b);
+
+export const LENGTH_TO_LEVEL: Record<number, number> = Object.fromEntries(
+  Object.entries(MAP_LEVEL_CHARACTERS).map(([level, length]) => [Number(length), Number(level)]),
+);
+
+export const isWortigerLength = (length: number): length is (typeof WORTIGER_LENGTHS)[number] =>
+  WORTIGER_LENGTHS.includes(length);
+
 export const deleteWortigerGame = async (id: number) => {
   const URL = `${CONFIG_GAMES['wortiger'].apiBase}/${CONFIG_GAMES['wortiger'].endpoints.games.name}?id=eq.${id}`;
 

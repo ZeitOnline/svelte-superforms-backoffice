@@ -3,9 +3,8 @@ import { DEFAULT_SORT } from '$lib/game-table-utils';
 import type { LoadEvent } from '@sveltejs/kit';
 import { CONFIG_GAMES } from '../config/games.config';
 import { deleteEckchenGame } from './games/eckchen';
-import { deleteWortigerGame } from './games/wortiger';
+import { deleteWortigerGame, LENGTH_TO_LEVEL } from './games/wortiger';
 import { deleteSpellingBeeGame } from './games/spelling-bee';
-import { MAP_LEVEL_CHARACTERS } from './games/wortiger';
 
 /**
  * Mock configuration to skip the deletion of game_state.
@@ -103,10 +102,6 @@ const setSearchParam = ({
     params.set('or', `(${filters.join(',')})`);
   }
 };
-
-const LENGTH_TO_LEVEL: Record<number, number> = Object.fromEntries(
-  Object.entries(MAP_LEVEL_CHARACTERS).map(([level, length]) => [Number(length), Number(level)]),
-);
 
 const setWortigerLevelParam = ({
   params,

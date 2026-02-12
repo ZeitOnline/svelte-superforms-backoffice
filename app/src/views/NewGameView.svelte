@@ -8,6 +8,7 @@
   import ViewNavigation from '$components/ViewNavigation.svelte';
   import IconHandler from '$components/icons/IconHandler.svelte';
   import WortigerBulkEditor from '$components/games/wortiger/WortigerBulkEditor.svelte';
+  import { WORTIGER_LENGTHS } from '$lib/games/wortiger';
 
   type Props = {
     data: DataProps;
@@ -86,7 +87,7 @@
           {data}
           bind:beginning_option
           bind:resultsDataBody
-          levels={[4, 5, 6, 7]}
+          levels={WORTIGER_LENGTHS}
         />
       {/if}
     {:else}

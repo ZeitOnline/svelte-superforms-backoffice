@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { BeginningOptions, DataProps } from '$types';
   import { view } from '$stores/view-state-store.svelte';
-  import { MAP_LEVEL_CHARACTERS } from '$lib/games/wortiger';
+  import { isWortigerLength, MAP_LEVEL_CHARACTERS, WORTIGER_LENGTHS } from '$lib/games/wortiger';
   import {
     fetchWordSetForLength,
     normalizeWortigerWord,
@@ -27,7 +27,7 @@
     data,
     resultsDataBody = $bindable(),
     beginning_option = $bindable(),
-    levels = [4, 5, 6, 7],
+    levels = WORTIGER_LENGTHS,
   }: Props = $props();
 
   type ExistingIndex = Record<
@@ -47,7 +47,9 @@
 
   /** Build once from incoming `data` (array of 100 objects) */
   const existingIndex = $derived.by<ExistingIndex>(() => {
-    const idx: ExistingIndex = { 4: new Map(), 5: new Map(), 6: new Map(), 7: new Map() };
+    const idx: ExistingIndex = Object.fromEntries(
+      WORTIGER_LENGTHS.map(len => [len, new Map()]),
+    );
 
     // If DataProps has the games array on a property, adjust here.
     // Your console shows `data` itself is the array, so iterate directly:
@@ -96,12 +98,9 @@
   const WORDLIST_RULE: 'must-exist' | 'must-not-exist' = 'must-exist';
 
   /** In-memory sets for O(1) membership checks */
-  let wordSets = $state<Record<number, Set<string>>>({
-    4: new Set(),
-    5: new Set(),
-    6: new Set(),
-    7: new Set(),
-  });
+  let wordSets = $state<Record<number, Set<string>>>(
+    Object.fromEntries(WORTIGER_LENGTHS.map(len => [len, new Set()])),
+  );
 
   /** Normalize for comparison (case-insensitive, trim). Adjust if you want strict case. */
   const normalize = normalizeWortigerWord;
@@ -109,7 +108,7 @@
   /** Fetch all lists required by the current "levels" columns */
   async function loadWordSets(levelLens: number[]) {
     try {
-      const uniqueLens = Array.from(new Set(levelLens)).filter(n => [4, 5, 6, 7].includes(n));
+      const uniqueLens = Array.from(new Set(levelLens)).filter(isWortigerLength);
       const results = await Promise.all(
         uniqueLens.map(len =>
           fetchWordSetForLength({
@@ -119,12 +118,9 @@
           }),
         ),
       );
-      const next: Record<number, Set<string>> = {
-        4: new Set(),
-        5: new Set(),
-        6: new Set(),
-        7: new Set(),
-      };
+      const next: Record<number, Set<string>> = Object.fromEntries(
+        WORTIGER_LENGTHS.map(len => [len, new Set()]),
+      );
       uniqueLens.forEach((len, idx) => {
         next[len] = results[idx];
       });
@@ -191,7 +187,7 @@
 
     // Conflict with existing games in DB
     if (existingDates().has(d)) {
-      return `❌ Für ${d} existiert bereits ein Spiel (4/5/6/7). Bitte wähle ein anderes Datum.`;
+      return `❌ Für ${d} existiert bereits ein Spiel (${WORTIGER_LENGTHS.join('/')}). Bitte wähle ein anderes Datum.`;
     }
 
     // Duplicate within current editor table
