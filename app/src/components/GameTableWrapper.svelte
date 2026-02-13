@@ -8,9 +8,11 @@
     GameEckchenComplete,
     GameSpellingBeeComplete,
     GameType,
+    GameWortgeflechtComplete,
     GameWortigerComplete,
   } from '$types';
   import SpellingBeeGameForm from './games/spelling-bee/SpellingBeeGameForm.svelte';
+  import WortgeflechtGameForm from './games/wortgeflecht/WortgeflechtGameForm.svelte';
 
   type Props = {
     resultsDataBody: string[][];
@@ -44,5 +46,11 @@
     game={game as GameSpellingBeeComplete}
     bind:beginning_option
     bind:resultsDataBody
+  />
+{:else if gameName === 'wortgeflecht'}
+  <WortgeflechtGameForm
+    data={data as any}
+    game={game as GameWortgeflechtComplete}
+    bind:beginning_option
   />
 {/if}

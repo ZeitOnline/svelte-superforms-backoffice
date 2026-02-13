@@ -1,5 +1,5 @@
 import type { GameComplete, SortDirection, TableColumn } from '$types';
-import { isEckchenGame } from '.';
+import { isEckchenGame, isSpellingBeeGame, isWortgeflechtGame, isWortigerGame } from '.';
 
 /**
  * Generic table utility functions that work with any game type
@@ -11,9 +11,12 @@ import { isEckchenGame } from '.';
 export function getGameDisplayTitle(game: GameComplete): string {
   if (isEckchenGame(game)) {
     return game.name;
-  } else {
+  } else if (isWortigerGame(game)) {
     return `Level ${game.level}`;
+  } else if (isSpellingBeeGame(game) || isWortgeflechtGame(game)) {
+    return game.name;
   }
+  return 'Game';
 }
 
 /**

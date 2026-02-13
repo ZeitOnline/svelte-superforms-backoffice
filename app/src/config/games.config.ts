@@ -1,10 +1,21 @@
-import type { GameConfig, GameEckchenComplete, GameSpellingBeeComplete, GameType, GameWortigerComplete } from '$types';
+import type {
+  GameConfig,
+  GameEckchenComplete,
+  GameSpellingBeeComplete,
+  GameType,
+  GameWortgeflechtComplete,
+  GameWortigerComplete,
+} from '$types';
 import { transformedPublishedData, isGameActive, transformedPublishedDataWithTime } from '$utils';
 // Schemas for the games
 import { generateEckchenGameSchema, saveEckchenGameFormSchema } from '$schemas/eckchen';
 import { generateWortigerGameSchema, saveWortigerGameFormSchema } from '$schemas/wortiger';
 import type { ZodValidationSchema } from 'sveltekit-superforms/adapters';
 import { generateSpellingBeeGameSchema, saveSpellingBeeGameFormSchema } from '$schemas/spelling-bee';
+import {
+  generateWortgeflechtGameSchema,
+  saveWortgeflechtGameFormSchema,
+} from '$schemas/wortgeflecht';
 
 export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   eckchen: {
@@ -229,6 +240,80 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           placeholder: 'z. B. abcdefghi',
           required: true,
           validation: { length: 9 },
+        },
+      ],
+    },
+  },
+  wortgeflecht: {
+    label: 'wortgeflecht',
+    apiBase: '/backoffice/api/wortgeflecht',
+    productionUrl: 'https://spiele.zeit.de/wortgeflecht',
+    endpoints: {
+      games: {
+        name: 'game',
+        releaseDateField: 'published_at',
+      },
+    },
+    schemas: {
+      generateGameSchema: generateWortgeflechtGameSchema as unknown as ZodValidationSchema,
+      saveGameFormSchema: saveWortgeflechtGameFormSchema as unknown as ZodValidationSchema,
+    },
+    table: {
+      hasLiveView: true,
+      columns: [
+        {
+          key: 'name',
+          label: 'Name des Spiels',
+          getValue: game => (game as GameWortgeflechtComplete).name,
+          searchable: true,
+          sortable: true,
+        },
+        {
+          key: 'id',
+          label: 'ID',
+          getValue: game => game.id,
+          searchable: true,
+          sortable: true,
+        },
+        {
+          key: 'published_at',
+          label: 'Veröffentlichungsdatum',
+          getValue: game => (game as GameWortgeflechtComplete).published_at,
+          getDisplayValue: game =>
+            transformedPublishedData((game as GameWortgeflechtComplete).published_at),
+          searchable: true,
+          sortable: true,
+        },
+        {
+          key: 'active',
+          label: 'Aktiv',
+          getValue: game => (isGameActive(game) ? 'active' : 'inactive'),
+          searchable: false,
+          sortable: false,
+        },
+      ],
+    },
+    form: {
+      hasQuestionsTable: false,
+      fields: [
+        {
+          key: 'name',
+          label: 'Name',
+          type: 'text',
+          placeholder: 'GameXXXX',
+          required: true,
+        },
+        {
+          key: 'published_at',
+          label: 'Veröffentlichungsdatum',
+          type: 'date',
+          required: true,
+        },
+        {
+          key: 'active',
+          label: 'Aktiv',
+          type: 'checkbox',
+          required: false,
         },
       ],
     },

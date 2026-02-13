@@ -1,4 +1,14 @@
-import type { GameComplete, GameEckchen, GameEckchenComplete, GameSpellingBeeComplete, GameWortiger, GameWortigerComplete, TableColumn } from '$types';
+import type {
+  GameComplete,
+  GameEckchen,
+  GameEckchenComplete,
+  GameSpellingBeeComplete,
+  GameWortgeflecht,
+  GameWortgeflechtComplete,
+  GameWortiger,
+  GameWortigerComplete,
+  TableColumn,
+} from '$types';
 
 /**
  *  This function is used to transform the published date
@@ -100,12 +110,18 @@ export function isSpellingBeeGame(game: GameComplete): game is GameSpellingBeeCo
   return 'wordcloud' in game;
 }
 
+export function isWortgeflechtGame(game: GameComplete): game is GameWortgeflecht & { id: number } {
+  return 'game_id' in game && typeof (game as GameWortgeflecht & { id: number }).name === 'string';
+}
+
 // Helper functions to work with games regardless of their type
 export function getGameDisplayName(game: GameComplete): string {
   if (isEckchenGame(game)) {
     return game.name;
   } else if (isWortigerGame(game)) {
     return `Level ${game.level}`;
+  } else if (isWortgeflechtGame(game)) {
+    return game.name;
   } else if (isSpellingBeeGame(game)) {
     return game.name;
   }
@@ -122,13 +138,17 @@ export function isGameActive(game: GameComplete): boolean {
 export function getGameSearchableText(game: GameComplete): string[] {
   const releaseOrStartData = isSpellingBeeGame(game)
     ? (game as GameSpellingBeeComplete).start_time
-    : (game as GameEckchenComplete | GameWortigerComplete).release_date;
+    : isWortgeflechtGame(game)
+      ? (game as GameWortgeflechtComplete).published_at
+      : (game as GameEckchenComplete | GameWortigerComplete).release_date;
   const common = [game.id.toString(), releaseOrStartData];
 
   if (isEckchenGame(game)) {
     return [...common, game.name];
   } else if (isWortigerGame(game)) {
     return [...common, game.level.toString(), game.solution || ''];
+  } else if (isWortgeflechtGame(game)) {
+    return [...common, game.name, game.game_id];
   } else if (isSpellingBeeGame(game)) {
     return [...common, game.name, game.wordcloud];
   }

@@ -372,7 +372,7 @@
       {#each rows as r, i (i)}
         {@const dateMsg = validateReleaseDate(r[0], i)}
         <tr>
-          <td class="px-2 py-1 w-[170px]">
+          <td class="px-2 py-1 w-42.5">
             <input
               type="date"
               class="border px-2 py-1 w-40"

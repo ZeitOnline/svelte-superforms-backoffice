@@ -3,6 +3,11 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import tailwindcss from '@tailwindcss/vite';
 
+const POSTGREST_ECKCHEN_URL = 'http://localhost:3001';
+const POSTGREST_WORTIGER_URL = 'http://localhost:3002';
+const POSTGREST_SPELLING_BEE_URL = 'http://localhost:3003';
+const POSTGREST_WORTGEFLECHT_URL = 'http://localhost:3004';
+
 export default defineConfig({
   plugins: [tailwindcss(), sveltekit(), svelteTesting()],
   build: {
@@ -18,16 +23,20 @@ export default defineConfig({
     ],
     proxy: {
       '/backoffice/api/eckchen': {
-        target: 'http://localhost:3001',
+        target: POSTGREST_ECKCHEN_URL,
         rewrite: path => path.replace(/^\/backoffice\/api\/eckchen/, ''),
       },
       '/backoffice/api/wortiger': {
-        target: 'http://localhost:3002',
+        target: POSTGREST_WORTIGER_URL,
         rewrite: path => path.replace(/^\/backoffice\/api\/wortiger/, ''),
       },
       '/backoffice/api/spelling-bee': {
-        target: 'http://localhost:3003',
+        target: POSTGREST_SPELLING_BEE_URL,
         rewrite: path => path.replace(/^\/backoffice\/api\/spelling-bee/, ''),
+      },
+      '/backoffice/api/wortgeflecht': {
+        target: POSTGREST_WORTGEFLECHT_URL,
+        rewrite: path => path.replace(/^\/backoffice\/api\/wortgeflecht/, ''),
       },
     },
   },

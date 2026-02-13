@@ -5,7 +5,7 @@
   import { deleteGame } from '$lib/queries';
   import { APP_MESSAGES } from '$lib/app-messages';
   import { getToastState } from '$lib/toast-state.svelte';
-  import { isEckchenGame, isSpellingBeeGame, isWortigerGame } from '../utils';
+  import { isEckchenGame, isSpellingBeeGame, isWortgeflechtGame, isWortigerGame } from '../utils';
 
   let {
     games,
@@ -27,7 +27,12 @@
     }
 
     try {
-      if (gameName !== 'eckchen' && gameName !== 'wortiger' && gameName !== 'spelling-bee') {
+      if (
+        gameName !== 'eckchen' &&
+        gameName !== 'wortiger' &&
+        gameName !== 'spelling-bee' &&
+        gameName !== 'wortgeflecht'
+      ) {
         throw new Error('Game type is not defined');
       }
       await deleteGame(gameName, id);
@@ -60,6 +65,8 @@
           )}
         {:else if isWortigerGame(game)}
           {@html APP_MESSAGES.GAME.DELETE_WORTIGER.replace('{solution}', String(game.solution))}
+        {:else if isWortgeflechtGame(game)}
+          {@html APP_MESSAGES.GAME.DELETE_WORTGEFLECHT.replace('{name}', game.name)}
         {:else if isEckchenGame(game)}
           {@html APP_MESSAGES.GAME.DELETE_ECKCHEN.replace('{name}', game.name)}
         {/if}
