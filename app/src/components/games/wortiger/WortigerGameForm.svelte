@@ -138,29 +138,17 @@
 
         // Validation logic
         if (beginning_option === 'edit' && game && isWortigerGame(game)) {
-          // Check for unique constraints during edit
+          // Check unique release date constraint during edit
           if (game.release_date !== form.data.release_date) {
             if (data.games.some(g => g.release_date === form.data.release_date)) {
               setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
               return;
             }
           }
-
-          if (game.solution !== form.data.solution) {
-            if (data.games.some(g => g.solution === form.data.solution)) {
-              setError(form, 'solution', ERRORS.WORTIGER.SOLUTION.TAKEN);
-              return;
-            }
-          }
         } else {
-          // Check for unique constraints during creation
+          // Check unique release date constraint during creation
           if (data.games.some(g => g.release_date === form.data.release_date)) {
             setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
-            return;
-          }
-
-          if (data.games.some(g => g.solution === form.data.solution)) {
-            setError(form, 'solution', ERRORS.WORTIGER.SOLUTION.TAKEN);
             return;
           }
         }
@@ -186,7 +174,6 @@
             data: finalEditedGame,
           });
 
-          // Success
           isSubmitted = true;
           toastManager.add(APP_MESSAGES.GAME.EDITED_SUCCESS, '');
 
@@ -203,10 +190,8 @@
             delete createData.active;
           }
 
-          // console.log('data', createData)
           await createGame({ gameName: 'wortiger', data: createData as GameComplete });
 
-          // Success
           isSubmitted = true;
           toastManager.add(APP_MESSAGES.GAME.ADDED_SUCCESS, '');
 
