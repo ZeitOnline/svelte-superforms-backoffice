@@ -1,10 +1,21 @@
-import type { GameConfig, GameEckchenComplete, GameSpellingBeeComplete, GameType, GameWortigerComplete } from '$types';
+import type {
+  GameConfig,
+  GameEckchenComplete,
+  GameSpellingBeeComplete,
+  GameType,
+  GameWortgeflechtComplete,
+  GameWortigerComplete,
+} from '$types';
 import { transformedPublishedData, isGameActive, transformedPublishedDataWithTime } from '$utils';
 // Schemas for the games
 import { generateEckchenGameSchema, saveEckchenGameFormSchema } from '$schemas/eckchen';
 import { generateWortigerGameSchema, saveWortigerGameFormSchema } from '$schemas/wortiger';
 import type { ZodValidationSchema } from 'sveltekit-superforms/adapters';
 import { generateSpellingBeeGameSchema, saveSpellingBeeGameFormSchema } from '$schemas/spelling-bee';
+import {
+  generateWortgeflechtGameSchema,
+  saveWortgeflechtGameFormSchema,
+} from '$schemas/wortgeflecht';
 
 export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   eckchen: {
@@ -233,20 +244,19 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
       ],
     },
   },
-  // TODO: Add configuration for Wortgeflecht game
   wortgeflecht: {
     label: 'wortgeflecht',
-    apiBase: '/backoffice/api/eckchen',
-    productionUrl: 'https://spiele.zeit.de/eckchen',
+    apiBase: '/backoffice/api/wortgeflecht',
+    productionUrl: 'https://spiele.zeit.de/wortgeflecht',
     endpoints: {
       games: {
         name: 'game',
-        releaseDateField: 'release_date',
+        releaseDateField: 'published_at',
       },
     },
     schemas: {
-      generateGameSchema: generateEckchenGameSchema as unknown as ZodValidationSchema,
-      saveGameFormSchema: saveEckchenGameFormSchema as unknown as ZodValidationSchema,
+      generateGameSchema: generateWortgeflechtGameSchema as unknown as ZodValidationSchema,
+      saveGameFormSchema: saveWortgeflechtGameFormSchema as unknown as ZodValidationSchema,
     },
     table: {
       hasLiveView: true,
@@ -254,7 +264,7 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         {
           key: 'name',
           label: 'Name des Spiels',
-          getValue: game => (game as GameEckchenComplete).name,
+          getValue: game => (game as GameWortgeflechtComplete).name,
           searchable: true,
           sortable: true,
         },
@@ -266,10 +276,11 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           sortable: true,
         },
         {
-          key: 'release_date',
+          key: 'published_at',
           label: 'Veröffentlichungsdatum',
-          getValue: game => (game as GameEckchenComplete).release_date,
-          getDisplayValue: game => transformedPublishedData((game as GameEckchenComplete).release_date),
+          getValue: game => (game as GameWortgeflechtComplete).published_at,
+          getDisplayValue: game =>
+            transformedPublishedData((game as GameWortgeflechtComplete).published_at),
           searchable: true,
           sortable: true,
         },
@@ -283,7 +294,7 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
       ],
     },
     form: {
-      hasQuestionsTable: true,
+      hasQuestionsTable: false,
       fields: [
         {
           key: 'name',
@@ -293,13 +304,13 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           required: true,
         },
         {
-          key: 'release_date',
+          key: 'published_at',
           label: 'Veröffentlichungsdatum',
           type: 'date',
           required: true,
         },
         {
-          key: 'published',
+          key: 'active',
           label: 'Aktiv',
           type: 'checkbox',
           required: false,

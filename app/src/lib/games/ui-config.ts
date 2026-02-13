@@ -8,7 +8,7 @@ type GameUiSubnavItem = {
   routeId: GameUiRoute;
 };
 
-type GameStatusTag = 'live' | 'coming soon';
+type GameStatusTag = 'live' | 'coming soon' | 'under maintenance';
 type GameStatusColor = 'green' | 'gray';
 
 type GameUiRoute =
@@ -47,8 +47,8 @@ export const GAME_UI_CONFIG: GameUiConfig[] = [
     href: '/eckchen',
     logo: EckchenLogo,
     status: {
-      tag: 'live',
-      color: 'green',
+      tag: 'under maintenance',
+      color: 'gray',
     },
   },
   {

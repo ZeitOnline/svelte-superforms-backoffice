@@ -55,6 +55,12 @@ export type GameWortiger = BaseGame & {
   solution: string;
 };
 
+export type GameWortgeflecht = BaseGame & {
+  game_id: string;
+  name: string;
+  published_at: string;
+};
+
 export type GameSpellingBee = BaseGame & {
   name: string;
   start_time: string;
@@ -67,15 +73,20 @@ export type GameSpellingBee = BaseGame & {
  */
 export type GameEckchenComplete = CompleteGame<GameEckchen>;
 export type GameWortigerComplete = CompleteGame<GameWortiger>;
+export type GameWortgeflechtComplete = CompleteGame<GameWortgeflecht>;
 export type GameSpellingBeeComplete = CompleteGame<GameSpellingBee>;
 
-export type GameComplete = GameEckchenComplete | GameWortigerComplete | GameSpellingBeeComplete;
+export type GameComplete =
+  | GameEckchenComplete
+  | GameWortigerComplete
+  | GameWortgeflechtComplete
+  | GameSpellingBeeComplete;
 
 export type DataProps = {
   games: GameComplete[];
   gamesPage: GamesPageInfo;
   latestActiveGameIds: number[];
-  saveGameForm: SuperValidated<GameEckchen | GameWortiger>;
+  saveGameForm: SuperValidated<GameEckchen | GameWortiger | GameWortgeflecht | GameSpellingBee>;
   generateGameForm: SuperValidated<{
     csv: File;
   }>;

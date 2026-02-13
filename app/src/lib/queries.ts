@@ -3,6 +3,7 @@ import { DEFAULT_SORT } from '$lib/game-table-utils';
 import type { LoadEvent } from '@sveltejs/kit';
 import { CONFIG_GAMES } from '../config/games.config';
 import { deleteEckchenGame } from './games/eckchen';
+import { deleteWortgeflechtGame } from './games/wortgeflecht';
 import { deleteWortigerGame, LENGTH_TO_LEVEL } from './games/wortiger';
 import { deleteSpellingBeeGame } from './games/spelling-bee';
 
@@ -244,6 +245,8 @@ export const deleteGame = async (gameName: GameType, id: number) => {
     return deleteWortigerGame(id);
   } else if (gameName === 'spelling-bee') {
     return deleteSpellingBeeGame(id);
+  } else if (gameName === 'wortgeflecht') {
+    return deleteWortgeflechtGame(id);
   } else {
     throw new Error(`Unsupported game type: ${gameName}`);
   }
