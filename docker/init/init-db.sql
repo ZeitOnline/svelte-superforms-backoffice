@@ -6,6 +6,7 @@
 CREATE SCHEMA IF NOT EXISTS eckchen;
 CREATE SCHEMA IF NOT EXISTS wortiger;
 CREATE SCHEMA IF NOT EXISTS spelling_bee;
+CREATE SCHEMA IF NOT EXISTS wortgeflecht;
 
 -- Create PostgREST role
 DO $$
@@ -16,10 +17,12 @@ BEGIN
 END
 $$;
 
+
 -- Grant schema usage
 GRANT USAGE ON SCHEMA eckchen TO web_anon;
 GRANT USAGE ON SCHEMA wortiger TO web_anon;
 GRANT USAGE ON SCHEMA spelling_bee TO web_anon;
+GRANT USAGE ON SCHEMA wortgeflecht TO web_anon;
 
 -- ================================
 -- ECKCHEN SCHEMA DEFINITIONS
@@ -68662,27 +68665,266 @@ SELECT pg_catalog.setval('spelling_bee.game_id_seq', 2, true);
 SELECT pg_catalog.setval('spelling_bee.game_solution_id_seq', 91, true);
 
 -- ================================
+-- WORTGEFLECHT SCHEMA DEFINITIONS
+-- ================================
+
+SELECT pg_catalog.set_config('search_path', 'public', false);
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS wortgeflecht.game (
+    id serial PRIMARY KEY,
+    game_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    name varchar(255) NOT NULL,
+    active boolean NOT NULL DEFAULT false,
+    published_at timestamp NOT NULL,
+    created_at timestamp NOT NULL DEFAULT now(),
+    modified_at timestamp NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS game_game_id_uindex ON wortgeflecht.game (game_id);
+
+CREATE TABLE IF NOT EXISTS wortgeflecht.game_word (
+    id serial PRIMARY KEY,
+    game_id uuid REFERENCES wortgeflecht.game (game_id),
+    word varchar(255) NOT NULL,
+    created_at timestamp NOT NULL DEFAULT now(),
+    modified_at timestamp NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS game_word_game_id_word_uindex
+    ON wortgeflecht.game_word (game_id, word);
+
+CREATE TABLE IF NOT EXISTS wortgeflecht.game_letter (
+    id serial PRIMARY KEY,
+    word_id integer REFERENCES wortgeflecht.game_word (id),
+    letter varchar(1) NOT NULL,
+    cx integer NOT NULL CHECK (cx >= 0),
+    cy integer NOT NULL CHECK (cy >= 0),
+    created_at timestamp NOT NULL DEFAULT now(),
+    modified_at timestamp NOT NULL DEFAULT now()
+);
+
+CREATE OR REPLACE VIEW wortgeflecht.game_letters_coordinates AS
+SELECT
+    l.id AS id,
+    w.word AS word,
+    l.letter AS letter,
+    l.cx AS coordinate_x,
+    l.cy AS coordinate_y
+FROM wortgeflecht.game g
+JOIN wortgeflecht.game_word w ON g.game_id = w.game_id
+JOIN wortgeflecht.game_letter l ON w.id = l.word_id;
+
+CREATE OR REPLACE VIEW wortgeflecht.game_view AS
+SELECT
+    g.id AS game_id,
+    g.name AS game_name,
+    g.published_at,
+    g.active AS is_active,
+    ARRAY_AGG(DISTINCT w.word) AS words,
+    JSON_AGG(
+        JSON_BUILD_OBJECT(
+            'id', l.id,
+            'letter', l.letter,
+            'coordinateX', l.cx,
+            'coordinateY', l.cy,
+            'word', w.word
+        )
+    ) AS lettersCoordinates
+FROM wortgeflecht.game g
+LEFT JOIN wortgeflecht.game_word w ON g.game_id = w.game_id
+LEFT JOIN wortgeflecht.game_letter l ON w.id = l.word_id
+GROUP BY g.id, g.name, g.published_at, g.active
+ORDER BY g.published_at DESC;
+
+-- ==================================
+-- WORTGEFLECHT SAMPLE DATA (LOCAL)
+-- ==================================
+
+-- Insert game: Expelliarmus
+WITH inserted_game AS (
+    INSERT INTO wortgeflecht.game (name, active, published_at, created_at, modified_at)
+    VALUES ('Expelliarmus', true, '2025-02-20', NOW(), NOW())
+    RETURNING game_id
+),
+inserted_words AS (
+    INSERT INTO wortgeflecht.game_word (game_id, word, created_at, modified_at)
+    SELECT game_id, word, NOW(), NOW()
+    FROM inserted_game, (VALUES
+        ('zauberlehrling'),
+        ('walle'),
+        ('tücke'),
+        ('wasser'),
+        ('zwecke'),
+        ('besen'),
+        ('meister')
+    ) AS words(word)
+    RETURNING id, game_id, word
+)
+INSERT INTO wortgeflecht.game_letter (word_id, letter, cx, cy, created_at, modified_at)
+SELECT iw.id, l.letter, l.cx, l.cy, NOW(), NOW()
+FROM inserted_words iw
+JOIN (
+    VALUES
+    ('walle', 'l', 1, 1),
+    ('walle', 'e', 1, 2),
+    ('zauberlehrling', 'n', 1, 3),
+    ('zauberlehrling', 'i', 1, 4),
+    ('zwecke', 'e', 1, 5),
+    ('zwecke', 'k', 1, 6),
+    ('walle', 'l', 2, 1),
+    ('zauberlehrling', 'g', 2, 2),
+    ('tücke', 't', 2, 3),
+    ('zauberlehrling', 'l', 2, 4),
+    ('zwecke', 'e', 2, 5),
+    ('zwecke', 'c', 2, 6),
+    ('walle', 'a', 3, 1),
+    ('walle', 'w', 3, 2),
+    ('tücke', 'ü', 3, 3),
+    ('zauberlehrling', 'r', 3, 4),
+    ('zwecke', 'z', 3, 5),
+    ('zwecke', 'w', 3, 6),
+    ('tücke', 'k', 4, 1),
+    ('tücke', 'c', 4, 2),
+    ('zauberlehrling', 'e', 4, 3),
+    ('zauberlehrling', 'h', 4, 4),
+    ('besen', 'n', 4, 5),
+    ('besen', 'e', 4, 6),
+    ('tücke', 'e', 5, 1),
+    ('wasser', 'w', 5, 2),
+    ('zauberlehrling', 'l', 5, 3),
+    ('meister', 'm', 5, 4),
+    ('besen', 'b', 5, 5),
+    ('besen', 's', 5, 6),
+    ('wasser', 'a', 6, 1),
+    ('zauberlehrling', 'r', 6, 2),
+    ('zauberlehrling', 'e', 6, 3),
+    ('meister', 'e', 6, 4),
+    ('meister', 's', 6, 5),
+    ('besen', 'e', 6, 6),
+    ('wasser', 'r', 7, 1),
+    ('wasser', 's', 7, 2),
+    ('zauberlehrling', 'b', 7, 3),
+    ('zauberlehrling', 'u', 7, 4),
+    ('meister', 'i', 7, 5),
+    ('meister', 't', 7, 6),
+    ('wasser', 'e', 8, 1),
+    ('wasser', 's', 8, 2),
+    ('zauberlehrling', 'z', 8, 3),
+    ('zauberlehrling', 'a', 8, 4),
+    ('meister', 'e', 8, 5),
+    ('meister', 'r', 8, 6)
+) AS l(word, letter, cx, cy)
+ON iw.word = l.word AND iw.game_id = (SELECT game_id FROM inserted_game);
+
+-- Insert game: Spielerisch schlagen
+WITH inserted_game AS (
+    INSERT INTO wortgeflecht.game (name, active, published_at, created_at, modified_at)
+    VALUES ('Spielerisch schlagen', true, '2025-02-27', NOW(), NOW())
+    RETURNING game_id
+),
+inserted_words AS (
+    INSERT INTO wortgeflecht.game_word (game_id, word, created_at, modified_at)
+    SELECT game_id, word, NOW(), NOW()
+    FROM inserted_game, (VALUES
+        ('golf'),
+        ('lacrosse'),
+        ('badminton'),
+        ('krocket'),
+        ('tennis'),
+        ('baseball'),
+        ('squash')
+    ) AS words(word)
+    RETURNING id, game_id, word
+)
+INSERT INTO wortgeflecht.game_letter (word_id, letter, cx, cy, created_at, modified_at)
+SELECT iw.id, l.letter, l.cx, l.cy, NOW(), NOW()
+FROM inserted_words iw
+JOIN (
+    VALUES
+    ('golf', 'f', 1, 1),
+    ('golf', 'l', 1, 2),
+    ('lacrosse', 'l', 1, 3),
+    ('lacrosse', 'a', 1, 4),
+    ('lacrosse', 'r', 1, 5),
+    ('lacrosse', 'o', 1, 6),
+    ('badminton', 'a', 2, 1),
+    ('badminton', 'd', 2, 2),
+    ('golf', 'o', 2, 3),
+    ('golf', 'g', 2, 4),
+    ('lacrosse', 'c', 2, 5),
+    ('lacrosse', 's', 2, 6),
+    ('badminton', 'b', 3, 1),
+    ('krocket', 'o', 3, 2),
+    ('badminton', 'm', 3, 3),
+    ('badminton', 'i', 3, 4),
+    ('badminton', 'n', 3, 5),
+    ('lacrosse', 's', 3, 6),
+    ('krocket', 'r', 4, 1),
+    ('krocket', 'c', 4, 2),
+    ('krocket', 'k', 4, 3),
+    ('badminton', 't', 4, 4),
+    ('badminton', 'o', 4, 5),
+    ('lacrosse', 'e', 4, 6),
+    ('krocket', 'k', 5, 1),
+    ('krocket', 'e', 5, 2),
+    ('baseball', 'b', 5, 3),
+    ('baseball', 'a', 5, 4),
+    ('baseball', 's', 5, 5),
+    ('badminton', 'n', 5, 6),
+    ('squash', 's', 6, 1),
+    ('krocket', 't', 6, 2),
+    ('baseball', 'l', 6, 3),
+    ('baseball', 'b', 6, 4),
+    ('baseball', 'e', 6, 5),
+    ('tennis', 's', 6, 6),
+    ('squash', 'u', 7, 1),
+    ('squash', 'q', 7, 2),
+    ('baseball', 'l', 7, 3),
+    ('baseball', 'a', 7, 4),
+    ('tennis', 'n', 7, 5),
+    ('tennis', 'i', 7, 6),
+    ('squash', 'a', 8, 1),
+    ('squash', 's', 8, 2),
+    ('squash', 'h', 8, 3),
+    ('tennis', 't', 8, 4),
+    ('tennis', 'e', 8, 5),
+    ('tennis', 'n', 8, 6)
+) AS l(word, letter, cx, cy)
+ON iw.word = l.word AND iw.game_id = (SELECT game_id FROM inserted_game);
+
+-- ================================
 -- POSTGREST PERMISSIONS
 -- ================================
 
--- Grant permissions for PostgREST on eckchen schema
+-- Existing tables/sequences
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA eckchen TO web_anon;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA eckchen TO web_anon;
 
--- Grant permissions for PostgREST on wortiger schema
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA wortiger TO web_anon;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA wortiger TO web_anon;
 
--- Grant permissions for PostgREST on spelling_bee schema
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA spelling_bee TO web_anon;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA spelling_bee TO web_anon;
 
--- Set default permissions for future tables
-ALTER DEFAULT PRIVILEGES IN SCHEMA eckchen GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO web_anon;
-ALTER DEFAULT PRIVILEGES IN SCHEMA eckchen GRANT USAGE, SELECT ON SEQUENCES TO web_anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA wortgeflecht TO web_anon;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA wortgeflecht TO web_anon;
 
-ALTER DEFAULT PRIVILEGES IN SCHEMA wortiger GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO web_anon;
-ALTER DEFAULT PRIVILEGES IN SCHEMA wortiger GRANT USAGE, SELECT ON SEQUENCES TO web_anon;
+-- Future tables/sequences
+ALTER DEFAULT PRIVILEGES IN SCHEMA eckchen
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO web_anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA eckchen
+    GRANT USAGE, SELECT ON SEQUENCES TO web_anon;
 
-ALTER DEFAULT PRIVILEGES IN SCHEMA spelling_bee GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO web_anon;
-ALTER DEFAULT PRIVILEGES IN SCHEMA spelling_bee GRANT USAGE, SELECT ON SEQUENCES TO web_anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA wortiger
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO web_anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA wortiger
+    GRANT USAGE, SELECT ON SEQUENCES TO web_anon;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA spelling_bee
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO web_anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA spelling_bee
+    GRANT USAGE, SELECT ON SEQUENCES TO web_anon;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA wortgeflecht
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO web_anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA wortgeflecht
+    GRANT USAGE, SELECT ON SEQUENCES TO web_anon;
