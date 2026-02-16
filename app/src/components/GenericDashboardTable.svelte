@@ -17,7 +17,7 @@
   import IconHandler from './icons/IconHandler.svelte';
   import { TableFilters, TableSearch, TablePagination } from './table';
   import { CloseIcon, EyeIcon, TickIcon } from './icons';
-  import { afterNavigate, goto } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { CONFIG_GAMES } from '../config/games.config';
   import { spellingBeeStore, toggleLegend } from '$stores/spelling-bee-word.svelte';
@@ -32,7 +32,7 @@
 
   let { games, gameName, gamesPage, latestActiveGameIds }: Props = $props();
 
-  let currentGameConfig = $derived(CONFIG_GAMES[gameName]);
+  const currentGameConfig = $derived(CONFIG_GAMES[gameName]);
   const normalizedGamesPage = $derived({
     page: gamesPage.page ?? 1,
     totalPages: gamesPage.totalPages ?? 1,
@@ -49,16 +49,6 @@
     searchTerm = normalizedGamesPage.search;
     debouncedSearchTerm = normalizedGamesPage.search;
     currentPage = normalizedGamesPage.page;
-  });
-
-  afterNavigate(() => {
-    if (page.route.id === '/wortiger') {
-      currentGameConfig = CONFIG_GAMES['wortiger'];
-    } else if (page.route.id === '/eckchen') {
-      currentGameConfig = CONFIG_GAMES['eckchen'];
-    } else if (page.route.id === '/spelling-bee') {
-      currentGameConfig = CONFIG_GAMES['spelling-bee'];
-    }
   });
 
   const hasActiveColumn = $derived(

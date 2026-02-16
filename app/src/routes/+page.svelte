@@ -1,28 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import ViewWrapper from '$components/ViewWrapper.svelte';
-  import { SpellingBeeLogo, EckchenLogo, WortigerLogo } from '$components/games';
-  import type { GameType } from '$types';
-
-  type CatalogueGame = {
-    name: string;
-    path: GameType;
-    logo: typeof SpellingBeeLogo;
-    tag: string;
-    color: string;
-  };
-
-  const GAMES: CatalogueGame[] = [
-    {
-      name: 'Buchstabiene',
-      path: 'spelling-bee',
-      logo: SpellingBeeLogo,
-      tag: 'live',
-      color: 'green',
-    },
-    { name: 'Eckchen', path: 'eckchen', logo: EckchenLogo, tag: 'live', color: 'green' },
-    { name: 'Wortiger', path: 'wortiger', logo: WortigerLogo, tag: 'live', color: 'green' },
-  ];
+  import { GAME_UI_CONFIG } from '$lib/games/ui-config';
 
   const tagColorClass = (color: string) => {
     switch (color) {
@@ -40,20 +19,20 @@
   <h1 class="font-bold text-black text-center text-3xl">Spielkatalog</h1>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-8">
-    {#each GAMES as game}
+    {#each GAME_UI_CONFIG as game (game.id)}
       <a
-        href={resolve(`/${game.path}`)}
+        href={resolve(game.href)}
         class="hover:bg-gray-100 focus:bg-gray-100 border border-black flex p-4 items-center justify-between"
       >
         <div class="flex flex-col gap-1">
-          <span class="font-bold">{game.name}</span>
+          <span class="font-bold">{game.label}</span>
           <span
             class={'text-xs italic ' +
-              tagColorClass(game.color) +
-              ' px-2 w-fit border  border-black'}>{game.tag}</span
+              tagColorClass(game.status.color) +
+              ' px-2 w-fit border  border-black'}>{game.status.tag}</span
           >
         </div>
-        <game.logo classExtra="w-12 h-12" />
+        <svelte:component this={game.logo} classExtra="w-12 h-12" />
       </a>
     {/each}
   </div>
