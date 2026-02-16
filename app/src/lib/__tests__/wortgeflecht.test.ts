@@ -58,6 +58,11 @@ describe('wortgeflecht helpers', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining('/game_word?game_id=eq.00000000-0000-0000-0000-000000000001'),
+      {
+        method: 'GET',
+        headers: expect.any(Headers),
+        body: undefined,
+      },
     );
     expect(rows).toEqual([
       { word: 'besen', letter: 'b', cx: 5, cy: 5 },
