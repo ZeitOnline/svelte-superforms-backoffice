@@ -73,7 +73,7 @@ const setSearchParam = ({
 
   const searchableColumns = CONFIG_GAMES[gameName].table.columns.filter(col => col.searchable);
   const numericColumns = new Set(['id', 'level']);
-  const dateColumns = new Set(['release_date', 'start_time']);
+  const dateColumns = new Set(['release_date', 'start_time', 'published_at']);
   const spellingBeeSolutionColumn = 'game_solution.solution';
 
   const isNumeric = /^[0-9]+$/.test(trimmedSearch);
