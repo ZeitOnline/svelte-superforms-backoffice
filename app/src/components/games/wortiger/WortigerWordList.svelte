@@ -5,6 +5,7 @@
   import IconHandler from '$components/icons/IconHandler.svelte';
   import HighlightedText from '$components/HighlightedText.svelte';
   import { getToastState } from '$lib/toast-state.svelte';
+  import { buildQueryParams, pg, PostgrestError, requestPostgrest } from '$lib/postgrest-client';
   import { toCSV } from './utils';
   import type { SortDirection } from '$types';
   import { WORTIGER_LENGTHS } from '$lib/games/wortiger';
@@ -27,6 +28,22 @@
 
   const toastManager = getToastState();
   let sortDir = $state<SortDirection>('asc');
+
+  const getPostgrestErrorDetails = (error: unknown): string => {
+    if (error instanceof PostgrestError) {
+      if (typeof error.details === 'string') return error.details;
+      if (
+        error.details &&
+        typeof error.details === 'object' &&
+        'message' in error.details &&
+        typeof (error.details as { message?: unknown }).message === 'string'
+      ) {
+        return (error.details as { message: string }).message;
+      }
+    }
+    if (error instanceof Error) return error.message;
+    return String(error);
+  };
 
   function setSort(dir: SortDirection) {
     sortDir = dir;
@@ -107,7 +124,6 @@
     }
 
     const table = `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
-    const url = `${CONFIG_GAMES.wortiger.apiBase}/${table}`;
 
     // optimistic update
     const prevWords = words;
@@ -121,41 +137,28 @@
 
     addBusy = true;
     try {
-      const res = await fetch(url, {
+      await requestPostgrest<unknown, { word: string }>({
+        baseUrl: CONFIG_GAMES.wortiger.apiBase,
+        path: table,
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // If duplicates are possible and the table has a unique constraint on "word",
-          // you can optionally add:
-          // 'Prefer': 'resolution=ignore-duplicates,return=minimal'
-        },
-        body: JSON.stringify({ word: normalized }),
+        body: { word: normalized },
       });
-
-      if (!res.ok) {
-        // rollback optimistic update
-        words = prevWords;
-        allWords = prevAll;
-
-        const text = await res.text().catch(() => '');
-        // If duplicate (409/425/5xx), surface a friendly message
-        addError =
-          res.status === 409
-            ? 'Duplikat: Dieses Wort ist bereits vorhanden.'
-            : `Fehler beim Hinzufügen (${res.status}).`;
-        toastManager.add('Fehler beim Hinzufügen', text || addError);
-        return;
-      }
 
       newWord = '';
       toastManager.add('Wort hinzugefügt', '');
-    } catch (e) {
+    } catch (e: unknown) {
       // rollback on network error
       words = prevWords;
       allWords = prevAll;
-      addError = 'Netzwerkfehler beim Hinzufügen.';
-      console.error(e);
-      toastManager.add('Netzwerkfehler', String(e));
+      if (e instanceof PostgrestError) {
+        addError =
+          e.status === 409 ? 'Duplikat: Dieses Wort ist bereits vorhanden.' : `Fehler beim Hinzufügen (${e.status}).`;
+        toastManager.add('Fehler beim Hinzufügen', getPostgrestErrorDetails(e) || addError);
+      } else {
+        addError = 'Netzwerkfehler beim Hinzufügen.';
+        console.error(e);
+        toastManager.add('Netzwerkfehler', getPostgrestErrorDetails(e));
+      }
     } finally {
       addBusy = false;
     }
@@ -188,7 +191,6 @@
     }
 
     const table = `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
-    const baseUrl = `${CONFIG_GAMES.wortiger.apiBase}/${table}`;
 
     // optimistic snapshot
     const prevWords = words;
@@ -214,56 +216,34 @@
 
       addBusy = true;
       try {
-        const url = `${baseUrl}?word=eq.${encodeURIComponent(old)}`;
-        const res = await fetch(url, {
+        await requestPostgrest<unknown, { word: string }>({
+          baseUrl: CONFIG_GAMES.wortiger.apiBase,
+          path: table,
           method: 'PATCH',
+          query: buildQueryParams([['word', pg.eq(old)]]),
           headers: {
-            'Content-Type': 'application/json',
             Prefer: 'return=minimal',
           },
-          body: JSON.stringify({ word: next }),
+          body: { word: next },
         });
-
-        if (!res.ok) {
-          words = prevWords;
-          allWords = prevAll;
-          const text = await res.text().catch(() => '');
-          toastManager.add('Fehler beim Aktualisieren', text || `(${res.status})`);
-          return;
-        }
 
         newWord = '';
         toastManager.add('Wort aktualisiert', `${old} → ${next}`);
-      } catch (e) {
+      } catch (e: unknown) {
         words = prevWords;
         allWords = prevAll;
+        if (e instanceof PostgrestError) {
+          toastManager.add('Fehler beim Aktualisieren', getPostgrestErrorDetails(e) || `(${e.status})`);
+          return;
+        }
         addError = 'Netzwerkfehler beim Aktualisieren.';
         console.error(e);
-        toastManager.add('Netzwerkfehler', String(e));
+        toastManager.add('Netzwerkfehler', getPostgrestErrorDetails(e));
       } finally {
         addBusy = false;
       }
       return;
     }
-  };
-
-  // Convert Proxy object to array and extract word strings
-  const convertProxyToArray = (proxyObject: any): string[] => {
-    if (!proxyObject) return [];
-
-    // Convert proxy object to array by accessing numbered indices
-    const wordsArray = [];
-    let index = 0;
-
-    while (proxyObject[index] !== undefined) {
-      // Extract the word property from each object
-      if (proxyObject[index]?.word) {
-        wordsArray.push(proxyObject[index].word);
-      }
-      index++;
-    }
-
-    return wordsArray;
   };
 
   const fetchWordLists = async (number: number = 4) => {
@@ -273,20 +253,21 @@
       return;
     }
 
-    const URL = `${CONFIG_GAMES.wortiger.apiBase}/${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
+    const table = `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
     loading = true;
 
     try {
-      const response = await fetch(URL);
-      if (!response.ok) {
-        throw new Error('Failed to fetch word lists');
-      }
+      const { data } = await requestPostgrest<Array<{ word: string }>>({
+        baseUrl: CONFIG_GAMES.wortiger.apiBase,
+        path: table,
+      });
 
-      const rawData = await response.json();
-
-      const convertedWords = convertProxyToArray(rawData).sort((a, b) =>
-        a.localeCompare(b, 'de-DE', { sensitivity: 'base' }),
-      );
+      const convertedWords = data
+        .map(item => item.word)
+        .filter((item): item is string => typeof item === 'string' && item.length > 0)
+        .sort((a, b) =>
+          a.localeCompare(b, 'de-DE', { sensitivity: 'base' }),
+        );
 
       allWords[number] = convertedWords;
       words = convertedWords;
@@ -300,7 +281,6 @@
 
   const deleteWord = async (number: number, word: string): Promise<void> => {
     const table = `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
-    const url = `${CONFIG_GAMES.wortiger.apiBase}/${table}?word=eq.${encodeURIComponent(word)}`;
 
     // optimistic update
     const prevWords = words;
@@ -310,25 +290,25 @@
 
     loading = true;
     try {
-      const res = await fetch(url, {
+      await requestPostgrest<unknown>({
+        baseUrl: CONFIG_GAMES.wortiger.apiBase,
+        path: table,
         method: 'DELETE',
+        query: buildQueryParams([['word', pg.eq(word)]]),
         headers: {
           Prefer: 'return=minimal',
         },
       });
-
-      if (!res.ok) {
-        words = prevWords;
-        allWords = prevAll;
-        const text = await res.text().catch(() => '');
-        toastManager.add(`Failed to delete word`, `(${res.status}): ${text}`);
-      } else {
-        toastManager.add('Word deleted successfully', '');
-      }
-    } catch (err) {
+      toastManager.add('Word deleted successfully', '');
+    } catch (err: unknown) {
+      words = prevWords;
+      allWords = prevAll;
       console.error('Error deleting word:', err);
-      // state already restored above
-      throw err;
+      if (err instanceof PostgrestError) {
+        toastManager.add(`Failed to delete word`, `(${err.status}): ${getPostgrestErrorDetails(err)}`);
+      } else {
+        toastManager.add(`Failed to delete word`, getPostgrestErrorDetails(err));
+      }
     } finally {
       loading = false;
     }
