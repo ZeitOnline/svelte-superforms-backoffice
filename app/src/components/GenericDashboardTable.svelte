@@ -28,6 +28,7 @@
   import { CONFIG_GAMES } from '../config/games.config';
   import { spellingBeeStore, toggleLegend } from '$stores/spelling-bee-word.svelte';
   import WortigerLevelTabs from '$components/games/wortiger/WortigerLevelTabs.svelte';
+  import HighlightedText from '$components/HighlightedText.svelte';
 
   type Props = {
     games: GameComplete[];
@@ -264,16 +265,6 @@
   </svg>
 {/snippet}
 
-{#snippet highlightedContent(segments: HighlightSegment[])}
-  {#each segments as segment, index (index)}
-    {#if segment.match}
-      <mark class="bg-yellow-300">{segment.text}</mark>
-    {:else}
-      {segment.text}
-    {/if}
-  {/each}
-{/snippet}
-
 <div class="flex items-center justify-between gap-3">
   {#if gameName === 'wortiger'}
     <WortigerLevelTabs
@@ -344,7 +335,7 @@
                     <CloseIcon extraClasses="text-z-ds-color-error-70 w-7 h-7" />
                   {/if}
                 {:else if gameName === 'spelling-bee' && column.key === 'wordcloud'}
-                  {@render highlightedContent(renderCellContent(item, column))}
+                  <HighlightedText segments={renderCellContent(item, column)} />
                   {@const solutionsForGame = (item as GameSpellingBeeComplete).game_solution ?? []}
                   {@const maxPoints = solutionsForGame.reduce(
                     (max, current) => Math.max(max, current.points),
@@ -372,7 +363,7 @@
                   <span class="text-z-ds-color-error-70">Keine Lösung</span>
                 {:else}
                   <!-- Regular cell content -->
-                  {@render highlightedContent(renderCellContent(item, column))}
+                  <HighlightedText segments={renderCellContent(item, column)} />
                 {/if}
               </td>
             {/each}
