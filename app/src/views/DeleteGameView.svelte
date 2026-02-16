@@ -3,7 +3,6 @@
   import type { GameComplete, GameType } from '$types';
   import { view } from '../stores/view-state-store.svelte';
   import { deleteGame } from '$lib/queries';
-  import { APP_MESSAGES } from '$lib/app-messages';
   import { getToastState } from '$lib/toast-state.svelte';
   import { isEckchenGame, isSpellingBeeGame, isWortgeflechtGame, isWortigerGame } from '../utils';
 
@@ -52,23 +51,49 @@
   };
 
   const game = $derived(games.find((game: GameComplete) => game.id === view.selectedGameId));
+
+  type DeleteMessageParts = {
+    before: string;
+    value: string;
+    after: string;
+  };
+
+  const getDeleteMessageParts = (game: GameComplete): DeleteMessageParts | null => {
+    if (isSpellingBeeGame(game)) {
+      return {
+        before: 'Bist du dir sicher, dass du das Spiel mit der Wortwolke ',
+        value: String(game.wordcloud),
+        after: ' löschen möchtest?',
+      };
+    }
+
+    if (isWortigerGame(game)) {
+      return {
+        before: 'Bist du dir sicher, dass du das Spiel mit der Lösung ',
+        value: String(game.solution),
+        after: ' löschen möchtest?',
+      };
+    }
+
+    if (isWortgeflechtGame(game) || isEckchenGame(game)) {
+      return {
+        before: 'Bist du dir sicher, dass du das Spiel ',
+        value: game.name,
+        after: ' löschen möchtest?',
+      };
+    }
+
+    return null;
+  };
 </script>
 
 <ViewWrapper>
   <div class="flex flex-col items-center gap-z-ds-14 py-z-ds-32">
     {#if game !== undefined}
+      {@const message = getDeleteMessageParts(game)}
       <div>
-        {#if isSpellingBeeGame(game)}
-          {@html APP_MESSAGES.GAME.DELETE_SPELLING_BEE.replace(
-            '{wordcloud}',
-            String(game.wordcloud),
-          )}
-        {:else if isWortigerGame(game)}
-          {@html APP_MESSAGES.GAME.DELETE_WORTIGER.replace('{solution}', String(game.solution))}
-        {:else if isWortgeflechtGame(game)}
-          {@html APP_MESSAGES.GAME.DELETE_WORTGEFLECHT.replace('{name}', game.name)}
-        {:else if isEckchenGame(game)}
-          {@html APP_MESSAGES.GAME.DELETE_ECKCHEN.replace('{name}', game.name)}
+        {#if message}
+          {message.before}<strong>{message.value}</strong>{message.after}
         {/if}
       </div>
       <div class="flex justify-end gap-z-ds-8">
