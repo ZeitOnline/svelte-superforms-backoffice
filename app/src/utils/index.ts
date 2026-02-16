@@ -10,6 +10,13 @@ import type {
   TableColumn,
 } from '$types';
 
+export type HighlightSegment = {
+  text: string;
+  match: boolean;
+};
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 /**
  *  This function is used to transform the published date
  * @param publishedAt
@@ -58,18 +65,22 @@ export function debounce<T extends (...args: string[]) => void>(callback: T, wai
  * This function is used to highlight the matched text
  * @param text the text to be highlighted
  * @param term the term to be highlighted
- * @returns
+ * @returns highlight segments that can be rendered safely without {@html}
  */
-export function highlightMatch(text: string | number, term: string): string {
+export function highlightMatch(text: string | number, term: string): HighlightSegment[] {
   const textStr = text.toString();
-  const parts: string[] = textStr.split(new RegExp(`(${term})`, 'gi'));
-  return parts
-    .map((part: string) =>
-      part.toLowerCase() === term.toLowerCase()
-        ? `<span class="bg-yellow-300">${part}</span>`
-        : part,
-    )
-    .join('');
+  const trimmedTerm = term.trim();
+  if (!trimmedTerm) {
+    return [{ text: textStr, match: false }];
+  }
+
+  const matcher = new RegExp(`(${escapeRegExp(trimmedTerm)})`, 'gi');
+  const parts: string[] = textStr.split(matcher).filter(Boolean);
+
+  return parts.map((part: string) => ({
+    text: part,
+    match: part.toLowerCase() === trimmedTerm.toLowerCase(),
+  }));
 }
 
 /**

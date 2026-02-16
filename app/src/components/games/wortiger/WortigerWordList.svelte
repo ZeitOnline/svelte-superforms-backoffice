@@ -3,6 +3,7 @@
   import { CONFIG_GAMES } from '$config/games.config';
   import { debounce, highlightMatch } from '$utils';
   import IconHandler from '$components/icons/IconHandler.svelte';
+  import HighlightedText from '$components/HighlightedText.svelte';
   import { getToastState } from '$lib/toast-state.svelte';
   import { toCSV } from './utils';
   import type { SortDirection } from '$types';
@@ -524,7 +525,7 @@
     <div id="wortiger-grid" class="word-grid grid grid-cols-2 md:grid-cols-4 gap-2">
       {#each visibleWords() as word, i (i)}
         <div class="word-item border border-black px-2 py-1 bg-gray-50 flex">
-          <div class="mr-auto">{@html highlightMatch(word, debouncedSearch)}</div>
+          <div class="mr-auto"><HighlightedText segments={highlightMatch(word, debouncedSearch)} /></div>
           <button
             aria-label="Spiel bearbeiten"
             onclick={() => requestRename(word)}

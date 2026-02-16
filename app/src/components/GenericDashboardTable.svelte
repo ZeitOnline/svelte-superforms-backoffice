@@ -12,7 +12,13 @@
   import { DEFAULT_SORT, isSortOption } from '$lib/game-table-utils';
   import { cubicInOut } from 'svelte/easing';
   import { view } from '$stores/view-state-store.svelte';
-  import { debounce, highlightMatch, isGameActive, isSpellingBeeGame } from '$utils';
+  import {
+    debounce,
+    highlightMatch,
+    isGameActive,
+    isSpellingBeeGame,
+    type HighlightSegment,
+  } from '$utils';
   import { blur } from 'svelte/transition';
   import IconHandler from './icons/IconHandler.svelte';
   import { TableFilters, TableSearch, TablePagination } from './table';
@@ -22,6 +28,7 @@
   import { CONFIG_GAMES } from '../config/games.config';
   import { spellingBeeStore, toggleLegend } from '$stores/spelling-bee-word.svelte';
   import WortigerLevelTabs from '$components/games/wortiger/WortigerLevelTabs.svelte';
+  import HighlightedText from '$components/HighlightedText.svelte';
 
   type Props = {
     games: GameComplete[];
@@ -164,18 +171,16 @@
   const updateWortigerLength = (length: number | null) =>
     updateQuery({ levelLength: length, page: 1 }, true);
 
-  // Helper function to render cell content with highlighting
-  function renderCellContent(game: GameComplete, column: TableColumn): string | number {
+  // Build safe, tokenized content for highlighted rendering without {@html}
+  function renderCellContent(game: GameComplete, column: TableColumn): HighlightSegment[] {
     const value = column.getValue(game);
     const displayValue = column.getDisplayValue ? column.getDisplayValue(game) : value;
 
     if (!column.searchable) {
-      return displayValue.toString();
+      return [{ text: displayValue.toString(), match: false }];
     }
 
-    if (!value) return displayValue;
-
-    return highlightMatch(displayValue, debouncedSearchTerm) as string;
+    return highlightMatch(displayValue, debouncedSearchTerm);
   }
 </script>
 
@@ -330,7 +335,7 @@
                     <CloseIcon extraClasses="text-z-ds-color-error-70 w-7 h-7" />
                   {/if}
                 {:else if gameName === 'spelling-bee' && column.key === 'wordcloud'}
-                  {@html renderCellContent(item, column)}
+                  <HighlightedText segments={renderCellContent(item, column)} />
                   {@const solutionsForGame = (item as GameSpellingBeeComplete).game_solution ?? []}
                   {@const maxPoints = solutionsForGame.reduce(
                     (max, current) => Math.max(max, current.points),
@@ -358,7 +363,7 @@
                   <span class="text-z-ds-color-error-70">Keine Lösung</span>
                 {:else}
                   <!-- Regular cell content -->
-                  {@html renderCellContent(item, column)}
+                  <HighlightedText segments={renderCellContent(item, column)} />
                 {/if}
               </td>
             {/each}
