@@ -23,7 +23,6 @@ export type IconOption =
   | 'search'
   | 'error'
   | 'upload'
-  | 'delete'
   | 'download'
   | 'eye'
   | 'eye-scan';
