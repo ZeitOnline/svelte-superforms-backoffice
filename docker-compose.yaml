@@ -22,7 +22,7 @@ services:
 
   # PostgREST API for Eckchen schema
   postgrest_eckchen:
-    image: postgrest/postgrest:v13.0.4@sha256:a312f4b2e48530a01fc26f5310d547d6c26d087858360e164522e415723a7732
+    image: postgrest/postgrest:v13.0.8@sha256:d09618df2b7b9547c80a076c2f4045b326be8d7ac06060d263caefec1334e3c9
     container_name: postgrest_eckchen
     environment:
       PGRST_DB_URI: postgres://postgres:postgres@postgres:5432/main
@@ -42,7 +42,7 @@ services:
 
   # PostgREST API for Wortiger schema
   postgrest_wortiger:
-    image: postgrest/postgrest:v13.0.4@sha256:a312f4b2e48530a01fc26f5310d547d6c26d087858360e164522e415723a7732
+    image: postgrest/postgrest:v13.0.8@sha256:d09618df2b7b9547c80a076c2f4045b326be8d7ac06060d263caefec1334e3c9
     container_name: postgrest_wortiger
     environment:
       PGRST_DB_URI: postgres://postgres:postgres@postgres:5432/main
@@ -62,7 +62,7 @@ services:
 
   # PostgREST API for SpellingBee schema
   postgrest_spelling_bee:
-    image: postgrest/postgrest:v13.0.4@sha256:a312f4b2e48530a01fc26f5310d547d6c26d087858360e164522e415723a7732
+    image: postgrest/postgrest:v13.0.8@sha256:d09618df2b7b9547c80a076c2f4045b326be8d7ac06060d263caefec1334e3c9
     container_name: postgrest_spelling_bee
     environment:
       PGRST_DB_URI: postgres://postgres:postgres@postgres:5432/main
@@ -82,7 +82,7 @@ services:
 
   # PostgREST API for Wortgeflecht schema
   postgrest_wortgeflecht:
-    image: postgrest/postgrest:v13.0.4@sha256:a312f4b2e48530a01fc26f5310d547d6c26d087858360e164522e415723a7732
+    image: postgrest/postgrest:v13.0.8@sha256:d09618df2b7b9547c80a076c2f4045b326be8d7ac06060d263caefec1334e3c9
     container_name: postgrest_wortgeflecht
     environment:
       PGRST_DB_URI: postgres://postgres:postgres@postgres:5432/main
