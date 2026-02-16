@@ -524,7 +524,15 @@
     <div id="wortiger-grid" class="word-grid grid grid-cols-2 md:grid-cols-4 gap-2">
       {#each visibleWords() as word, i (i)}
         <div class="word-item border border-black px-2 py-1 bg-gray-50 flex">
-          <div class="mr-auto">{@html highlightMatch(word, debouncedSearch)}</div>
+          <div class="mr-auto">
+            {#each highlightMatch(word, debouncedSearch) as segment, index (index)}
+              {#if segment.match}
+                <mark class="bg-yellow-300">{segment.text}</mark>
+              {:else}
+                {segment.text}
+              {/if}
+            {/each}
+          </div>
           <button
             aria-label="Spiel bearbeiten"
             onclick={() => requestRename(word)}
