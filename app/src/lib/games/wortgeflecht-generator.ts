@@ -26,6 +26,8 @@ export type WortgeflechtWordPath = {
   cells: WortgeflechtPathCell[];
 };
 
+const normalizeWordKey = (value: string) => value.trim().toLocaleLowerCase('de-DE');
+
 const EDGE_DIRS: ReadonlyArray<readonly [number, number]> = [
   [-1, -1],
   [0, -1],
@@ -434,31 +436,35 @@ const isAdjacent = (a: number, b: number) => {
 
 export const buildWortgeflechtPreviewFromRows = (rows: WortgeflechtLetterRow[]) => {
   const grid = EMPTY_GRID.slice();
-  const wordOrder: string[] = [];
-  const indexSetByWord = new Map<string, Set<number>>();
+  const wordOrderKeys: string[] = [];
+  const indexSetByWordKey = new Map<string, Set<number>>();
+  const displayWordByKey = new Map<string, string>();
 
   for (const row of rows) {
-    const word = (row.word ?? '').trim().toLocaleUpperCase('de-DE');
-    const letter = (row.letter ?? '').trim().toLocaleUpperCase('de-DE');
+    const word = (row.word ?? '').trim();
+    const wordKey = normalizeWordKey(word);
+    const letter = (row.letter ?? '').trim();
     const x = Number(row.cy) - 1;
     const y = Number(row.cx) - 1;
-    if (!word || !letter) continue;
+    if (!wordKey || !letter) continue;
     if (!inBounds(x, y)) continue;
     const idx = y * GRID_WIDTH + x;
     grid[idx] = letter[0] ?? '\u00A0';
-    if (!indexSetByWord.has(word)) {
-      indexSetByWord.set(word, new Set<number>());
-      wordOrder.push(word);
+    if (!indexSetByWordKey.has(wordKey)) {
+      indexSetByWordKey.set(wordKey, new Set<number>());
+      displayWordByKey.set(wordKey, word);
+      wordOrderKeys.push(wordKey);
     }
-    indexSetByWord.get(word)?.add(idx);
+    indexSetByWordKey.get(wordKey)?.add(idx);
   }
 
   const paths: WortgeflechtWordPath[] = [];
 
-  for (const word of wordOrder) {
-    const targetSet = indexSetByWord.get(word);
+  for (const wordKey of wordOrderKeys) {
+    const targetSet = indexSetByWordKey.get(wordKey);
+    const displayWord = displayWordByKey.get(wordKey) ?? wordKey;
     if (!targetSet || targetSet.size === 0) continue;
-    const candidates = findWord(grid, word);
+    const candidates = findWord(grid, displayWord);
     let chosen = candidates.find(path => {
       if (path.length !== targetSet.size) return false;
       return path.every(idx => targetSet.has(idx));
@@ -486,7 +492,7 @@ export const buildWortgeflechtPreviewFromRows = (rows: WortgeflechtLetterRow[]) 
     }
 
     paths.push({
-      word,
+      word: displayWord,
       cells: chosen.map(idx => ({
         x: idx % GRID_WIDTH,
         y: Math.floor(idx / GRID_WIDTH),

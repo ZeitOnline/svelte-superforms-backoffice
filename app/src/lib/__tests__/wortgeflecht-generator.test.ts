@@ -97,4 +97,23 @@ describe('wortgeflecht-generator helpers', () => {
     const preview = buildWortgeflechtPreviewFromRows(rows);
     expect(preview.paths.map(p => p.word)).toEqual(['IMKE', 'PACO']);
   });
+
+  it('preserves ß words when rebuilding preview from saved rows', () => {
+    const rows = [
+      { word: 'süßlich', letter: 's', cx: 1, cy: 1 },
+      { word: 'süßlich', letter: 'ü', cx: 1, cy: 2 },
+      { word: 'süßlich', letter: 'ß', cx: 1, cy: 3 },
+      { word: 'süßlich', letter: 'l', cx: 1, cy: 4 },
+      { word: 'süßlich', letter: 'i', cx: 1, cy: 5 },
+      { word: 'süßlich', letter: 'c', cx: 1, cy: 6 },
+      { word: 'süßlich', letter: 'h', cx: 1, cy: 7 },
+    ];
+
+    const preview = buildWortgeflechtPreviewFromRows(rows);
+
+    expect(preview.paths).toHaveLength(1);
+    expect(preview.paths[0]?.word).toBe('süßlich');
+    expect(preview.grid).toContain('ß');
+    expect((preview.paths[0]?.cells.length ?? 0) > 0).toBe(true);
+  });
 });
