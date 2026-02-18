@@ -299,15 +299,15 @@
           Prefer: 'return=minimal',
         },
       });
-      toastManager.add('Word deleted successfully', '');
+      toastManager.add('Wort gelöscht', '');
     } catch (err: unknown) {
       words = prevWords;
       allWords = prevAll;
       console.error('Error deleting word:', err);
       if (err instanceof PostgrestError) {
-        toastManager.add(`Failed to delete word`, `(${err.status}): ${getPostgrestErrorDetails(err)}`);
+        toastManager.add('Fehler beim Löschen', `(${err.status}): ${getPostgrestErrorDetails(err)}`);
       } else {
-        toastManager.add(`Failed to delete word`, getPostgrestErrorDetails(err));
+        toastManager.add('Fehler beim Löschen', getPostgrestErrorDetails(err));
       }
     } finally {
       loading = false;
