@@ -3,6 +3,7 @@
         "validation",
         "api",
         "parsing",
-        "wording"
+        "wording",
+        "auth"
     ]
 }
