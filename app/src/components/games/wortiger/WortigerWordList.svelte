@@ -5,7 +5,13 @@
   import IconHandler from '$components/icons/IconHandler.svelte';
   import HighlightedText from '$components/HighlightedText.svelte';
   import { getToastState } from '$lib/toast-state.svelte';
-  import { buildQueryParams, pg, PostgrestError, requestPostgrest } from '$lib/postgrest-client';
+  import {
+    buildQueryParams,
+    getPostgrestErrorMessage,
+    pg,
+    PostgrestError,
+    requestPostgrest,
+  } from '$lib/postgrest-client';
   import { toCSV } from './utils';
   import type { SortDirection } from '$types';
   import { WORTIGER_LENGTHS } from '$lib/games/wortiger';
@@ -28,22 +34,6 @@
 
   const toastManager = getToastState();
   let sortDir = $state<SortDirection>('asc');
-
-  const getPostgrestErrorDetails = (error: unknown): string => {
-    if (error instanceof PostgrestError) {
-      if (typeof error.details === 'string') return error.details;
-      if (
-        error.details &&
-        typeof error.details === 'object' &&
-        'message' in error.details &&
-        typeof (error.details as { message?: unknown }).message === 'string'
-      ) {
-        return (error.details as { message: string }).message;
-      }
-    }
-    if (error instanceof Error) return error.message;
-    return String(error);
-  };
 
   function setSort(dir: SortDirection) {
     sortDir = dir;
@@ -153,11 +143,11 @@
       if (e instanceof PostgrestError) {
         addError =
           e.status === 409 ? 'Duplikat: Dieses Wort ist bereits vorhanden.' : `Fehler beim Hinzufügen (${e.status}).`;
-        toastManager.add('Fehler beim Hinzufügen', getPostgrestErrorDetails(e) || addError);
+        toastManager.add('Fehler beim Hinzufügen', getPostgrestErrorMessage(e) || addError);
       } else {
         addError = 'Netzwerkfehler beim Hinzufügen.';
         console.error(e);
-        toastManager.add('Netzwerkfehler', getPostgrestErrorDetails(e));
+        toastManager.add('Netzwerkfehler', getPostgrestErrorMessage(e));
       }
     } finally {
       addBusy = false;
@@ -233,12 +223,12 @@
         words = prevWords;
         allWords = prevAll;
         if (e instanceof PostgrestError) {
-          toastManager.add('Fehler beim Aktualisieren', getPostgrestErrorDetails(e) || `(${e.status})`);
+          toastManager.add('Fehler beim Aktualisieren', getPostgrestErrorMessage(e) || `(${e.status})`);
           return;
         }
         addError = 'Netzwerkfehler beim Aktualisieren.';
         console.error(e);
-        toastManager.add('Netzwerkfehler', getPostgrestErrorDetails(e));
+        toastManager.add('Netzwerkfehler', getPostgrestErrorMessage(e));
       } finally {
         addBusy = false;
       }
@@ -305,9 +295,9 @@
       allWords = prevAll;
       console.error('Error deleting word:', err);
       if (err instanceof PostgrestError) {
-        toastManager.add('Fehler beim Löschen', `(${err.status}): ${getPostgrestErrorDetails(err)}`);
+        toastManager.add('Fehler beim Löschen', `(${err.status}): ${getPostgrestErrorMessage(err)}`);
       } else {
-        toastManager.add('Fehler beim Löschen', getPostgrestErrorDetails(err));
+        toastManager.add('Fehler beim Löschen', getPostgrestErrorMessage(err));
       }
     } finally {
       loading = false;

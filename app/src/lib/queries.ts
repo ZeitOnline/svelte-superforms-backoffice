@@ -6,33 +6,19 @@ import { deleteEckchenGame } from './games/eckchen';
 import { deleteWortgeflechtGame } from './games/wortgeflecht';
 import { deleteWortigerGame, LENGTH_TO_LEVEL } from './games/wortiger';
 import { deleteSpellingBeeGame } from './games/spelling-bee';
-import { buildQueryParams, pg, PostgrestError, requestPostgrest } from './postgrest-client';
+import {
+  buildQueryParams,
+  getPostgrestErrorMessage,
+  pg,
+  PostgrestError,
+  requestPostgrest,
+} from './postgrest-client';
 
 /**
  * Mock configuration to skip the deletion of game_state.
  * We do not have game_state in the mock data.
  */
 export const SHOULD_DELETE_STATE = false;
-
-const getPostgrestErrorMessage = (error: unknown) => {
-  if (error instanceof PostgrestError) {
-    if (
-      error.details &&
-      typeof error.details === 'object' &&
-      'message' in error.details &&
-      typeof (error.details as { message?: unknown }).message === 'string'
-    ) {
-      return (error.details as { message: string }).message;
-    }
-    if (typeof error.details === 'string') {
-      return error.details;
-    }
-  }
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return 'Unknown error';
-};
 
 const setOrderParam = ({
   params,

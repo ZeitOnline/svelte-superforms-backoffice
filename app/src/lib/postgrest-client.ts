@@ -43,6 +43,26 @@ export class PostgrestError extends Error {
   }
 }
 
+export const getPostgrestErrorMessage = (error: unknown, fallback = 'Unknown error'): string => {
+  if (error instanceof PostgrestError) {
+    if (typeof error.details === 'string' && error.details.length > 0) {
+      return error.details;
+    }
+    if (
+      error.details &&
+      typeof error.details === 'object' &&
+      'message' in error.details &&
+      typeof (error.details as { message?: unknown }).message === 'string'
+    ) {
+      return (error.details as { message: string }).message;
+    }
+  }
+  if (error instanceof Error && error.message.length > 0) {
+    return error.message;
+  }
+  return fallback;
+};
+
 export const pg = {
   eq: (value: string | number | boolean) => `eq.${value}`,
   order: (column: string, direction: 'asc' | 'desc') => `${column}.${direction}`,
