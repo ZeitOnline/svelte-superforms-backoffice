@@ -38,7 +38,7 @@
   </div>
 
   <select
-    class="border border-black p-1 min-w-40"
+    class="border border-black pl-2 p-1 min-w-40"
     name="game"
     id="game"
     onchange={handleGameChange}
