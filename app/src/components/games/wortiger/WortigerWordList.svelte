@@ -157,7 +157,7 @@
   /**
    * Add or update (rename) a word in the PostgREST word list.
    *
-   * - Add: call with { oldWord: undefined } → POST (optionally as update)
+   * - Add: call without { oldWord } → delegates to `addWord` (POST)
    * - Update: call with { oldWord } → PATCH /?word=eq.{oldWord}
    *
    * @param number   Word length bucket (4|5|6|7) -> table `wortliste_${number}`
@@ -234,6 +234,9 @@
       }
       return;
     }
+
+    // Add branch: avoid silent no-op when called without oldWord.
+    await addWord(number, next);
   };
 
   const fetchWordLists = async (number: number = 4) => {
