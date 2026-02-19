@@ -12,6 +12,7 @@ export const saveWortgeflechtGameFormSchema = z.object({
   name: z.string().trim().min(1, {
     message: ERRORS.GAME.NAME.EMPTY,
   }),
+  description: z.string().trim().default(''),
   published_at: z.string().min(1, { message: ERRORS.GAME.RELEASE_DATE.EMPTY }),
   active: z.boolean().default(false),
 });

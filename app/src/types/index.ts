@@ -12,6 +12,12 @@ export type GameType = 'eckchen' | 'wortiger' | 'spelling-bee' | 'wortgeflecht';
  */
 export type View = 'dashboard' | 'new-game' | 'edit-game' | 'delete-game';
 
+
+/**
+ * These are the possible creation modes for a game
+ */
+export type CreationMode = 'manual' | 'csv'
+
 /**
  * These are the possible icons in the app (used for the logs for example)
  */
@@ -57,6 +63,7 @@ export type GameWortiger = BaseGame & {
 export type GameWortgeflecht = BaseGame & {
   game_id: string;
   name: string;
+  description?: string;
   published_at: string;
 };
 
@@ -182,7 +189,10 @@ export type GameConfig = {
     fields: FormField[];
     hasQuestionsTable?: boolean; // Whether this game type has a questions table
   };
+  creationModes: CreationMode[];
 };
+
+
 
 export type FormField = {
   key: string;

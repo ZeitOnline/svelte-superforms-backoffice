@@ -152,7 +152,7 @@ export const upsertWortgeflechtGame = async ({
   data,
 }: {
   id?: number;
-  data: { name: string; published_at: string; active: boolean };
+  data: { name: string; description: string; published_at: string; active: boolean };
 }) => {
   if (id) {
     const { data: result } = await requestPostgrest<Array<{ id: number; game_id: string }>, typeof data>({
