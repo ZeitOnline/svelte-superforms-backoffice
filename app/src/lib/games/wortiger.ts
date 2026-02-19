@@ -1,4 +1,5 @@
 import { CONFIG_GAMES } from '../../config/games.config';
+import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
 
 /**
  * The characters per level in the Wortiger game.
@@ -20,25 +21,14 @@ export const isWortigerLength = (length: number): length is (typeof WORTIGER_LEN
   WORTIGER_LENGTHS.includes(length);
 
 export const deleteWortigerGame = async (id: number) => {
-  const URL = `${CONFIG_GAMES['wortiger'].apiBase}/${CONFIG_GAMES['wortiger'].endpoints.games.name}?id=eq.${id}`;
-
   try {
-    const response = await fetch(URL, {
+    const { response } = await requestPostgrest<unknown>({
+      baseUrl: CONFIG_GAMES['wortiger'].apiBase,
+      path: CONFIG_GAMES['wortiger'].endpoints.games.name,
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      query: buildQueryParams([['id', pg.eq(id)]]),
+      errorMessage: `Failed to delete Wortiger game with id: ${id}`,
     });
-
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      console.error(
-        `Failed to delete Wortiger game with id: ${id}. Status: ${response.status}. Error: ${errorMessage}`,
-      );
-      throw new Error(
-        `Failed to delete Wortiger game with id: ${id}. Status: ${response.status}. Error: ${errorMessage}`,
-      );
-    }
 
     console.log(`Successfully deleted Wortiger game with id: ${id}`);
     return response.statusText;

@@ -22,9 +22,25 @@
     upsertWortgeflechtGame,
   } from '$lib/games/wortgeflecht';
   import {
+    buildWortgeflechtPreviewFromRows,
+    generateWortgeflechtLayout,
+    parseWortgeflechtWords,
+    toGridRows,
+    type WortgeflechtWordPath,
+  } from '$lib/games/wortgeflecht-generator';
+  import {
+    hasSameWordSetForWortgeflecht,
+    normalizeWortgeflechtWordKey,
+    normalizeWortgeflechtWordLines,
+    normalizeWortgeflechtWordLineValue,
+    validateWortgeflechtGenerationInput,
+  } from '$lib/games/wortgeflecht-utils';
+  import {
     saveWortgeflechtGameFormSchema,
     type SaveWortgeflechtGameFormSchema,
   } from '$schemas/wortgeflecht';
+  import WordListEditor from './WordListEditor.svelte';
+  import GridPreview from './GridPreview.svelte';
 
   type DataProps = {
     games: GameWortgeflechtComplete[];
@@ -40,12 +56,62 @@
 
   let { data, game, beginning_option = $bindable() }: Props = $props();
 
-  const EMPTY_ROW: WortgeflechtLetterRow = { word: '', letter: '', cx: 0, cy: 0 };
+  const EMPTY_GRID = Array<string>(48).fill('\u00A0');
+  const GRID_CELL_SIZE = 40;
+  const PATH_COLORS = [
+    { fill: '#f8d7da', stroke: '#d94f70' },
+    { fill: '#ffe8b5', stroke: '#c99800' },
+    { fill: '#cffafe', stroke: '#0f9fb0' },
+    { fill: '#d1fae5', stroke: '#169c74' },
+    { fill: '#e0e7ff', stroke: '#4f74d9' },
+    { fill: '#fce7f3', stroke: '#cc5f97' },
+    { fill: '#fae8ff', stroke: '#9660cc' },
+    { fill: '#fef3c7', stroke: '#b08a07' },
+  ];
+  const DEBUG_WORDS = ['blumig', 'modrig', 'säuerlich', 'stechend', 'süßlich', 'muffig', 'ranzig'];
   const toastManager = getToastState();
-  let isSubmitted = $state(false);
   let rows = $state<WortgeflechtLetterRow[]>([]);
   let rowsError = $state<string | null>(null);
   let initialRowsSnapshot = $state('');
+  let wordLines = $state<string[]>(['']);
+  let generatorError = $state<string | null>(null);
+  let invalidInputWords = $state<string[]>([]);
+  let totalLetters = $state(0);
+  let wordCount = $state(0);
+  let isGenerating = $state(false);
+  let generatedGrid = $state<string[]>(EMPTY_GRID);
+  let generatedPaths = $state<WortgeflechtWordPath[]>([]);
+  const generatedGridRows = $derived(toGridRows(generatedGrid));
+  const coloredPaths = $derived(
+    generatedPaths.map((path, index) => {
+      const color = PATH_COLORS[index % PATH_COLORS.length];
+      return {
+        ...path,
+        id: `path-${index}`,
+        fill: color.fill,
+        stroke: color.stroke,
+        points: path.cells
+          .map(cell => `${cell.x * GRID_CELL_SIZE + GRID_CELL_SIZE / 2},${cell.y * GRID_CELL_SIZE + GRID_CELL_SIZE / 2}`)
+          .join(' '),
+        start: path.cells[0],
+        end: path.cells[path.cells.length - 1],
+      };
+    }),
+  );
+  const wordStyleByWord = $derived(
+    new Map(
+      coloredPaths.map(path => [
+        normalizeWortgeflechtWordKey(path.word),
+        `border-left: 6px solid ${path.stroke}; background-color: ${path.fill};`,
+      ]),
+    ),
+  );
+
+  function getWordRowStyle(line: string) {
+    const key = normalizeWortgeflechtWordKey(line);
+    if (!key) return '';
+    return wordStyleByWord.get(key) ?? '';
+  }
 
   // svelte-ignore state_referenced_locally
   const wortgeflechtForm = data.saveGameForm;
@@ -58,6 +124,12 @@
     async onUpdate({ form }) {
       try {
         rowsError = null;
+
+        if (!hasSameWordSetForWortgeflecht({ wordLines, rows })) {
+          rowsError = 'Bitte nach Änderungen an der Wortliste zuerst auf „Generieren“ klicken.';
+          return;
+        }
+
         const normalizedRows = sortWortgeflechtRowsByWordThenLetter(normalizeRows(rows));
         const rowsValidationMsg = validateRows(normalizedRows);
         if (rowsValidationMsg) {
@@ -86,6 +158,7 @@
 
         const payload = {
           name: form.data.name.trim(),
+          description: (form.data.description ?? '').trim(),
           published_at: normalizeDate(form.data.published_at),
           active: form.data.active,
         };
@@ -100,7 +173,6 @@
           rows: normalizedRows,
         });
 
-        isSubmitted = true;
         toastManager.add(
           beginning_option === 'edit' ? APP_MESSAGES.GAME.EDITED_SUCCESS : APP_MESSAGES.GAME.ADDED_SUCCESS,
           '',
@@ -150,23 +222,92 @@
       })),
     );
 
-  function addRow() {
-    rows.push({ ...EMPTY_ROW });
-  }
-
-  function removeRow(index: number) {
-    if (rows.length === 1) return;
-    if (!confirm(`Zeile ${index + 1} löschen?`)) return;
-    rows.splice(index, 1);
-  }
-
   async function loadInitialRows() {
     if (game && isWortgeflechtGame(game)) {
       const existing = await fetchWortgeflechtLettersByGameId(game.game_id);
-      rows = existing.length ? sortWortgeflechtRowsByWordThenLetter(existing) : [{ ...EMPTY_ROW }];
+      rows = existing.length ? sortWortgeflechtRowsByWordThenLetter(existing) : [];
+      const preview = buildWortgeflechtPreviewFromRows(rows);
+      generatedGrid = preview.grid;
+      generatedPaths = preview.paths;
+      const orderedWords = preview.paths.map(path => path.word);
+      wordLines = [...orderedWords, ''];
       return;
     }
-    rows = [{ ...EMPTY_ROW }];
+    rows = [];
+    wordLines = [''];
+    generatedGrid = EMPTY_GRID.slice();
+    generatedPaths = [];
+  }
+
+  function refreshWordStats() {
+    const parsed = parseWortgeflechtWords(wordLines.join('\n'));
+    wordCount = parsed.words.length;
+    totalLetters = parsed.totalLetters;
+    invalidInputWords = parsed.invalidWords;
+  }
+
+  function updateWordLine(index: number, value: string) {
+    const next = wordLines.slice();
+    next[index] = normalizeWortgeflechtWordLineValue(value);
+    wordLines = normalizeWortgeflechtWordLines(next);
+    refreshWordStats();
+  }
+
+  function removeWordLine(index: number) {
+    if (wordLines.length === 1) {
+      wordLines = [''];
+      refreshWordStats();
+      return;
+    }
+    const next = wordLines.slice();
+    next.splice(index, 1);
+    wordLines = normalizeWortgeflechtWordLines(next.length ? next : ['']);
+    refreshWordStats();
+  }
+
+  function addWordLine() {
+    const next = wordLines.slice();
+    if (next[next.length - 1].trim() !== '') {
+      next.push('');
+    }
+    wordLines = normalizeWortgeflechtWordLines(next);
+  }
+
+  function fillDebugWords() {
+    wordLines = [...DEBUG_WORDS, ''];
+    generatorError = null;
+    rowsError = null;
+    refreshWordStats();
+  }
+
+  async function generateGridFromWords() {
+    refreshWordStats();
+    generatorError = null;
+    rowsError = null;
+
+    const validation = validateWortgeflechtGenerationInput(wordLines);
+    if (validation.error) {
+      generatorError = validation.error;
+      return;
+    }
+
+    isGenerating = true;
+    try {
+      const generated = generateWortgeflechtLayout({ words: validation.parsed.words, attempts: 50 });
+      if (!generated) {
+        generatorError =
+          'Kein valides Gitter gefunden. Bitte Wortliste prüfen oder erneut auf "Generieren" klicken.';
+        generatedGrid = EMPTY_GRID.slice();
+        generatedPaths = [];
+        rows = [];
+        return;
+      }
+      generatedGrid = generated.grid;
+      generatedPaths = generated.paths;
+      rows = sortWortgeflechtRowsByWordThenLetter(generated.rows);
+    } finally {
+      isGenerating = false;
+    }
   }
 
   const addCustomDate = async () => {
@@ -184,6 +325,7 @@
   onMount(async () => {
     if (game && isWortgeflechtGame(game)) {
       $form.name = game.name;
+      $form.description = game.description ?? '';
       $form.published_at = normalizeDate(game.published_at);
       $form.active = game.active ?? false;
     } else if (!$form.published_at) {
@@ -191,6 +333,8 @@
     }
 
     await loadInitialRows();
+    wordLines = normalizeWortgeflechtWordLines(wordLines);
+    refreshWordStats();
     initialRowsSnapshot = snapshotRows(rows);
   });
 
@@ -213,6 +357,7 @@
     }
     resetAll();
   }
+
 </script>
 
 {#if beginning_option === 'edit' && game}
@@ -278,6 +423,27 @@
   </div>
 
   <div
+    class="w-full flex flex-col sm:flex-row sm:items-start justify-between pb-z-ds-24 relative gap-z-ds-4"
+  >
+    <label class="text-md font-bold mt-2" for="description">Beschreibung:</label>
+    <div class="relative w-full sm:w-62.5">
+      <textarea
+        class="border py-z-ds-8 w-full px-z-ds-12 border-black text-md min-h-[96px]"
+        name="description"
+        id="description"
+        placeholder="Kurzbeschreibung des Rätsels"
+        bind:value={$form.description}
+      ></textarea>
+      {#if $errors.description}
+        <div in:blur class="text-red-500 invalid flex items-center gap-z-ds-4 text-xs mt-2">
+          <IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
+          <span>{$errors.description}</span>
+        </div>
+      {/if}
+    </div>
+  </div>
+
+  <div
     class="w-full flex flex-col sm:flex-row sm:items-center justify-between pb-z-ds-24 relative gap-z-ds-4"
   >
     <label class="text-md font-bold" for="active">Aktiv:</label>
@@ -290,59 +456,29 @@
     />
   </div>
 
-  <div class="flex justify-between items-center w-full gap-z-ds-8 my-z-ds-24">
-    <div class="font-bold">Buchstaben-Koordinaten</div>
-    <button class="z-ds-button z-ds-button-outline" type="button" onclick={addRow}>+ Zeile</button>
-  </div>
-
-  {#if rowsError}
-    <div class="border border-red-500 text-red-600 p-3 mb-4 flex items-center gap-2">
-      <IconHandler iconName="error" extraClasses="w-4 h-4" />
-      <span>{rowsError}</span>
-    </div>
-  {/if}
-
-  <div class="relative overflow-x-auto">
-    <table class="w-full text-sm text-left">
-      <thead>
-        <tr>
-          <th class="px-2 py-2">Wort</th>
-          <th class="px-2 py-2">Buchstabe</th>
-          <th class="px-2 py-2">X</th>
-          <th class="px-2 py-2">Y</th>
-          <th class="px-2 py-2"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each rows as row, i (i)}
-          <tr>
-            <td class="px-2 py-1">
-              <input class="border px-2 py-1 w-full" type="text" bind:value={row.word} />
-            </td>
-            <td class="px-2 py-1">
-              <input class="border px-2 py-1 w-24" type="text" maxlength="1" bind:value={row.letter} />
-            </td>
-            <td class="px-2 py-1">
-              <input class="border px-2 py-1 w-24" type="number" min="0" bind:value={row.cx} />
-            </td>
-            <td class="px-2 py-1">
-              <input class="border px-2 py-1 w-24" type="number" min="0" bind:value={row.cy} />
-            </td>
-            <td class="px-2 py-1">
-              <button
-                class="z-ds-button z-ds-button-outline"
-                type="button"
-                title="Zeile löschen"
-                onclick={() => removeRow(i)}
-              >
-                –
-              </button>
-            </td>
-          </tr>
-        {/each}
-      </tbody>
-    </table>
-  </div>
+  <section class="grid grid-cols-1 xl:grid-cols-2 gap-z-ds-24 my-z-ds-24">
+    <WordListEditor
+      state={{
+        wordLines,
+        wordCount,
+        totalLetters,
+        invalidInputWords,
+        generatorError,
+        rowsError,
+        isGenerating,
+        hasGeneratedRows: rows.length > 0,
+        getWordRowStyle,
+      }}
+      actions={{
+        onFillDebugWords: fillDebugWords,
+        onAddWordLine: addWordLine,
+        onUpdateWordLine: updateWordLine,
+        onRemoveWordLine: removeWordLine,
+        onGenerateGrid: generateGridFromWords,
+      }}
+    />
+    <GridPreview {coloredPaths} {generatedGridRows} />
+  </section>
 
   <div class="flex flex-row gap-4 items-center my-12 mx-auto w-full justify-center">
     <button class="z-ds-button" type="submit">
@@ -354,10 +490,3 @@
     </button>
   </div>
 </form>
-
-<style>
-  table th,
-  table td {
-    border-bottom: 1px solid black;
-  }
-</style>

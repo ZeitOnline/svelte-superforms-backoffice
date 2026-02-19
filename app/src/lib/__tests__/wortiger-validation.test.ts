@@ -127,9 +127,11 @@ describe('wortiger-validation', () => {
       fetchFn,
     });
 
-    expect(fetchFn).toHaveBeenCalledWith(
-      'https://example.test/wortliste_4?select=word',
-    );
+    expect(fetchFn).toHaveBeenCalledWith('https://example.test/wortliste_4?select=word', {
+      method: 'GET',
+      headers: expect.any(Headers),
+      body: undefined,
+    });
     expect(set.has('wort')).toBe(true);
   });
 });

@@ -90,6 +90,7 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         },
       ],
     },
+    creationModes: ["manual", "csv"],
   },
   wortiger: {
     label: 'wortiger',
@@ -167,6 +168,7 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         },
       ],
     },
+    creationModes: ["manual", "csv"],
   },
   "spelling-bee": {
     label: 'spelling-bee',
@@ -243,6 +245,7 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         },
       ],
     },
+    creationModes: ["manual", "csv"],
   },
   wortgeflecht: {
     label: 'wortgeflecht',
@@ -274,6 +277,13 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           getValue: game => game.id,
           searchable: true,
           sortable: true,
+        },
+        {
+          key: 'description',
+          label: 'Beschreibung',
+          getValue: game => (game as GameWortgeflechtComplete).description ?? '',
+          searchable: true,
+          sortable: false,
         },
         {
           key: 'published_at',
@@ -310,6 +320,13 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           required: true,
         },
         {
+          key: 'description',
+          label: 'Beschreibung',
+          type: 'textarea',
+          placeholder: 'Kurzbeschreibung des Rätsels',
+          required: false,
+        },
+        {
           key: 'active',
           label: 'Aktiv',
           type: 'checkbox',
@@ -317,5 +334,6 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         },
       ],
     },
+    creationModes: ["manual"],
   },
 };

@@ -1,5 +1,6 @@
 import type { SpellingBeeSolutionItem } from "$types";
 import { CONFIG_GAMES } from "$config/games.config";
+import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
 
 export const DEFAULT_SPELLING_BEE_SOLUTION = {
   solution: '',
@@ -20,28 +21,17 @@ const getSolutionsEndpointUrl = () => {
 const normalizeSolutionValue = (solution: string) => solution.trim().toUpperCase();
 
 export const deleteSpellingBeeGame = async (id: number) => {
-  const URL = `${CONFIG_GAMES['spelling-bee'].apiBase}/${CONFIG_GAMES['spelling-bee'].endpoints.games.name}?id=eq.${id}`;
-
   try {
     // Remove solutions first since there is no DB cascade
     await deleteSpellingBeeSolutions(id);
 
-    const response = await fetch(URL, {
+    const { response } = await requestPostgrest<unknown>({
+      baseUrl: CONFIG_GAMES['spelling-bee'].apiBase,
+      path: CONFIG_GAMES['spelling-bee'].endpoints.games.name,
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      query: buildQueryParams([['id', pg.eq(id)]]),
+      errorMessage: `Failed to delete Spelling Bee game with id: ${id}`,
     });
-
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      console.error(
-        `Failed to delete Spelling Bee game with id: ${id}. Status: ${response.status}. Error: ${errorMessage}`,
-      );
-      throw new Error(
-        `Failed to delete Spelling Bee game with id: ${id}. Status: ${response.status}. Error: ${errorMessage}`,
-      );
-    }
 
     console.log(`Successfully deleted Spelling Bee game with id: ${id}`);
     return response.statusText;
@@ -63,38 +53,23 @@ export const createSpellingBeeSolutions = async (
     game_id: gameId,
   }));
 
-  const response = await fetch(getSolutionsEndpointUrl(), {
+  const { response } = await requestPostgrest<unknown, typeof payload>({
+    url: getSolutionsEndpointUrl(),
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
+    body: payload,
+    errorMessage: `Failed to create spelling bee solutions for game ${gameId}`,
   });
-
-  if (!response.ok) {
-    const errorMessage = await response.text();
-    throw new Error(
-      `Failed to create spelling bee solutions for game ${gameId}. Status: ${response.status}. Error: ${errorMessage}`,
-    );
-  }
 
   return response;
 };
 
 export const deleteSpellingBeeSolutions = async (gameId: number) => {
-  const response = await fetch(`${getSolutionsEndpointUrl()}?game_id=eq.${gameId}`, {
+  const { response } = await requestPostgrest<unknown>({
+    url: getSolutionsEndpointUrl(),
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    query: buildQueryParams([['game_id', pg.eq(gameId)]]),
+    errorMessage: `Failed to delete spelling bee solutions for game ${gameId}`,
   });
-
-  if (!response.ok) {
-    const errorMessage = await response.text();
-    throw new Error(
-      `Failed to delete spelling bee solutions for game ${gameId}. Status: ${response.status}. Error: ${errorMessage}`,
-    );
-  }
 
   return response;
 };

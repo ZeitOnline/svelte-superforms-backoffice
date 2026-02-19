@@ -68675,11 +68675,14 @@ CREATE TABLE IF NOT EXISTS wortgeflecht.game (
     id serial PRIMARY KEY,
     game_id uuid NOT NULL DEFAULT gen_random_uuid(),
     name varchar(255) NOT NULL,
+    description text NOT NULL DEFAULT '',
     active boolean NOT NULL DEFAULT false,
     published_at timestamp NOT NULL,
     created_at timestamp NOT NULL DEFAULT now(),
     modified_at timestamp NOT NULL DEFAULT now()
 );
+ALTER TABLE wortgeflecht.game
+    ADD COLUMN IF NOT EXISTS description text NOT NULL DEFAULT '';
 CREATE UNIQUE INDEX IF NOT EXISTS game_game_id_uindex ON wortgeflecht.game (game_id);
 
 CREATE TABLE IF NOT EXISTS wortgeflecht.game_word (
@@ -68717,6 +68720,7 @@ CREATE OR REPLACE VIEW wortgeflecht.game_view AS
 SELECT
     g.id AS game_id,
     g.name AS game_name,
+    g.description,
     g.published_at,
     g.active AS is_active,
     ARRAY_AGG(DISTINCT w.word) AS words,
@@ -68732,7 +68736,7 @@ SELECT
 FROM wortgeflecht.game g
 LEFT JOIN wortgeflecht.game_word w ON g.game_id = w.game_id
 LEFT JOIN wortgeflecht.game_letter l ON w.id = l.word_id
-GROUP BY g.id, g.name, g.published_at, g.active
+GROUP BY g.id, g.name, g.description, g.published_at, g.active
 ORDER BY g.published_at DESC;
 
 -- ==================================

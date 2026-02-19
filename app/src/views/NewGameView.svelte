@@ -9,6 +9,7 @@
   import IconHandler from '$components/icons/IconHandler.svelte';
   import WortigerBulkEditor from '$components/games/wortiger/WortigerBulkEditor.svelte';
   import { WORTIGER_LENGTHS } from '$lib/games/wortiger';
+  import { CONFIG_GAMES } from '$config/games.config';
 
   type Props = {
     data: DataProps;
@@ -21,6 +22,8 @@
   function handleBackToDashboard() {
     view.updateView('dashboard');
   }
+
+  const canCSV = $derived(data.gameType && CONFIG_GAMES[data.gameType].creationModes.includes('csv'));
 </script>
 
 <ViewWrapper>
@@ -33,7 +36,7 @@
     />
     <div class="flex items-center justify-between gap-z-ds-8">
       <button
-        class="relative flex-1 z-ds-button z-ds-button-outline flex items-center min-h-[200px] text-sm"
+        class="relative flex-1 z-ds-button z-ds-button-outline flex items-center min-h-50 text-sm"
         onclick={() => {
           beginning_option = 'scratch';
         }}
@@ -45,18 +48,20 @@
         Manuell hinzufügen
       </button>
 
-      <button
-        class="relative flex-1 z-ds-button z-ds-button-outline flex items-center min-h-[200px] text-sm"
-        onclick={() => {
-          beginning_option = 'csv';
-        }}
-      >
-        <IconHandler
-          iconName="upload"
-          extraClasses="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-48 h-48 opacity-5"
-        />
-        Über CSV hinzufügen
-      </button>
+      {#if canCSV}
+        <button
+          class="relative flex-1 z-ds-button z-ds-button-outline flex items-center min-h-50 text-sm"
+          onclick={() => {
+            beginning_option = 'csv';
+          }}
+        >
+          <IconHandler
+            iconName="upload"
+            extraClasses="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-48 h-48 opacity-5"
+          />
+          Über CSV hinzufügen
+        </button>
+      {/if}
     </div>
   {/if}
 

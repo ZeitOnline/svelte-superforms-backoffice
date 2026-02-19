@@ -1,4 +1,5 @@
 import { MAP_LEVEL_CHARACTERS } from '$lib/games/wortiger';
+import { buildQueryParams, requestPostgrest } from '$lib/postgrest-client';
 import type { GameWortiger } from '$types';
 
 export type WordListRule = 'must-exist' | 'must-not-exist';
@@ -55,11 +56,13 @@ export async function fetchWordSetForLength(options: {
   length: number;
   fetchFn?: typeof fetch;
 }): Promise<Set<string>> {
-  const fetcher = options.fetchFn ?? fetch;
-  const url = `${options.apiBase}/${options.endpointName}_${options.length}?select=word`;
-  const res = await fetcher(url);
-  if (!res.ok) throw new Error(`Fetch failed for ${options.length}: ${res.status}`);
-  const data = (await res.json()) as Array<{ word?: string }>;
+  const { data } = await requestPostgrest<Array<{ word?: string }>>({
+    fetchFn: options.fetchFn,
+    baseUrl: options.apiBase,
+    path: `${options.endpointName}_${options.length}`,
+    query: buildQueryParams([['select', 'word']]),
+    errorMessage: `Fetch failed for ${options.length}`,
+  });
   return buildWordSetFromResponse(data);
 }
 
