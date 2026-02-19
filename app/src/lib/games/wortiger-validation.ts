@@ -50,19 +50,27 @@ export function buildWordSetFromResponse(rows: Array<{ word?: string }>): Set<st
   return set;
 }
 
-export async function fetchWordSetForLength(options: {
+const fetchWordsForLength = async (options: {
   apiBase: string;
   endpointName: string;
   length: number;
   fetchFn?: typeof fetch;
-}): Promise<Set<string>> {
-  const { data } = await requestPostgrest<Array<{ word?: string }>>({
+}) =>
+  requestPostgrest<Array<{ word?: string }>>({
     fetchFn: options.fetchFn,
     baseUrl: options.apiBase,
     path: `${options.endpointName}_${options.length}`,
     query: buildQueryParams([['select', 'word']]),
     errorMessage: `Fetch failed for ${options.length}`,
   });
+
+export async function fetchWordSetForLength(options: {
+  apiBase: string;
+  endpointName: string;
+  length: number;
+  fetchFn?: typeof fetch;
+}): Promise<Set<string>> {
+  const { data } = await fetchWordsForLength(options);
   return buildWordSetFromResponse(data);
 }
 
