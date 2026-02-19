@@ -4,7 +4,7 @@
   import type { SuperValidated } from 'sveltekit-superforms';
   import { blur } from 'svelte/transition';
   import IconHandler from '../../icons/IconHandler.svelte';
-  import { createGame, getNextAvailableDateForGame, updateGame } from '$lib/queries';
+  import { getNextAvailableDateForGame } from '$lib/queries';
   import ViewNavigation from '../../ViewNavigation.svelte';
   import type { BeginningOptions } from '$types';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
@@ -22,7 +22,7 @@
   } from '$lib/games/wortiger-validation';
   import { SvelteDate, SvelteMap } from 'svelte/reactivity';
   import { CONFIG_GAMES } from '$config/games.config';
-  import { MAP_LEVEL_CHARACTERS } from '$lib/games/wortiger';
+  import { createWortigerGame, MAP_LEVEL_CHARACTERS, updateWortigerGame } from '$lib/games/wortiger';
 
   type DataProps = {
     games: GameWortigerComplete[];
@@ -168,8 +168,7 @@
             delete finalEditedGame.active;
           }
 
-          await updateGame({
-            gameName: 'wortiger',
+          await updateWortigerGame({
             gameId: game.id,
             data: finalEditedGame,
           });
@@ -190,7 +189,7 @@
             delete createData.active;
           }
 
-          await createGame({ gameName: 'wortiger', data: createData as GameComplete });
+          await createWortigerGame(createData as GameComplete);
 
           isSubmitted = true;
           toastManager.add(APP_MESSAGES.GAME.ADDED_SUCCESS, '');

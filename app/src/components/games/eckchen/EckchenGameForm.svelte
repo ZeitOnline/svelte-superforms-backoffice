@@ -6,7 +6,7 @@
   import { blur } from 'svelte/transition';
   import IconHandler from '../../icons/IconHandler.svelte';
   import { cubicInOut } from 'svelte/easing';
-  import { createGame, getNextAvailableDateForGame, updateGame } from '$lib/queries';
+  import { getNextAvailableDateForGame } from '$lib/queries';
   import ViewNavigation from '../../ViewNavigation.svelte';
   import type { BeginningOptions } from '$types';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
@@ -18,9 +18,11 @@
   import { type SaveEckchenGameFormSchema } from '$schemas/eckchen';
   import { isEckchenGame } from '$utils';
   import {
+    createEckchenGame,
     createGameQuestions,
     DEFAULT_ECKCHEN_QUESTION,
     serializeRow,
+    updateEckchenGame,
     updateGameQuestions,
   } from '$lib/games/eckchen';
   import { CONFIG_GAMES } from '$config/games.config';
@@ -105,8 +107,7 @@
             ...finalData,
           } as GameComplete;
 
-          await updateGame({
-            gameName: 'eckchen',
+          await updateEckchenGame({
             gameId: game.id,
             data: finalEditedGame,
           });
@@ -131,10 +132,7 @@
         } else {
           // Create new Eckchen game
           console.log('Creating Eckchen game:', finalData);
-          const newGameArray = await createGame({
-            gameName: 'eckchen',
-            data: finalData as GameComplete,
-          });
+          const newGameArray = await createEckchenGame(finalData as GameComplete);
           const newGame = newGameArray[0] as GameEckchenComplete;
 
           // Handle questions for Eckchen games
@@ -315,7 +313,7 @@
     <label class="text-md font-bold" for="release_date">Veröffentlichungsdatum:</label>
     <div class="relative">
       <input
-        class="border py-z-ds-8 w-full sm:w-[250px] px-z-ds-12 border-black text-md"
+        class="border py-z-ds-8 w-full sm:w-62.5 px-z-ds-12 border-black text-md"
         name="release_date"
         id="release_date"
         type="date"
