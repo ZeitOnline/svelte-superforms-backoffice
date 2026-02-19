@@ -2,7 +2,7 @@
   import IconHandler from '$components/icons/IconHandler.svelte';
   import { toCSV } from '$components/games/wortiger/utils';
   import { MAP_LEVEL_CHARACTERS, WORTIGER_LENGTHS } from '$lib/games/wortiger';
-  import { SvelteURLSearchParams } from 'svelte/reactivity';
+  import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
 
   type Props = {
     apiBase: string;
@@ -73,23 +73,22 @@
     const rows: Array<{ release_date: string; level: number; solution: string }> = [];
 
     do {
-      const params = new SvelteURLSearchParams();
-      params.set('select', 'release_date,level,solution');
-      if (level) {
-        params.set('level', `eq.${level}`);
-      }
-      params.set('order', 'release_date.desc');
-      params.set('limit', String(limit));
-      params.set('offset', String(offset));
+      const params = buildQueryParams([
+        ['select', 'release_date,level,solution'],
+        ['level', level ? pg.eq(level) : undefined],
+        ['order', pg.order('release_date', 'desc')],
+        ['limit', limit],
+        ['offset', offset],
+      ]);
 
-      const res = await fetch(`${baseUrl}?${params.toString()}`, {
+      const { data, response: res } = await requestPostgrest<
+        Array<{ release_date: string; level: number; solution: string }>
+      >({
+        url: baseUrl,
+        query: params,
         headers: { Prefer: 'count=exact' },
+        errorMessage: 'CSV export failed',
       });
-      if (!res.ok) {
-        throw new Error(`CSV export failed: ${res.status}`);
-      }
-
-      const data = await res.json();
       rows.push(...data);
 
       const contentRange = res.headers.get('content-range');

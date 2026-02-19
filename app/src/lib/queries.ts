@@ -6,6 +6,13 @@ import { deleteEckchenGame } from './games/eckchen';
 import { deleteWortgeflechtGame } from './games/wortgeflecht';
 import { deleteWortigerGame, LENGTH_TO_LEVEL } from './games/wortiger';
 import { deleteSpellingBeeGame } from './games/spelling-bee';
+import {
+  buildQueryParams,
+  getPostgrestErrorMessage,
+  pg,
+  PostgrestError,
+  requestPostgrest,
+} from './postgrest-client';
 
 /**
  * Mock configuration to skip the deletion of game_state.
@@ -180,17 +187,15 @@ export const getAllGames = async ({
     setSearchParam({ params, gameName, search });
   }
 
-  const URL = `${baseUrl}?${params.toString()}`;
-  const response = await fetch(URL, {
+  const { data, response } = await requestPostgrest<GameComplete[]>({
+    fetchFn: fetch,
+    url: baseUrl,
+    query: params,
     headers: {
       Prefer: 'count=exact',
     },
+    errorMessage: `Failed to fetch ${gameName} games`,
   });
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${gameName} games: ${response.status}`);
-  }
-
-  const data = await response.json();
   const contentRange = response.headers.get('content-range');
   let total = data.length;
   if (contentRange) {
@@ -219,17 +224,18 @@ export const getLatestActiveGameIds = async ({
   }
   const baseUrl = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
   const dateField = CONFIG_GAMES[gameName].endpoints.games.releaseDateField;
-  const params = new URLSearchParams();
-  params.set('select', 'id');
-  params.set('active', 'eq.true');
-  params.set('order', `${dateField}.desc`);
-  params.set('limit', String(limit));
-
-  const response = await fetch(`${baseUrl}?${params.toString()}`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch latest active ${gameName} games: ${response.status}`);
-  }
-  const data = (await response.json()) as Array<{ id: number }>;
+  const params = buildQueryParams([
+    ['select', 'id'],
+    ['active', pg.eq(true)],
+    ['order', pg.order(dateField, 'desc')],
+    ['limit', limit],
+  ]);
+  const { data } = await requestPostgrest<Array<{ id: number }>>({
+    fetchFn: fetch,
+    url: baseUrl,
+    query: params,
+    errorMessage: `Failed to fetch latest active ${gameName} games`,
+  });
   return data.map(row => row.id);
 };
 
@@ -268,23 +274,16 @@ export const updateGame = async ({
   data: Partial<GameComplete>;
 }) => {
   try {
-    const response = await fetch(
-      `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}?id=eq.${id}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Prefer: 'return=representation',
-        },
-        body: JSON.stringify(data),
+    const { data: updatedGame } = await requestPostgrest<GameComplete[]>({
+      baseUrl: `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`,
+      method: 'PATCH',
+      query: buildQueryParams([['id', pg.eq(id)]]),
+      headers: {
+        Prefer: 'return=representation',
       },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to update game with id: ${id}. Status: ${response.status}`);
-    }
-
-    const updatedGame = await response.json();
+      body: data,
+      errorMessage: `Failed to update game with id: ${id}`,
+    });
     return updatedGame;
   } catch (error) {
     console.error('Failed to update the game', error);
@@ -305,21 +304,16 @@ export async function createGame({
   gameName: GameType;
   data: GameComplete;
 }): Promise<GameComplete[]> {
-  const URL = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
-  const game = await fetch(URL, {
+  const { data: game } = await requestPostgrest<GameComplete[]>({
+    baseUrl: `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`,
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
       Prefer: 'return=representation',
     },
-    body: JSON.stringify(data),
+    body: data,
+    errorMessage: 'Failed to create game',
   });
-
-  if (!game.ok) {
-    throw new Error(`Failed to create game. Status: ${game.status}`);
-  }
-
-  return await game.json();
+  return game;
 }
 
 /**
@@ -336,35 +330,28 @@ export async function createGamesBulk({
   rows: Array<Partial<GameComplete> & Record<string, unknown>>;
   onConflict?: string;
 }) {
-  const base = `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
-  const url = onConflict ? `${base}?on_conflict=${encodeURIComponent(onConflict)}` : base;
-
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      // Use `resolution=merge-duplicates` to upsert instead of insert-only
-      // Remove it if you want pure inserts that error on duplicates.
-      Prefer: onConflict
-        ? 'resolution=merge-duplicates,return=representation'
-        : 'return=representation',
-    },
-    body: JSON.stringify(rows),
-  });
-
-  if (!res.ok) {
-    // PostgREST returns JSON error body — surface it
-    let details = '';
-    try {
-      const err = await res.json();
-      details = err?.message || JSON.stringify(err);
-    } catch {
-      details = 'Unknown error';
+  try {
+    const { data } = await requestPostgrest<Array<Partial<GameComplete> & Record<string, unknown>>>({
+      baseUrl: `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`,
+      method: 'POST',
+      query: onConflict ? buildQueryParams([['on_conflict', onConflict]]) : undefined,
+      headers: {
+        // Use `resolution=merge-duplicates` to upsert instead of insert-only
+        // Remove it if you want pure inserts that error on duplicates.
+        Prefer: onConflict
+          ? 'resolution=merge-duplicates,return=representation'
+          : 'return=representation',
+      },
+      body: rows,
+      errorMessage: 'Bulk insert failed',
+    });
+    return data;
+  } catch (error) {
+    if (error instanceof PostgrestError) {
+      throw new Error(`Bulk insert failed (${error.status}): ${getPostgrestErrorMessage(error)}`);
     }
-    throw new Error(`Bulk insert failed (${res.status}): ${details}`);
+    throw error;
   }
-
-  return res.json();
 }
 
 /**
@@ -375,10 +362,16 @@ export async function createGamesBulk({
 export const getNextAvailableDateForGame = async (gameName: GameType, apiBaseUrl?: string) => {
   const baseUrl = apiBaseUrl || CONFIG_GAMES[gameName].apiBase;
   const dateField = CONFIG_GAMES[gameName].endpoints.games.releaseDateField;
-  const URL = `${baseUrl}/${CONFIG_GAMES[gameName].endpoints.games.name}?select=${dateField}&order=${dateField}.desc&limit=1`;
-
-  const response = await fetch(URL);
-  const data = await response.json();
+  const { data } = await requestPostgrest<Array<Record<string, string>>>({
+    baseUrl,
+    path: CONFIG_GAMES[gameName].endpoints.games.name,
+    query: buildQueryParams([
+      ['select', dateField],
+      ['order', pg.order(dateField, 'desc')],
+      ['limit', 1],
+    ]),
+    errorMessage: `Failed to fetch next available date for ${gameName}`,
+  });
 
   if (!data?.length) {
     return new Date().toISOString().split('T')[0];
