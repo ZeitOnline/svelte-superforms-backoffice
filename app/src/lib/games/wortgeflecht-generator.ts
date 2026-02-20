@@ -213,20 +213,44 @@ const findWord = (grid: string[], word: string) => {
   return locations;
 };
 
-const sameCells = (locs: number[][]) => {
-  const len = locs[0]?.length ?? 0;
-  const allNodes = unique(locs.flat());
-  return len === allNodes.length;
-};
-
 const isWordPlacementUnique = (grid: string[], words: string[]) => {
   for (const word of words) {
     if (!word) continue;
     const locations = findWord(grid, word);
-    if (locations.length === 1) continue;
-    if (locations.length > 1 && sameCells(locations)) continue;
-    return false;
+    if (locations.length !== 1) return false;
   }
+  return true;
+};
+
+const edgeKey = (a: number, b: number) => (a < b ? `${a}-${b}` : `${b}-${a}`);
+
+const getNeighborIndexes = (idx: number) => getFreeNeighbors(idx, []);
+
+const hasOnlyIntendedSameLetterAdjacency = (wordPaths: Record<string, NodeId[]>) => {
+  const grid = gridFromWords(wordPaths);
+  const intendedSameLetterEdges = new Set<string>();
+
+  for (const [word, path] of Object.entries(wordPaths)) {
+    for (let i = 1; i < path.length; i++) {
+      const prevLetter = word[i - 1];
+      const nextLetter = word[i];
+      if (!prevLetter || !nextLetter || prevLetter !== nextLetter) continue;
+      intendedSameLetterEdges.add(edgeKey(toIndex(path[i - 1] as NodeId), toIndex(path[i] as NodeId)));
+    }
+  }
+
+  for (let i = 0; i < grid.length; i++) {
+    const letter = grid[i];
+    if (!letter || letter === '\u00A0') continue;
+    for (const neighbor of getNeighborIndexes(i)) {
+      if (neighbor <= i) continue;
+      if (grid[neighbor] !== letter) continue;
+      if (!intendedSameLetterEdges.has(edgeKey(i, neighbor))) {
+        return false;
+      }
+    }
+  }
+
   return true;
 };
 
@@ -329,7 +353,9 @@ const placeWordsSubsets = (words: string[], graph: Graph | null = null): Graph |
       islandGraph.visited = unique([...islandGraph.visited, ...path]);
 
       const candidateWords = { ...graph.words, ...islandGraph.words };
-      const valid = isWordPlacementUnique(gridFromWords(candidateWords), Object.keys(candidateWords));
+      const valid =
+        isWordPlacementUnique(gridFromWords(candidateWords), Object.keys(candidateWords)) &&
+        hasOnlyIntendedSameLetterAdjacency(candidateWords);
       if (valid) {
         result = placeWordsSubsets(shuffle(selected.words.slice(1)), islandGraph);
       }
@@ -377,6 +403,7 @@ export const generateWortgeflechtLayout = ({
   for (let i = 0; i < attempts; i++) {
     const graph = placeWordsSubsets(shuffle(words.slice()));
     if (!graph) continue;
+    if (!hasOnlyIntendedSameLetterAdjacency(graph.words)) continue;
     const grid = gridFromWords(graph.words);
     const rows: WortgeflechtLetterRow[] = [];
     const paths: WortgeflechtWordPath[] = [];
