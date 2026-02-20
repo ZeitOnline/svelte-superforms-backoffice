@@ -1,5 +1,5 @@
 import { SHOULD_DELETE_STATE } from '$lib/queries';
-import { Orientation, type GameEckchen, type Question, type QuestionComplete } from '$types';
+import { Orientation, type GameComplete, type GameEckchen, type Question, type QuestionComplete } from '$types';
 import { CONFIG_GAMES } from '../../config/games.config';
 import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
 
@@ -25,6 +25,88 @@ export const DEFAULT_ECKCHEN_QUESTION = [
   'Ich bin so arm, ich habe nur X und Y',
 ];
 
+const deleteQuestionsByIds = async (id: number, questionIds: number[]) =>
+  requestPostgrest<unknown>({
+    baseUrl: CONFIG_GAMES['eckchen'].apiBase,
+    path: 'game_question',
+    method: 'DELETE',
+    query: buildQueryParams([['id', `in.(${questionIds.join(',')})`]]),
+    errorMessage: `Failed to delete questions for game ${id}`,
+  });
+
+const deleteGameStateByGameId = async (id: number) =>
+  requestPostgrest<unknown>({
+    baseUrl: CONFIG_GAMES['eckchen'].apiBase,
+    path: 'game_state',
+    method: 'DELETE',
+    query: buildQueryParams([['game_id', pg.eq(id)]]),
+    errorMessage: `Failed to delete game_state entries for game ${id}`,
+  });
+
+const deleteGameById = async (id: number) =>
+  requestPostgrest<unknown>({
+    baseUrl: CONFIG_GAMES['eckchen'].apiBase,
+    path: 'game',
+    method: 'DELETE',
+    query: buildQueryParams([['id', pg.eq(id)]]),
+    errorMessage: `Failed to delete game with id: ${id}`,
+  });
+
+const fetchQuestionsByGameId = async (id: number) =>
+  requestPostgrest<QuestionComplete[]>({
+    baseUrl: CONFIG_GAMES['eckchen'].apiBase,
+    path: 'game_question',
+    query: buildQueryParams([['game_id', pg.eq(id)]]),
+    errorMessage: `Failed to fetch questions for game ${id}`,
+  });
+
+const updateQuestionById = async (question: QuestionComplete) =>
+  requestPostgrest<unknown, QuestionComplete>({
+    baseUrl: CONFIG_GAMES['eckchen'].apiBase,
+    path: 'game_question',
+    method: 'PATCH',
+    query: buildQueryParams([['id', pg.eq(question.id)]]),
+    headers: {
+      Prefer: 'return=representation',
+    },
+    body: question,
+    errorMessage: `Failed to update question with id: ${question.id}`,
+  });
+
+const createQuestions = async (questions: GameEckchen['questions']) =>
+  requestPostgrest<unknown, GameEckchen['questions']>({
+    baseUrl: CONFIG_GAMES['eckchen'].apiBase,
+    path: 'game_question',
+    method: 'POST',
+    body: questions,
+    errorMessage: 'Failed to create game questions',
+  });
+
+const updateEckchenGameById = async (id: number, data: Partial<GameComplete>) =>
+  requestPostgrest<GameComplete[], Partial<GameComplete>>({
+    baseUrl: CONFIG_GAMES.eckchen.apiBase,
+    path: CONFIG_GAMES.eckchen.endpoints.games.name,
+    method: 'PATCH',
+    query: buildQueryParams([['id', pg.eq(id)]]),
+    headers: {
+      Prefer: 'return=representation',
+    },
+    body: data,
+    errorMessage: `Failed to update game with id: ${id}`,
+  });
+
+const createEckchenGameRow = async (data: GameComplete) =>
+  requestPostgrest<GameComplete[], GameComplete>({
+    baseUrl: CONFIG_GAMES.eckchen.apiBase,
+    path: CONFIG_GAMES.eckchen.endpoints.games.name,
+    method: 'POST',
+    headers: {
+      Prefer: 'return=representation',
+    },
+    body: data,
+    errorMessage: 'Failed to create game',
+  });
+
 /**
  * Get all the questions from a game by its id.
  * @param id - the id of the game
@@ -32,12 +114,7 @@ export const DEFAULT_ECKCHEN_QUESTION = [
  */
 export const getAllQuestionsByGameId = async (id: number) => {
   try {
-    const { data } = await requestPostgrest<QuestionComplete[]>({
-      baseUrl: CONFIG_GAMES['eckchen'].apiBase,
-      path: 'game_question',
-      query: buildQueryParams([['game_id', pg.eq(id)]]),
-      errorMessage: `Failed to fetch questions for game ${id}`,
-    });
+    const { data } = await fetchQuestionsByGameId(id);
 
     return data as QuestionComplete[];
   } catch (error) {
@@ -62,26 +139,14 @@ export const deleteEckchenGame = async (id: number) => {
     // Batch delete questions associated with the game
     const questionIds = questions.map(question => question.id);
 
-    await requestPostgrest<unknown>({
-      baseUrl: CONFIG_GAMES['eckchen'].apiBase,
-      path: 'game_question',
-      method: 'DELETE',
-      query: buildQueryParams([['id', `in.(${questionIds.join(',')})`]]),
-      errorMessage: `Failed to delete questions for game ${id}`,
-    });
+    await deleteQuestionsByIds(id, questionIds);
 
     console.log(`Deleted ${questions.length} questions associated with game id: ${id}`);
   }
 
   if (SHOULD_DELETE_STATE) {
     // Step 2: Fetch and delete related entries in the game_state table
-    await requestPostgrest<unknown>({
-      baseUrl: CONFIG_GAMES['eckchen'].apiBase,
-      path: 'game_state',
-      method: 'DELETE',
-      query: buildQueryParams([['game_id', pg.eq(id)]]),
-      errorMessage: `Failed to delete game_state entries for game ${id}`,
-    });
+    await deleteGameStateByGameId(id);
     console.log(`Deleted game_state entries associated with game id: ${id}`);
   }
 
@@ -89,13 +154,7 @@ export const deleteEckchenGame = async (id: number) => {
   // Before deleting the game, check if there are other related resources
   console.log(`Attempting to delete the game with id: ${id}`);
 
-  const { response: responseGame } = await requestPostgrest<unknown>({
-    baseUrl: CONFIG_GAMES['eckchen'].apiBase,
-    path: 'game',
-    method: 'DELETE',
-    query: buildQueryParams([['id', pg.eq(id)]]),
-    errorMessage: `Failed to delete game with id: ${id}`,
-  });
+  const { response: responseGame } = await deleteGameById(id);
 
   console.log(`Successfully deleted game with id: ${id}`);
   return responseGame.statusText;
@@ -108,17 +167,7 @@ export const deleteEckchenGame = async (id: number) => {
  */
 export async function updateGameQuestions(questions: QuestionComplete[]): Promise<Response[]> {
   const updateQuestions = questions.map(async question => {
-    const { response } = await requestPostgrest<unknown, QuestionComplete>({
-      baseUrl: CONFIG_GAMES['eckchen'].apiBase,
-      path: 'game_question',
-      method: 'PATCH',
-      query: buildQueryParams([['id', pg.eq(question.id)]]),
-      headers: {
-        Prefer: 'return=representation',
-      },
-      body: question,
-      errorMessage: `Failed to update question with id: ${question.id}`,
-    });
+    const { response } = await updateQuestionById(question);
     return response;
   });
 
@@ -134,14 +183,24 @@ export async function updateGameQuestions(questions: QuestionComplete[]): Promis
  */
 export async function createGameQuestions(data: GameEckchen): Promise<Response> {
   const { questions } = data;
-  const { response: gameQuestions } = await requestPostgrest<unknown, GameEckchen['questions']>({
-    baseUrl: CONFIG_GAMES['eckchen'].apiBase,
-    path: 'game_question',
-    method: 'POST',
-    body: questions,
-    errorMessage: 'Failed to create game questions',
-  });
+  const { response: gameQuestions } = await createQuestions(questions);
   return gameQuestions;
+}
+
+export const updateEckchenGame = async ({
+  gameId,
+  data,
+}: {
+  gameId: number;
+  data: Partial<GameComplete>;
+}) => {
+  const { data: updatedGame } = await updateEckchenGameById(gameId, data);
+  return updatedGame;
+};
+
+export async function createEckchenGame(data: GameComplete): Promise<GameComplete[]> {
+  const { data: game } = await createEckchenGameRow(data);
+  return game;
 }
 
 export async function getResultBodyForGame(id: number, game: GameEckchen, resultsDataBody: string[][]) {

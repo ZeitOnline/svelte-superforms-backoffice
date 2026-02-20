@@ -1,15 +1,137 @@
 import { CONFIG_GAMES } from '../../config/games.config';
 import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
 
+const fetchWortgeflechtGameIdentityById = async (id: number) =>
+  requestPostgrest<Array<{ id: number; game_id: string }>>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: CONFIG_GAMES.wortgeflecht.endpoints.games.name,
+    query: buildQueryParams([
+      ['id', pg.eq(id)],
+      ['select', 'id,game_id'],
+      ['limit', 1],
+    ]),
+    errorMessage: `Failed to fetch Wortgeflecht game identity for id: ${id}`,
+  });
+
+const deleteWortgeflechtGameById = async (id: number) =>
+  requestPostgrest<unknown>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: CONFIG_GAMES.wortgeflecht.endpoints.games.name,
+    method: 'DELETE',
+    query: buildQueryParams([['id', pg.eq(id)]]),
+    errorMessage: `Failed to delete Wortgeflecht game with id: ${id}`,
+  });
+
+const fetchGameWordsWithLetters = async (gameId: string) =>
+  requestPostgrest<GameWordWithLetters[]>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: 'game_word',
+    query: buildQueryParams([
+      ['game_id', pg.eq(gameId)],
+      ['select', 'id,word,game_letter(letter,cx,cy)'],
+      ['order', pg.order('id', 'asc')],
+    ]),
+    errorMessage: 'Failed to fetch wortgeflecht letters',
+  });
+
+const fetchExistingWordIdsByGameId = async (gameId: string) =>
+  requestPostgrest<Array<{ id: number }>>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: 'game_word',
+    query: buildQueryParams([
+      ['game_id', pg.eq(gameId)],
+      ['select', 'id'],
+    ]),
+    errorMessage: 'Failed to fetch existing words',
+  });
+
+const deleteGameLettersByWordIds = async (wordIds: number[]) => {
+  if (wordIds.length === 0) return;
+  const ids = wordIds.join(',');
+  await requestPostgrest<unknown>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: 'game_letter',
+    method: 'DELETE',
+    query: buildQueryParams([['word_id', `in.(${ids})`]]),
+    errorMessage: 'Failed to delete old letters',
+  });
+};
+
+const deleteGameWordsByGameId = async (gameId: string) =>
+  requestPostgrest<unknown>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: 'game_word',
+    method: 'DELETE',
+    query: buildQueryParams([['game_id', pg.eq(gameId)]]),
+    errorMessage: 'Failed to delete old words',
+  });
+
+const insertGameWords = async (wordsPayload: Array<{ game_id: string; word: string }>) =>
+  requestPostgrest<Array<{ id: number; word: string }>, typeof wordsPayload>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: 'game_word',
+    method: 'POST',
+    headers: {
+      Prefer: 'return=representation',
+    },
+    body: wordsPayload,
+    errorMessage: 'Failed to insert words',
+  });
+
+const insertGameLetters = async (
+  lettersPayload: Array<{ word_id: number; letter: string; cx: number; cy: number }>,
+) =>
+  requestPostgrest<unknown, typeof lettersPayload>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: 'game_letter',
+    method: 'POST',
+    body: lettersPayload,
+    errorMessage: 'Failed to insert letters',
+  });
+
+const updateWortgeflechtGameById = async (
+  id: number,
+  data: { name: string; description: string; published_at: string; active: boolean },
+) =>
+  requestPostgrest<Array<{ id: number; game_id: string }>, typeof data>({
+    url: baseUrl,
+    method: 'PATCH',
+    query: buildQueryParams([['id', pg.eq(id)]]),
+    headers: {
+      Prefer: 'return=representation',
+    },
+    body: data,
+    errorMessage: 'Failed to update wortgeflecht game',
+  });
+
+const createWortgeflechtGame = async (data: {
+  name: string;
+  description: string;
+  published_at: string;
+  active: boolean;
+}) =>
+  requestPostgrest<Array<{ id: number; game_id: string }>, typeof data>({
+    url: baseUrl,
+    method: 'POST',
+    headers: {
+      Prefer: 'return=representation',
+    },
+    body: data,
+    errorMessage: 'Failed to create wortgeflecht game',
+  });
+
 export const deleteWortgeflechtGame = async (id: number) => {
   try {
-    const { response } = await requestPostgrest<unknown>({
-      baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
-      path: CONFIG_GAMES.wortgeflecht.endpoints.games.name,
-      method: 'DELETE',
-      query: buildQueryParams([['id', pg.eq(id)]]),
-      errorMessage: `Failed to delete Wortgeflecht game with id: ${id}`,
-    });
+    const { data: gameRows } = await fetchWortgeflechtGameIdentityById(id);
+    const gameId = gameRows[0]?.game_id;
+
+    if (gameId) {
+      const { data: existingWords } = await fetchExistingWordIdsByGameId(gameId);
+      await deleteGameLettersByWordIds(existingWords.map(word => word.id));
+      await deleteGameWordsByGameId(gameId);
+    }
+
+    const { response } = await deleteWortgeflechtGameById(id);
 
     return response.statusText;
   } catch (error) {
@@ -44,16 +166,7 @@ type GameWordWithLetters = {
 const baseUrl = `${CONFIG_GAMES.wortgeflecht.apiBase}/${CONFIG_GAMES.wortgeflecht.endpoints.games.name}`;
 
 export const fetchWortgeflechtLettersByGameId = async (gameId: string) => {
-  const { data: words } = await requestPostgrest<GameWordWithLetters[]>({
-    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
-    path: 'game_word',
-    query: buildQueryParams([
-      ['game_id', pg.eq(gameId)],
-      ['select', 'id,word,game_letter(letter,cx,cy)'],
-      ['order', pg.order('id', 'asc')],
-    ]),
-    errorMessage: 'Failed to fetch wortgeflecht letters',
-  });
+  const { data: words } = await fetchGameWordsWithLetters(gameId);
   const rows: WortgeflechtLetterRow[] = [];
 
   for (const wordEntry of words) {
@@ -78,51 +191,16 @@ export const replaceWortgeflechtLettersByGameId = async ({
   gameId: string;
   rows: WortgeflechtLetterRow[];
 }) => {
-  const { data: existingWords } = await requestPostgrest<Array<{ id: number }>>({
-    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
-    path: 'game_word',
-    query: buildQueryParams([
-      ['game_id', pg.eq(gameId)],
-      ['select', 'id'],
-    ]),
-    errorMessage: 'Failed to fetch existing words',
-  });
-  const existingWordIds = existingWords.map(w => w.id);
-
-  if (existingWordIds.length > 0) {
-    const ids = existingWordIds.join(',');
-    await requestPostgrest<unknown>({
-      baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
-      path: 'game_letter',
-      method: 'DELETE',
-      query: buildQueryParams([['word_id', `in.(${ids})`]]),
-      errorMessage: 'Failed to delete old letters',
-    });
-  }
-
-  await requestPostgrest<unknown>({
-    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
-    path: 'game_word',
-    method: 'DELETE',
-    query: buildQueryParams([['game_id', pg.eq(gameId)]]),
-    errorMessage: 'Failed to delete old words',
-  });
+  const { data: existingWords } = await fetchExistingWordIdsByGameId(gameId);
+  await deleteGameLettersByWordIds(existingWords.map(word => word.id));
+  await deleteGameWordsByGameId(gameId);
 
   if (rows.length === 0) return;
 
   const uniqueWords = Array.from(new Set(rows.map(r => r.word.trim())));
   const wordsPayload = uniqueWords.map(word => ({ game_id: gameId, word }));
 
-  const { data: insertedWords } = await requestPostgrest<Array<{ id: number; word: string }>, typeof wordsPayload>({
-    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
-    path: 'game_word',
-    method: 'POST',
-    headers: {
-      Prefer: 'return=representation',
-    },
-    body: wordsPayload,
-    errorMessage: 'Failed to insert words',
-  });
+  const { data: insertedWords } = await insertGameWords(wordsPayload);
   const wordIdByWord = new Map(insertedWords.map(w => [w.word, w.id]));
 
   const lettersPayload = rows.map(r => {
@@ -138,13 +216,7 @@ export const replaceWortgeflechtLettersByGameId = async ({
     };
   });
 
-  await requestPostgrest<unknown, typeof lettersPayload>({
-    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
-    path: 'game_letter',
-    method: 'POST',
-    body: lettersPayload,
-    errorMessage: 'Failed to insert letters',
-  });
+  await insertGameLetters(lettersPayload);
 };
 
 export const upsertWortgeflechtGame = async ({
@@ -155,27 +227,10 @@ export const upsertWortgeflechtGame = async ({
   data: { name: string; description: string; published_at: string; active: boolean };
 }) => {
   if (id) {
-    const { data: result } = await requestPostgrest<Array<{ id: number; game_id: string }>, typeof data>({
-      url: baseUrl,
-      method: 'PATCH',
-      query: buildQueryParams([['id', pg.eq(id)]]),
-      headers: {
-        Prefer: 'return=representation',
-      },
-      body: data,
-      errorMessage: 'Failed to update wortgeflecht game',
-    });
+    const { data: result } = await updateWortgeflechtGameById(id, data);
     return result[0];
   }
 
-  const { data: result } = await requestPostgrest<Array<{ id: number; game_id: string }>, typeof data>({
-    url: baseUrl,
-    method: 'POST',
-    headers: {
-      Prefer: 'return=representation',
-    },
-    body: data,
-    errorMessage: 'Failed to create wortgeflecht game',
-  });
+  const { data: result } = await createWortgeflechtGame(data);
   return result[0];
 };

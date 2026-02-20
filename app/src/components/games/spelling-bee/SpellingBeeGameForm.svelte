@@ -9,7 +9,7 @@
   import ViewNavigation from '../../ViewNavigation.svelte';
   import type { BeginningOptions } from '$types';
   import { view } from '$stores/view-state-store.svelte';
-  import { createGame, getNextAvailableDateForGame, updateGame } from '$lib/queries';
+  import { getNextAvailableDateForGame } from '$lib/queries';
   import { CONFIG_GAMES } from '$config/games.config';
   import { APP_MESSAGES } from '$lib/app-messages';
   import { ERRORS } from '$lib/error-messages';
@@ -22,9 +22,11 @@
     type SaveSpellingBeeSolutionSchema,
   } from '$schemas/spelling-bee';
   import {
+    createSpellingBeeGame,
     DEFAULT_SPELLING_BEE_SOLUTION,
     createSpellingBeeSolutions,
     replaceSpellingBeeSolutions,
+    updateSpellingBeeGame,
   } from '$lib/games/spelling-bee';
 
   type DataProps = {
@@ -114,10 +116,7 @@
         }
 
         if (beginning_option !== 'edit') {
-          const newGameArray = await createGame({
-            gameName: 'spelling-bee',
-            data: finalData as GameComplete,
-          });
+          const newGameArray = await createSpellingBeeGame(finalData as GameComplete);
           const newGame = (newGameArray[0] ?? null) as GameSpellingBeeComplete | null;
 
           if (!newGame?.id) {
@@ -128,8 +127,7 @@
             await createSpellingBeeSolutions(newGame.id, form.data.solutions);
           }
         } else {
-          await updateGame({
-            gameName: 'spelling-bee',
+          await updateSpellingBeeGame({
             gameId: game!.id,
             data: finalData as GameComplete,
           });
