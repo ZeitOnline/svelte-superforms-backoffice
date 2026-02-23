@@ -1,3 +1,5 @@
+import { oidc } from '@zeitonline/svelte-oidc';
+
 type PostgrestMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
 type QueryValue = string | number | boolean | null | undefined;
@@ -181,6 +183,10 @@ export const requestPostgrest = async <TResponse, TBody = unknown>({
 
   if (body !== undefined && !requestHeaders.has('Content-Type')) {
     requestHeaders.set('Content-Type', 'application/json');
+  }
+
+  if (oidc?.accessToken) {
+    requestHeaders.set('X-API-Token', oidc.accessToken);
   }
 
   const response = await fetchFn(finalUrl, {
