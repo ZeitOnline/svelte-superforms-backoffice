@@ -105,20 +105,24 @@
 
 <section class="grid grid-cols-1 xl:grid-cols-2 gap-z-ds-24 my-z-ds-24">
   <WordListEditor
-    {wordLines}
-    {wordCount}
-    {totalLetters}
-    {invalidInputWords}
-    {generatorError}
-    {rowsError}
-    {isGenerating}
-    {hasGeneratedRows}
-    {getWordRowStyle}
-    onFillDebugWords={onFillDebugWords}
-    onAddWordLine={onAddWordLine}
-    onUpdateWordLine={onUpdateWordLine}
-    onRemoveWordLine={onRemoveWordLine}
-    onGenerateGrid={onGenerateGrid}
+    state={{
+      wordLines,
+      wordCount,
+      totalLetters,
+      invalidInputWords,
+      generatorError,
+      rowsError,
+      isGenerating,
+      hasGeneratedRows,
+      getWordRowStyle,
+    }}
+    actions={{
+      onFillDebugWords,
+      onAddWordLine,
+      onUpdateWordLine,
+      onRemoveWordLine,
+      onGenerateGrid,
+    }}
   />
 
   <GridPreview {coloredPaths} {generatedGridRows} />
