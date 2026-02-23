@@ -3,7 +3,7 @@
   import { oidc } from '@zeitonline/svelte-oidc';
 
   // Props for customization
-  export let authority = '/-/spiele-backoffice/openid/realms/zeit-online';
+  export let authority = '/backoffice/openid/realms/zeit-online';
   export let clientId = 'spiele-backoffice';
 
   onMount(() => {
