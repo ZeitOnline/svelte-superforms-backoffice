@@ -2,9 +2,10 @@
   import { onMount } from 'svelte';
   import { oidc } from '@zeitonline/svelte-oidc';
 
-  // Props for customization
-  export let authority = '/backoffice/openid/realms/zeit-online';
-  export let clientId = 'spiele-backoffice';
+  let { children }: { children: () => ReturnType<import('svelte').Snippet> } = $props();
+
+  const authority = '/backoffice/openid/realms/zeit-online';
+  const clientId = 'spiele-backoffice';
 
   onMount(() => {
     oidc.manage({
@@ -17,7 +18,7 @@
 {#if oidc.loading}
   <!-- Loading auth state: intentionally render nothing -->
 {:else if oidc.isAuthenticated}
-  <slot />
+  {@render children()}
 {:else}
   <div class="flex flex-col items-center justify-center h-screen">
     <p class="mb-8 text-lg">Bitte loggen Sie sich ein um fortzufahren.</p>
