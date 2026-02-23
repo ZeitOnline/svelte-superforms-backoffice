@@ -81,6 +81,8 @@ const createGraph = (): Graph => {
     words: {},
   };
 
+  // Build the traversal graph from the grid, but intentionally remove one diagonal
+  // per 2x2 block to reduce ambiguity compared to full 8-neighbor connectivity.
   const removeDiagonal = (x: number, y: number) => {
     const removeForward = randomInt(2) === 0;
     const x1 = removeForward ? x : x + 1;
@@ -143,7 +145,7 @@ const getLongestPaths = (graph: Graph): Record<NodeId, number> => {
 
 const getFreeSubsets = (graph: Graph) => {
   const subsets: NodeId[][] = [];
-  const allNodes = Object.keys(graph.nodes);
+  const allNodes = Object.keys(graph.nodes) as NodeId[];
   const available = new Set(difference(allNodes, graph.visited));
   while (available.size) {
     const first = available.values().next().value as NodeId;
@@ -224,12 +226,15 @@ const isWordPlacementUnique = (grid: string[], words: string[]) => {
 
 const edgeKey = (a: number, b: number) => (a < b ? `${a}-${b}` : `${b}-${a}`);
 
-const getNeighborIndexes = (idx: number) => getFreeNeighbors(idx, []);
-
-const hasOnlyIntendedSameLetterAdjacency = (wordPaths: Record<string, NodeId[]>) => {
+const hasOnlyIntendedSameLetterAdjacency = (
+  wordPaths: Record<string, NodeId[]>,
+  graph: Graph,
+) => {
   const grid = gridFromWords(wordPaths);
   const intendedSameLetterEdges = new Set<string>();
 
+  // Same-letter neighbors are only allowed when that exact edge is part of a placed
+  // word path (for example, consecutive identical letters in the same word).
   for (const [word, path] of Object.entries(wordPaths)) {
     for (let i = 1; i < path.length; i++) {
       const prevLetter = word[i - 1];
@@ -239,10 +244,14 @@ const hasOnlyIntendedSameLetterAdjacency = (wordPaths: Record<string, NodeId[]>)
     }
   }
 
-  for (let i = 0; i < grid.length; i++) {
+  // Use the graph's edges (allowed connections), not just geometric grid neighbors.
+  // Some diagonal grid neighbors are intentionally disconnected in `createGraph()`.
+  for (const node of Object.keys(graph.nodes) as NodeId[]) {
+    const i = toIndex(node);
     const letter = grid[i];
     if (!letter || letter === '\u00A0') continue;
-    for (const neighbor of getNeighborIndexes(i)) {
+    for (const neighborNode of graph.nodes[node].neighbors) {
+      const neighbor = toIndex(neighborNode);
       if (neighbor <= i) continue;
       if (grid[neighbor] !== letter) continue;
       if (!intendedSameLetterEdges.has(edgeKey(i, neighbor))) {
@@ -269,12 +278,14 @@ const placeWord = (word: string, path: NodeId[], graph: Graph): NodeId[] | false
   const availableNodes = difference(Object.keys(graph.nodes) as NodeId[], graph.visited, path);
   let neighbors = [];
   if (path.length === 0) {
+    // Prefer start nodes that can still fit the whole word in this graph component.
     const possible = availableNodes.filter(n => (graph.longest?.[n] ?? 0) >= word.length);
     const candidate = randomFrom(possible);
     if (!candidate) return false;
     neighbors.push(candidate);
   } else {
     const last = path[path.length - 1];
+    // Depth-first backtracking over allowed graph edges.
     neighbors = shuffle(intersection(graph.nodes[last].neighbors, availableNodes));
     if (neighbors.length === 0) return false;
   }
@@ -299,6 +310,7 @@ const combinations = (arr: string[]) =>
 const graphFromIsland = (island: NodeId[], graph: Graph): Graph => {
   const islandSet = new Set(island);
   const nodes = {} as Record<NodeId, GraphNode>;
+  // Create a subgraph for one connected component so placement stays inside the island.
   for (const key of island) {
     nodes[key] = {
       neighbors: graph.nodes[key].neighbors.filter(n => islandSet.has(n)),
@@ -331,6 +343,7 @@ const placeWordsSubsets = (words: string[], graph: Graph | null = null): Graph |
   for (let i = 0; i < islands.length; i++) {
     const island = islands[i];
     const islandSize = island.length;
+    // Pick a subset of words that exactly fills this connected component.
     const wordCombs = combinations(words)
       .slice(1)
       .map(combo => ({ words: combo, len: sum(combo.map(w => w.length)) }));
@@ -353,9 +366,11 @@ const placeWordsSubsets = (words: string[], graph: Graph | null = null): Graph |
       islandGraph.visited = unique([...islandGraph.visited, ...path]);
 
       const candidateWords = { ...graph.words, ...islandGraph.words };
+      // Validate the current partial layout before continuing recursion.
+      // If it breaks the rules, stop here instead of exploring this branch further.
       const valid =
         isWordPlacementUnique(gridFromWords(candidateWords), Object.keys(candidateWords)) &&
-        hasOnlyIntendedSameLetterAdjacency(candidateWords);
+        hasOnlyIntendedSameLetterAdjacency(candidateWords, graph);
       if (valid) {
         result = placeWordsSubsets(shuffle(selected.words.slice(1)), islandGraph);
       }
@@ -400,10 +415,12 @@ export const generateWortgeflechtLayout = ({
   words: string[];
   attempts?: number;
 }) => {
+  // Graph construction and path placement are randomized, so retry until a valid layout is found.
   for (let i = 0; i < attempts; i++) {
+    // `placeWordsSubsets` already enforces the placement invariants while constructing
+    // the solution, so we can use the returned graph directly here.
     const graph = placeWordsSubsets(shuffle(words.slice()));
     if (!graph) continue;
-    if (!hasOnlyIntendedSameLetterAdjacency(graph.words)) continue;
     const grid = gridFromWords(graph.words);
     const rows: WortgeflechtLetterRow[] = [];
     const paths: WortgeflechtWordPath[] = [];
