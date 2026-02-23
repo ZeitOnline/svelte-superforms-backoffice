@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { DataProps } from '$types';
   import App from '$components/App.svelte';
   import Header from '$components/Header.svelte';
 
@@ -6,4 +7,4 @@
 </script>
 
 <Header gameName={data.gameType} />
-<App {data} />
+<App data={data as DataProps} />
