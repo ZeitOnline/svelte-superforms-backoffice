@@ -23,8 +23,8 @@ export const isWortigerLength = (length: number): length is (typeof WORTIGER_LEN
 
 const deleteWortigerGameById = async (id: number) =>
   requestPostgrest<unknown>({
-    baseUrl: CONFIG_GAMES['wortiger'].apiBase,
-    path: CONFIG_GAMES['wortiger'].endpoints.games.name,
+    baseUrl: CONFIG_GAMES.wortiger.apiBase,
+    path: CONFIG_GAMES.wortiger.endpoints.games.name,
     method: 'DELETE',
     query: buildQueryParams([['id', pg.eq(id)]]),
     errorMessage: `Failed to delete Wortiger game with id: ${id}`,
