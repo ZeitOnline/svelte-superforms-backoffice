@@ -143,7 +143,7 @@ const getLongestPaths = (graph: Graph): Record<NodeId, number> => {
 
 const getFreeSubsets = (graph: Graph) => {
   const subsets: NodeId[][] = [];
-  const allNodes = Object.keys(graph.nodes) as NodeId[];
+  const allNodes = Object.keys(graph.nodes);
   const available = new Set(difference(allNodes, graph.visited));
   while (available.size) {
     const first = available.values().next().value as NodeId;
@@ -235,7 +235,7 @@ const hasOnlyIntendedSameLetterAdjacency = (wordPaths: Record<string, NodeId[]>)
       const prevLetter = word[i - 1];
       const nextLetter = word[i];
       if (!prevLetter || !nextLetter || prevLetter !== nextLetter) continue;
-      intendedSameLetterEdges.add(edgeKey(toIndex(path[i - 1] as NodeId), toIndex(path[i] as NodeId)));
+      intendedSameLetterEdges.add(edgeKey(toIndex(path[i - 1]), toIndex(path[i])));
     }
   }
 
@@ -267,14 +267,14 @@ const gridFromWords = (wordPaths: Record<string, NodeId[]>) => {
 
 const placeWord = (word: string, path: NodeId[], graph: Graph): NodeId[] | false => {
   const availableNodes = difference(Object.keys(graph.nodes) as NodeId[], graph.visited, path);
-  let neighbors: NodeId[] = [];
+  let neighbors = [];
   if (path.length === 0) {
     const possible = availableNodes.filter(n => (graph.longest?.[n] ?? 0) >= word.length);
     const candidate = randomFrom(possible);
     if (!candidate) return false;
     neighbors.push(candidate);
   } else {
-    const last = path[path.length - 1] as NodeId;
+    const last = path[path.length - 1];
     neighbors = shuffle(intersection(graph.nodes[last].neighbors, availableNodes));
     if (neighbors.length === 0) return false;
   }
