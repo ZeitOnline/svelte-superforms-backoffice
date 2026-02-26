@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { invalidateAll } from '$app/navigation';
   import type { BeginningOptions, GameWortgeflechtComplete } from '$types';
   import type { SuperValidated } from 'sveltekit-superforms';
   import { superForm, setError } from 'sveltekit-superforms';
@@ -177,9 +178,8 @@
           beginning_option === 'edit' ? APP_MESSAGES.GAME.EDITED_SUCCESS : APP_MESSAGES.GAME.ADDED_SUCCESS,
           '',
         );
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
+
+        refreshDataAndGoToDashboard();
       } catch (error) {
         console.error('Error saving Wortgeflecht game:', error);
         toastManager.add(ERRORS.GAME.FAILED_TO_ADD, '');
@@ -345,6 +345,12 @@
       view.updateSelectedGameId(-1);
       view.updateView('dashboard');
     }
+  }
+
+  async function refreshDataAndGoToDashboard() {
+    await invalidateAll();
+    resetAll();
+    view.updateView('dashboard');
   }
 
   function handleBackToDashboard() {
