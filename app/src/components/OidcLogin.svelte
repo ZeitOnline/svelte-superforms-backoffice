@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { oidc } from '@zeitonline/svelte-oidc';
+  import { dev } from '$app/environment';
 
   let { children }: { children: () => ReturnType<import('svelte').Snippet> } = $props();
 
@@ -8,14 +9,18 @@
   const clientId = 'spiele-backoffice';
 
   onMount(() => {
+    if (dev) return;
+
     oidc.manage({
       authority,
       client_id: clientId,
     });
   });
-</script>
+</script>so
 
-{#if oidc.loading}
+{#if dev}
+  {@render children()}
+{:else if oidc.loading}
   <!-- Loading auth state: intentionally render nothing -->
 {:else if oidc.isAuthenticated}
   {@render children()}
