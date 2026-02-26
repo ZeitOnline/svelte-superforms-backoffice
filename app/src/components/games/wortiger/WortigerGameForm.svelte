@@ -54,7 +54,6 @@
   const pendingWordSets = new SvelteMap<number, Promise<Set<string>>>();
 
   const levelToLength = (level: number) => MAP_LEVEL_CHARACTERS[level];
-  const duplicateCheckEndpoint = CONFIG_GAMES.wortiger.endpoints.games.name;
 
   let lastUsedRemote = $state<LastUsedInfo | null>(null);
   let lastUsedRequestId = 0;
@@ -124,7 +123,7 @@
     try {
       const result = await fetchLastUsedInfo({
         apiBase: CONFIG_GAMES.wortiger.apiBase,
-        endpointName: duplicateCheckEndpoint,
+        endpointName: CONFIG_GAMES.wortiger.endpoints.games.name,
         level,
         value: trimmed,
         excludeId: beginning_option === 'edit' && game ? game.id : undefined,
