@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   buildWordSetFromResponse,
+  fetchLastUsedInfo,
   fetchWordSetForLength,
   getLastUsedInfo,
   normalizeWortigerWord,
@@ -133,5 +134,51 @@ describe('wortiger-validation', () => {
       body: undefined,
     });
     expect(set.has('wort')).toBe(true);
+  });
+
+  it('fetches duplicate usage info across wortiger games', async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => [
+        { id: 1, level: 4, solution: 'WORT', release_date: '2025-01-01' },
+        { id: 2, level: 4, solution: 'wort', release_date: '2025-02-01' },
+      ],
+    });
+
+    const result = await fetchLastUsedInfo({
+      apiBase: 'https://example.test',
+      endpointName: 'wortiger_games',
+      level: 4,
+      value: 'WORT',
+      fetchFn,
+    });
+
+    expect(result).toEqual({ count: 2, lastDate: '2025-02-01' });
+    expect(fetchFn).toHaveBeenCalledWith(
+      expect.stringContaining('/wortiger_games?'),
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
+  it('respects excludeId in fetched duplicate usage info', async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => [
+        { id: 2, level: 4, solution: 'WORT', release_date: '2025-02-01' },
+      ],
+    });
+
+    const result = await fetchLastUsedInfo({
+      apiBase: 'https://example.test',
+      endpointName: 'wortiger_games',
+      level: 4,
+      value: 'WORT',
+      excludeId: 2,
+      fetchFn,
+    });
+
+    expect(result).toBeNull();
   });
 });
