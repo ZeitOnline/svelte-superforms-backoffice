@@ -466,7 +466,7 @@
   <!-- UI TABLE -->
   <h2 class="font-bold mt-16 mb-4">Lösungen</h2>
 
-  <div class="relative overflow-x-auto">
+  <div class="relative overflow-x-auto max-h-100">
     <table class="w-full text-sm">
       <thead>
         <tr>
