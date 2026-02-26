@@ -14,7 +14,7 @@ export class ToastState {
     });
   }
 
-  add(title: string, message: string, durationMs = 5000) {
+  add(title: string, message: string, durationMs = 4000) {
     const id = crypto.randomUUID();
     this.toasts.push({
       id,
