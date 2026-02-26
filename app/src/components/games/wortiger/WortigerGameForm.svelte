@@ -9,6 +9,7 @@
   import type { BeginningOptions } from '$types';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
   import { onMount } from 'svelte';
+  import { invalidateAll } from '$app/navigation';
   import { view } from '$stores/view-state-store.svelte';
   import { APP_MESSAGES } from '$lib/app-messages';
   import { ERRORS } from '$lib/error-messages';
@@ -16,6 +17,8 @@
   import { saveWortigerGameFormSchema, type SaveWortigerGameFormSchema } from '$schemas/wortiger';
   import { isWortigerGame } from '$utils';
   import {
+    type LastUsedInfo,
+    fetchLastUsedInfo,
     fetchWordSetForLength,
     getLastUsedInfo,
     validateAgainstWordList,
@@ -51,6 +54,10 @@
   const pendingWordSets = new SvelteMap<number, Promise<Set<string>>>();
 
   const levelToLength = (level: number) => MAP_LEVEL_CHARACTERS[level];
+  const duplicateCheckEndpoint = CONFIG_GAMES.wortiger.endpoints.games.name;
+
+  let lastUsedRemote = $state<LastUsedInfo | null>(null);
+  let lastUsedRequestId = 0;
 
   async function ensureWordSetForLevel(level: number) {
     const length = levelToLength(level);
@@ -104,6 +111,36 @@
       value,
       excludeId: beginning_option === 'edit' && game ? game.id : undefined,
     });
+
+  async function loadLastUsedInfo(level: number, value: string) {
+    const requestId = ++lastUsedRequestId;
+    const trimmed = (value ?? '').trim();
+    const expectedLength = levelToLength(level);
+    if (!trimmed || !expectedLength || trimmed.length !== expectedLength) {
+      lastUsedRemote = null;
+      return null;
+    }
+
+    try {
+      const result = await fetchLastUsedInfo({
+        apiBase: CONFIG_GAMES.wortiger.apiBase,
+        endpointName: duplicateCheckEndpoint,
+        level,
+        value: trimmed,
+        excludeId: beginning_option === 'edit' && game ? game.id : undefined,
+      });
+      if (requestId === lastUsedRequestId) {
+        lastUsedRemote = result;
+      }
+      return result;
+    } catch (error) {
+      console.error('Error checking Wortiger duplicate usage:', error);
+      if (requestId === lastUsedRequestId) {
+        lastUsedRemote = computeLastUsed(level, trimmed);
+      }
+      return requestId === lastUsedRequestId ? lastUsedRemote : null;
+    }
+  }
 
   // svelte-ignore state_referenced_locally
   const wortigerForm = data.saveGameForm;
@@ -176,9 +213,7 @@
           isSubmitted = true;
           toastManager.add(APP_MESSAGES.GAME.EDITED_SUCCESS, '');
 
-          setTimeout(() => {
-            window.location.reload();
-          }, 2500);
+          refreshDataAndGoToDashboard();
         } else {
           // Create new Wortiger game (not active by default)
           const createData: Omit<typeof finalData, 'active'> & { active?: boolean } = {
@@ -194,16 +229,13 @@
           isSubmitted = true;
           toastManager.add(APP_MESSAGES.GAME.ADDED_SUCCESS, '');
 
-          setTimeout(() => {
-            window.location.reload();
-          }, 2500);
-        }
-      } catch (error: any) {
-        console.error('Error saving Wortiger game:', error);
-
-        toastManager.add(ERRORS.GAME.FAILED_TO_ADD, '');
+          refreshDataAndGoToDashboard();
       }
-    },
+    } catch (error: any) {
+      console.error('Error saving Wortiger game:', error);
+      toastManager.add(ERRORS.GAME.FAILED_TO_ADD, '');
+    }
+  },
   });
 
   const { form, errors, enhance, isTainted, reset } = superform;
@@ -230,6 +262,16 @@
     }
   });
 
+  $effect(() => {
+    const level = $form.level;
+    const solution = $form.solution;
+    if (!level) {
+      lastUsedRemote = null;
+      return;
+    }
+    loadLastUsedInfo(level, solution);
+  });
+
   const addCustomDate = async () => {
     try {
       const lastGameDate = await getNextAvailableDateForGame('wortiger');
@@ -242,7 +284,7 @@
     }
   };
 
-  const lastUsed = $derived.by(() => computeLastUsed($form.level, $form.solution));
+  const lastUsed = $derived.by(() => lastUsedRemote ?? computeLastUsed($form.level, $form.solution));
 
   function resetAll() {
     reset();
@@ -251,6 +293,12 @@
       view.updateSelectedGameId(-1);
       view.updateView('dashboard');
     }
+  }
+
+  async function refreshDataAndGoToDashboard() {
+    await invalidateAll();
+    resetAll();
+    view.updateView('dashboard');
   }
 
   function handleBackToDashboard(): void {
