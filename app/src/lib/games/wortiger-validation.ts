@@ -74,6 +74,42 @@ export async function fetchWordSetForLength(options: {
   return buildWordSetFromResponse(data);
 }
 
+export async function fetchLastUsedInfo(options: {
+  apiBase: string;
+  endpointName: string;
+  level: number;
+  value: string;
+  excludeId?: number;
+  fetchFn?: typeof fetch;
+}): Promise<LastUsedInfo | null> {
+  const value = (options.value ?? '').trim();
+  if (!value) return null;
+
+  const length = levelToLength(options.level);
+  if (!length) return null;
+
+  const { data } = await requestPostgrest<Array<GameWortiger & { id?: number }>>({
+    fetchFn: options.fetchFn,
+    baseUrl: options.apiBase,
+    path: options.endpointName,
+    query: buildQueryParams([
+      ['select', 'id,level,solution,release_date'],
+      ['level', `eq.${options.level}`],
+      // Exact match without wildcards; `ilike` keeps this case-insensitive.
+      ['solution', `ilike.${value}`],
+      ['order', 'release_date.desc'],
+    ]),
+    errorMessage: 'Fetch failed for Wortiger duplicate check',
+  });
+
+  return getLastUsedInfo({
+    games: data,
+    level: options.level,
+    value,
+    excludeId: options.excludeId,
+  });
+}
+
 export function getLastUsedInfo(options: {
   games: Array<GameWortiger & { id?: number }>;
   level: number;
