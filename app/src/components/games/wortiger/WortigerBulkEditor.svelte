@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { invalidateAll } from '$app/navigation';
   import type { BeginningOptions, DataProps } from '$types';
   import { view } from '$stores/view-state-store.svelte';
   import { isWortigerLength, MAP_LEVEL_CHARACTERS, WORTIGER_LENGTHS } from '$lib/games/wortiger';
@@ -310,9 +311,7 @@
 
       toastManager.add('Alle Einträge gespeichert ✅', '');
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 2500);
+      refreshDataAndGoToDashboard();
     } catch (e: any) {
       error = e?.message ?? 'Fehler beim Speichern.';
     } finally {
@@ -324,8 +323,15 @@
   const headers = ['Release_Date', ...levels.map(l => `Level_${l}`)];
 
   const handleBackToDashboard = () => {
-    window.location.reload();
+    refreshDataAndGoToDashboard();
   };
+
+  async function refreshDataAndGoToDashboard() {
+    await invalidateAll();
+    view.updateSelectedGameId(-1);
+    view.updateView('dashboard');
+    beginning_option = null;
+  }
 </script>
 
 <ViewNavigation

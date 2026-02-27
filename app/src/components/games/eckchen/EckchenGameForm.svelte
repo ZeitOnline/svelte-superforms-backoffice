@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { invalidateAll } from '$app/navigation';
   import type { GameComplete, GameEckchenComplete, QuestionComplete } from '$types';
   import { superForm, arrayProxy, setError, formFieldProxy } from 'sveltekit-superforms';
   import type { SuperValidated } from 'sveltekit-superforms';
@@ -126,9 +127,7 @@
           isSubmitted = true;
           toastManager.add(APP_MESSAGES.GAME.EDITED_SUCCESS, '');
 
-          setTimeout(() => {
-            window.location.reload();
-          }, 2500);
+          refreshDataAndGoToDashboard();
         } else {
           // Create new Eckchen game
           console.log('Creating Eckchen game:', finalData);
@@ -154,9 +153,7 @@
           isSubmitted = true;
           toastManager.add(APP_MESSAGES.GAME.ADDED_SUCCESS, '');
 
-          setTimeout(() => {
-            window.location.reload();
-          }, 2500);
+          refreshDataAndGoToDashboard();
         }
       } catch (error) {
         console.error('Error saving Eckchen game:', error);
@@ -245,6 +242,12 @@
       view.updateSelectedGameId(-1);
       view.updateView('dashboard');
     }
+  }
+
+  async function refreshDataAndGoToDashboard() {
+    await invalidateAll();
+    resetAll();
+    view.updateView('dashboard');
   }
 
   function handleBackToDashboard(): void {

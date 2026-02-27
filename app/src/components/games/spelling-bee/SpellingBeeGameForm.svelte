@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { invalidateAll } from '$app/navigation';
   import type { GameComplete, GameSpellingBeeComplete, SpellingBeeSolutionItem } from '$types';
   import { superForm, setError, arrayProxy } from 'sveltekit-superforms';
   import type { SuperValidated } from 'sveltekit-superforms';
@@ -142,7 +143,7 @@
           toastManager.add(APP_MESSAGES.GAME.ADDED_SUCCESS, '');
         }
 
-        setTimeout(() => window.location.reload(), 2000);
+        refreshDataAndGoToDashboard();
       } catch (error) {
         console.error('Error saving Spelling Bee game:', error);
         toastManager.add(ERRORS.GAME.FAILED_TO_ADD, '');
@@ -309,11 +310,17 @@
   function resetAll() {
     reset();
     beginning_option = null;
-    console.log('Resetting selection...');
+
     if (game) {
       view.updateSelectedGameId(-1);
       view.updateView('dashboard');
     }
+  }
+
+  async function refreshDataAndGoToDashboard() {
+    await invalidateAll();
+    resetAll();
+    view.updateView('dashboard');
   }
 
   function handleBackToDashboard() {
@@ -454,7 +461,7 @@
       {#if $errors.wordcloud}
         <div
           in:blur
-          class="text-red-500 flex flex-wrap max-w-[200px] items-center gap-2 text-xs mt-2"
+          class="text-red-500 flex flex-wrap max-w-50 items-center gap-2 text-xs mt-2"
         >
           <IconHandler iconName="error" extraClasses="w-4 h-4 text-z-ds-color-accent-100" />
           <span>{$errors.wordcloud}</span>
@@ -466,7 +473,7 @@
   <!-- UI TABLE -->
   <h2 class="font-bold mt-16 mb-4">Lösungen</h2>
 
-  <div class="relative overflow-x-auto">
+  <div class="relative overflow-x-auto max-h-100">
     <table class="w-full text-sm">
       <thead>
         <tr>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { invalidateAll } from '$app/navigation';
   import ViewWrapper from '$components/ViewWrapper.svelte';
   import type { GameComplete, GameType } from '$types';
   import { view } from '../stores/view-state-store.svelte';
@@ -36,11 +37,7 @@
       }
       await deleteGame(gameName, id);
 
-      setTimeout(() => {
-        view.updateView('dashboard');
-        view.updateSelectedGameId(-1);
-        window.location.reload();
-      }, 2000);
+      refreshDataAndGoToDashboard();
     } catch (error) {
       console.error('Error deleting game:', error);
 
@@ -49,6 +46,12 @@
       }
     }
   };
+
+  async function refreshDataAndGoToDashboard() {
+    await invalidateAll();
+    view.updateView('dashboard');
+    view.updateSelectedGameId(-1);
+  }
 
   const game = $derived(games.find((game: GameComplete) => game.id === view.selectedGameId));
 
