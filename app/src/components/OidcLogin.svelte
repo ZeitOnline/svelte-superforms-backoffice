@@ -16,7 +16,7 @@
       client_id: clientId,
     });
   });
-</script>so
+</script>
 
 {#if dev}
   {@render children()}
