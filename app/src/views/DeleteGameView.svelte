@@ -2,7 +2,7 @@
   import { invalidateAll } from '$app/navigation';
   import ViewWrapper from '$components/ViewWrapper.svelte';
   import type { GameComplete, GameType } from '$types';
-  import { view } from '../stores/view-state-store.svelte';
+  import { view } from '$stores/view-state-store.svelte';
   import { deleteGame } from '$lib/queries';
   import { getToastState } from '$lib/toast-state.svelte';
   import { isEckchenGame, isSpellingBeeGame, isWortgeflechtGame, isWortigerGame } from '../utils';
