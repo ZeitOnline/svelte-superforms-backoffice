@@ -230,7 +230,7 @@
 
           refreshDataAndGoToDashboard();
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving Wortiger game:', error);
       toastManager.add(ERRORS.GAME.FAILED_TO_ADD, '');
     }

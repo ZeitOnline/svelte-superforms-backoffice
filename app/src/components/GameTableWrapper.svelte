@@ -1,18 +1,13 @@
 <script lang="ts">
-  import WortigerGameForm from './games/wortiger/WortigerGameForm.svelte';
-  import EckchenGameForm from './games/eckchen/EckchenGameForm.svelte';
   import type {
     BeginningOptions,
     DataProps,
     GameComplete,
-    GameEckchenComplete,
-    GameSpellingBeeComplete,
+    GameDataByType,
     GameType,
-    GameWortgeflechtComplete,
-    GameWortigerComplete,
   } from '$types';
-  import SpellingBeeGameForm from './games/spelling-bee/SpellingBeeGameForm.svelte';
-  import WortgeflechtGameForm from './games/wortgeflecht/WortgeflechtGameForm.svelte';
+  import { isEckchenGame, isSpellingBeeGame, isWortgeflechtGame, isWortigerGame } from '$utils';
+  import { SpellingBeeGameForm, WortigerGameForm, EckchenGameForm, WortgeflechtGameForm } from './games';
 
   type Props = {
     resultsDataBody: string[][];
@@ -29,28 +24,38 @@
     beginning_option = $bindable(),
     gameName,
   }: Props = $props();
+
+  const eckchenData = $derived(data as unknown as GameDataByType['eckchen']);
+  const wortigerData = $derived(data as unknown as GameDataByType['wortiger']);
+  const spellingBeeData = $derived(data as unknown as GameDataByType['spelling-bee']);
+  const wortgeflechtData = $derived(data as unknown as GameDataByType['wortgeflecht']);
+
+  const eckchenGame = $derived(game && isEckchenGame(game) ? game : undefined);
+  const wortigerGame = $derived(game && isWortigerGame(game) ? game : undefined);
+  const spellingBeeGame = $derived(game && isSpellingBeeGame(game) ? game : undefined);
+  const wortgeflechtGame = $derived(game && isWortgeflechtGame(game) ? game : undefined);
 </script>
 
 {#if gameName === 'wortiger'}
-  <WortigerGameForm data={data as any} game={game as GameWortigerComplete} bind:beginning_option />
+  <WortigerGameForm data={wortigerData} game={wortigerGame} bind:beginning_option />
 {:else if gameName === 'eckchen'}
   <EckchenGameForm
-    data={data as any}
-    game={game as GameEckchenComplete}
+    data={eckchenData}
+    game={eckchenGame}
     bind:beginning_option
     bind:resultsDataBody
   />
 {:else if gameName === 'spelling-bee'}
   <SpellingBeeGameForm
-    data={data as any}
-    game={game as GameSpellingBeeComplete}
+    data={spellingBeeData}
+    game={spellingBeeGame}
     bind:beginning_option
     bind:resultsDataBody
   />
 {:else if gameName === 'wortgeflecht'}
   <WortgeflechtGameForm
-    data={data as any}
-    game={game as GameWortgeflechtComplete}
+    data={wortgeflechtData}
+    game={wortgeflechtGame}
     bind:beginning_option
   />
 {/if}
