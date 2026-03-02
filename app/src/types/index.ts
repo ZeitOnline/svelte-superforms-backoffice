@@ -18,6 +18,13 @@ export type View = 'dashboard' | 'new-game' | 'edit-game' | 'delete-game';
  */
 export type CreationMode = 'manual' | 'csv'
 
+
+/**
+ * Rendering mode for CSV results
+ */
+export type CsvResultsRenderMode = 'table' | 'bulk';
+
+
 /**
  * These are the possible icons in the app (used for the logs for example)
  */

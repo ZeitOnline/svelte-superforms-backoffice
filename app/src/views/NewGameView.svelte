@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { view } from '../stores/view-state-store.svelte';
-  import type { BeginningOptions, DataProps } from '$types';
+  import { view } from '$stores/view-state-store.svelte';
+  import type { BeginningOptions, CsvResultsRenderMode, DataProps, GameType, IconOption } from '$types';
 
   import GameTableWrapper from '$components/GameTableWrapper.svelte';
   import CSVGameFileUploader from '$components/CSVGameFileUploader.svelte';
@@ -14,6 +14,7 @@
   type Props = {
     data: DataProps;
   };
+
   let { data }: Props = $props();
 
   let resultsDataBody: string[][] = $state([]);
@@ -23,7 +24,30 @@
     view.updateView('dashboard');
   }
 
-  const canCSV = $derived(data.gameType && CONFIG_GAMES[data.gameType].creationModes.includes('csv'));
+  const ACTIONS = [
+    {
+      name: 'scratch',
+      label: 'Manuell hinzufügen',
+      icon: 'update',
+    },
+    {
+      name: 'csv',
+      label: 'Über CSV hinzufügen',
+      icon: 'upload',
+    },
+  ];
+
+  const CSV_RESULTS_RENDER_MODE: Partial<Record<GameType, CsvResultsRenderMode>> = {
+    eckchen: 'table',
+    'spelling-bee': 'table',
+    wortiger: 'bulk',
+  };
+
+  const canCSV = $derived(
+    data.gameType && CONFIG_GAMES[data.gameType].creationModes.includes('csv'),
+  );
+
+  const csvResultsRenderMode = $derived(CSV_RESULTS_RENDER_MODE[data.gameType]);
 </script>
 
 <ViewWrapper>
@@ -35,33 +59,24 @@
       gameName={data.gameType}
     />
     <div class="flex items-center justify-between gap-z-ds-8">
-      <button
-        class="relative flex-1 z-ds-button z-ds-button-outline flex items-center min-h-50 text-sm"
-        onclick={() => {
-          beginning_option = 'scratch';
-        }}
-      >
-        <IconHandler
-          iconName="update"
-          extraClasses="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-48 h-48 opacity-5"
-        />
-        Manuell hinzufügen
-      </button>
-
-      {#if canCSV}
+      {#each ACTIONS as action}
         <button
-          class="relative flex-1 z-ds-button z-ds-button-outline flex items-center min-h-50 text-sm"
+          // add hidden if action.name === 'csv' && !canCSV
+          class={[
+            'relative flex-1 z-ds-button z-ds-button-outline flex items-center min-h-50 text-sm',
+            action.name === 'csv' && !canCSV ? 'hidden!' : '',
+          ].join(' ')}
           onclick={() => {
-            beginning_option = 'csv';
+            beginning_option = action.name as BeginningOptions;
           }}
         >
           <IconHandler
-            iconName="upload"
+            iconName={action.icon as IconOption}
             extraClasses="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-48 h-48 opacity-5"
           />
-          Über CSV hinzufügen
+          {action.label}
         </button>
-      {/if}
+      {/each}
     </div>
   {/if}
 
@@ -71,23 +86,14 @@
 
   {#if beginning_option === 'csv'}
     {#if resultsDataBody.length > 0}
-      {#if data.gameType === 'eckchen'}
-        <!-- Eckchen loads the question from the csv into the table  -->
+      {#if csvResultsRenderMode === 'table'}
         <GameTableWrapper
           {data}
           bind:beginning_option
           bind:resultsDataBody
           gameName={data.gameType}
         />
-      {:else if data.gameType === 'spelling-bee'}
-        <GameTableWrapper
-          {data}
-          bind:beginning_option
-          bind:resultsDataBody
-          gameName={data.gameType}
-        />
-      {:else if data.gameType === 'wortiger'}
-        <!-- Wortiger allows a bulk upload from the csv directly into the db -->
+      {:else if csvResultsRenderMode === 'bulk'}
         <WortigerBulkEditor
           {data}
           bind:beginning_option
