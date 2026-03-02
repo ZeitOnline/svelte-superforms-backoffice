@@ -126,7 +126,7 @@
         next[len] = results[idx];
       });
       wordSets = next;
-    } catch (e: any) {
+    } catch (e) {
       console.error(e);
     } finally {
       console.log('Loaded word sets', wordSets);
@@ -312,8 +312,8 @@
       toastManager.add('Alle Einträge gespeichert ✅', '');
 
       refreshDataAndGoToDashboard();
-    } catch (e: any) {
-      error = e?.message ?? 'Fehler beim Speichern.';
+    } catch (e) {
+      error = 'Fehler beim Speichern.';
     } finally {
       saving = false;
     }

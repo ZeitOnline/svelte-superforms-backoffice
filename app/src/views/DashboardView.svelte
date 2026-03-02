@@ -3,7 +3,7 @@
   import GenericDashboardTable from '$components/GenericDashboardTable.svelte';
   import ViewNavigation from '$components/ViewNavigation.svelte';
   import ViewWrapper from '$components/ViewWrapper.svelte';
-  import { view } from '../stores/view-state-store.svelte';
+  import { view } from '$stores/view-state-store.svelte';
 
   type Props = {
     games: GameComplete[];

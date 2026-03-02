@@ -1,3 +1,7 @@
+import type { SaveEckchenGameFormSchema } from '$schemas/eckchen';
+import type { SaveSpellingBeeGameFormSchema } from '$schemas/spelling-bee';
+import type { SaveWortgeflechtGameFormSchema } from '$schemas/wortgeflecht';
+import type { SaveWortigerGameFormSchema } from '$schemas/wortiger';
 import type { SuperValidated } from 'sveltekit-superforms';
 import type { ZodValidationSchema } from 'sveltekit-superforms/adapters';
 
@@ -17,6 +21,13 @@ export type View = 'dashboard' | 'new-game' | 'edit-game' | 'delete-game';
  * These are the possible creation modes for a game
  */
 export type CreationMode = 'manual' | 'csv'
+
+
+/**
+ * Rendering mode for CSV results
+ */
+export type CsvResultsRenderMode = 'table' | 'bulk';
+
 
 /**
  * These are the possible icons in the app (used for the logs for example)
@@ -87,6 +98,29 @@ export type GameComplete =
   | GameWortigerComplete
   | GameWortgeflechtComplete
   | GameSpellingBeeComplete;
+
+export type GameDataByType = {
+  eckchen: {
+    games: GameEckchenComplete[];
+    generateGameForm: SuperValidated<SaveEckchenGameFormSchema>;
+    saveGameForm: SuperValidated<SaveEckchenGameFormSchema>;
+  };
+  wortiger: {
+    games: GameWortigerComplete[];
+    generateGameForm: SuperValidated<SaveWortigerGameFormSchema>;
+    saveGameForm: SuperValidated<SaveWortigerGameFormSchema>;
+  };
+  'spelling-bee': {
+    games: GameSpellingBeeComplete[];
+    generateGameForm: SuperValidated<SaveSpellingBeeGameFormSchema>;
+    saveGameForm: SuperValidated<SaveSpellingBeeGameFormSchema>;
+  };
+  wortgeflecht: {
+    games: GameWortgeflechtComplete[];
+    generateGameForm: SuperValidated<SaveWortgeflechtGameFormSchema>;
+    saveGameForm: SuperValidated<SaveWortgeflechtGameFormSchema>;
+  };
+};
 
 export type DataProps = {
   games: GameComplete[];
@@ -191,8 +225,6 @@ export type GameConfig = {
   };
   creationModes: CreationMode[];
 };
-
-
 
 export type FormField = {
   key: string;

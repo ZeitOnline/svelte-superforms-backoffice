@@ -74,7 +74,7 @@
         if (beginning_option === 'edit' && game && isEckchenGame(game)) {
           // Check for unique constraints during edit
           if (game.name !== form.data.name) {
-            if (data.games.some((g: any) => g.name === form.data.name)) {
+            if (data.games.some((g) => g.name === form.data.name)) {
               setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
               return;
             }
@@ -87,11 +87,11 @@
           }
         } else {
           // Check for unique constraints during creation
-          if (data.games.some((g: any) => g.name === form.data.name)) {
+          if (data.games.some((g) => g.name === form.data.name)) {
             setError(form, 'name', ERRORS.GAME.NAME.TAKEN);
             return;
           }
-          if (data.games.some(g => g.release_date === form.data.release_date)) {
+          if (data.games.some((g) => g.release_date === form.data.release_date)) {
             setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
             return;
           }
@@ -118,7 +118,7 @@
           editedQuestions.forEach((question, index) => {
             question.game_id = game.id;
             if (game.questions && game.questions[index]) {
-              question.id = (game.questions[index] as any).id;
+              question.id = (game.questions[index] as QuestionComplete).id;
             }
           });
           await updateGameQuestions(editedQuestions);
@@ -139,7 +139,7 @@
             const gameWithQuestions = newGame;
             gameWithQuestions.questions = form.data.questions;
             if (gameWithQuestions.questions) {
-              gameWithQuestions.questions.map((question: any) => {
+              gameWithQuestions.questions.map((question) => {
                 question.game_id = newGame.id;
                 return question;
               });
@@ -470,7 +470,7 @@
     </table>
   </div>
 
-  {#if $errors.questions?._errors || $questionErrors.some((error: any) => error?.nr || error?.xc || error?.yc || error?.direction || error?.description || error?.question || error?.answer)}
+  {#if $errors.questions?._errors || $questionErrors.some((error) => error?.nr || error?.xc || error?.yc || error?.direction || error?.description || error?.question || error?.answer)}
     <div
       role="alert"
       aria-atomic="true"
@@ -483,7 +483,7 @@
 
       <ul
         aria-live="assertive"
-        class="flex flex-col justify-center list-inside list-disc max-w-[300px]"
+        class="flex flex-col justify-center list-inside list-disc max-w-75"
         aria-labelledby="error-heading"
       >
         {#each $questionErrors as _, i (i)}
