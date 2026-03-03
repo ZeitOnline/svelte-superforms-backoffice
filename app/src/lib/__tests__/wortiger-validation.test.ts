@@ -4,6 +4,7 @@ import {
   fetchLastUsedInfo,
   fetchWordSetForLength,
   getLastUsedInfo,
+  hasLevelDateConflict,
   normalizeWortigerWord,
   validateAgainstWordList,
 } from '$lib/games/wortiger-validation';
@@ -180,5 +181,36 @@ describe('wortiger-validation', () => {
     });
 
     expect(result).toBeNull();
+  });
+
+  it('detects a conflict for the same level and release date', () => {
+    const result = hasLevelDateConflict({
+      games: [{ id: 1, level: 4, solution: 'WORT', release_date: '2025-02-01' }],
+      level: 4,
+      releaseDate: '2025-02-01',
+    });
+
+    expect(result).toBe(true);
+  });
+
+  it('does not treat other levels on the same day as conflict', () => {
+    const result = hasLevelDateConflict({
+      games: [{ id: 1, level: 3, solution: 'WORTS', release_date: '2025-02-01' }],
+      level: 4,
+      releaseDate: '2025-02-01',
+    });
+
+    expect(result).toBe(false);
+  });
+
+  it('ignores the current game id during conflict checks', () => {
+    const result = hasLevelDateConflict({
+      games: [{ id: 2, level: 4, solution: 'WORT', release_date: '2025-02-01' }],
+      level: 4,
+      releaseDate: '2025-02-01',
+      excludeId: 2,
+    });
+
+    expect(result).toBe(false);
   });
 });
