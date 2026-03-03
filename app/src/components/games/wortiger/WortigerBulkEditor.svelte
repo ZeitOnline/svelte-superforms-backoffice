@@ -1,13 +1,13 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
-  import type { BeginningOptions, DataProps } from '$types';
+  import type { BeginningOptions, DataProps, GameComplete } from '$types';
   import { view } from '$stores/view-state-store.svelte';
-  import { isWortigerLength, MAP_LEVEL_CHARACTERS, WORTIGER_LENGTHS } from '$lib/games/wortiger';
   import {
-    buildQueryParams,
-    pg,
-    requestPostgrest,
-  } from '$lib/postgrest-client';
+    fetchWortigerGamesByLevels,
+    isWortigerLength,
+    MAP_LEVEL_CHARACTERS,
+    WORTIGER_LENGTHS,
+  } from '$lib/games/wortiger';
   import {
     fetchWordSetForLength,
     normalizeWortigerWord,
@@ -43,34 +43,45 @@
 
   /** editable table model — deep reactive */
   let rows = $state<string[][]>(resultsDataBody);
-  const detectedLevels = $derived.by(() => {
-    const firstRow = rows[0];
+  function detectLevelsFromCsvRows(inputRows: string[][]): number[] {
+    const firstRow = inputRows[0];
     if (!firstRow) return WORTIGER_LENGTHS;
 
     // Legacy CSV format: [date, level_4, level_5, level_6, level_7]
     if (firstRow.length > 2) return WORTIGER_LENGTHS;
 
     // Single-level CSV format: [date, word]
-    const lengths = Array.from(new Set(rows.map(row => (row[1] ?? '').trim().length)));
+    const lengths = Array.from(new Set(inputRows.map(row => (row[1] ?? '').trim().length)));
     return lengths.length === 1 && isWortigerLength(lengths[0] ?? 0) ? [lengths[0]] : WORTIGER_LENGTHS;
-  });
+  }
+  let detectedLevels = $state<number[]>(detectLevelsFromCsvRows(resultsDataBody));
 
   /** pending + per-cell length guard based on MAP_LEVEL_CHARACTERS */
   let saving = $state(false);
   let error = $state<string | null>(null);
   let existingLevelDateIndex = $state<Record<string, true>>({});
   let existingSlotsLoaded = $state(false);
+  let existingSolutionsRows = $state<Array<{ level: number; solution: string; release_date: string }>>(
+    [],
+  );
+  let existingSolutionsLoaded = $state(false);
 
-  /** Build once from incoming `data` (array of 100 objects) */
+  /** Build warning index from DB-fetched rows (fallback to local data until loaded). */
   const existingIndex = $derived.by<ExistingIndex>(() => {
     const idx: ExistingIndex = Object.fromEntries(
       WORTIGER_LENGTHS.map(len => [len, new Map()]),
     );
 
-    // If DataProps has the games array on a property, adjust here.
-    // Your console shows `data` itself is the array, so iterate directly:
-    for (const g of data.games) {
-      if (!isWortigerGame(g)) continue;
+    const source = existingSolutionsLoaded
+      ? existingSolutionsRows
+      : data.games.filter(isWortigerGame).map(g => ({
+          level: g.level,
+          solution: g.solution ?? '',
+          release_date: g.release_date ?? '',
+        }));
+
+    for (const g of source) {
+      if (!isWortigerGame(g as GameComplete)) continue;
 
       const sol = g?.solution ?? '';
       const len = sol.trim().length;
@@ -147,27 +158,49 @@
 
     if (levelIds.length === 0) return {};
 
-    const responses = await Promise.all(
-      levelIds.map(level =>
-        requestPostgrest<Array<{ level: number; release_date: string }>>({
-          baseUrl: CONFIG_GAMES.wortiger.apiBase,
-          path: CONFIG_GAMES.wortiger.endpoints.games.name,
-          query: buildQueryParams([
-            ['select', 'level,release_date'],
-            ['level', pg.eq(level)],
-          ]),
-          errorMessage: `Failed to fetch existing Wortiger games for level ${level}`,
-        }),
-      ),
-    );
+    const games = await fetchWortigerGamesByLevels<{ level: number; release_date: string }>({
+      levelIds,
+      select: 'level,release_date',
+    });
 
     const next: Record<string, true> = {};
-    for (const { data: games } of responses) {
-      for (const game of games) {
-        next[`${game.level}|${game.release_date}`] = true;
-      }
+    for (const game of games) {
+      next[`${game.level}|${game.release_date}`] = true;
     }
     return next;
+  }
+
+  async function loadExistingSolutions(levelLens: number[]) {
+    try {
+      existingSolutionsLoaded = false;
+      const levelIds = Array.from(
+        new Set(
+          levelLens
+            .map(len => CHAR_TO_LEVEL[len])
+            .filter((level): level is number => typeof level === 'number'),
+        ),
+      );
+
+      if (levelIds.length === 0) {
+        existingSolutionsRows = [];
+        return;
+      }
+
+      existingSolutionsRows = await fetchWortigerGamesByLevels<{
+        level: number;
+        solution: string;
+        release_date: string;
+      }>({
+        levelIds,
+        select: 'level,solution,release_date',
+        errorMessagePrefix: 'Failed to fetch existing Wortiger solutions for level',
+      });
+    } catch (e) {
+      console.error(e);
+      existingSolutionsRows = [];
+    } finally {
+      existingSolutionsLoaded = true;
+    }
   }
 
   async function loadExistingLevelDateKeys(levelLens: number[]) {
@@ -185,32 +218,31 @@
   /** Check if the value already exists in previously saved games (same length) */
   function validateAgainstExistingSolutions(
     lengthForThisColumn: number,
-    value: string,
+    value: string = "",
   ): string | null {
-    const v = (value ?? '').trim();
-    if (!v) return null;
+    const word = value.trim();
+    if (!word) return null;
 
     const map = existingIndex[lengthForThisColumn];
     if (!map) return null;
 
-    const hit = map.get(normalize(v));
+    const hit = map.get(normalize(word));
     if (!hit || hit.count <= 0) return null;
 
     // Optional: include the first known date and a “+N×” suffix if repeated
     const suffix = hit.count > 1 ? ` (+${hit.count - 1}×)` : '';
     const when = hit.first_date ? ` — zuletzt am ${hit.first_date}` : '';
-    return `„⚠️ ${v}“ wurde schon verwendet${when}${suffix}`;
+    return `„⚠️ ${word}“ wurde schon verwendet${when}${suffix}`;
   }
 
   /** Warn when a value repeats within the current editor table */
   function validateWithinTableDuplicates(
-    lengthForThisColumn: number,
-    value: string,
+    value: string = "",
     rowIndex: number,
     colIndex: number,
   ): string | null {
-    const v = (value ?? '').trim();
-    if (!v) return null;
+    const word = value.trim();
+    if (!word) return null;
 
     let repeats = 0;
     for (let i = 0; i < rows.length; i++) {
@@ -219,29 +251,29 @@
       if (!candidate) continue;
 
       // Only compare within the same length column
-      if (normalize(candidate) === normalize(v)) repeats++;
+      if (normalize(candidate) === normalize(word)) repeats++;
     }
 
     if (repeats > 0) {
       const suffix = repeats > 1 ? ` (+${repeats} weitere)` : '';
-      return `⚠️ „${v}“ wird in dieser Tabelle mehrfach verwendet${suffix}.`;
+      return `⚠️ „${word}“ wird in dieser Tabelle mehrfach verwendet${suffix}.`;
     }
 
     return null;
   }
 
   /** Validate a row's release date against within-table duplicates */
-  function validateReleaseDate(dateStr: string, _rowIndex: number): string | null {
-    const d = (dateStr ?? '').trim();
-    if (!d) return null;
+  function validateReleaseDate(dateStr: string = ""): string | null {
+    const date = dateStr.trim();
+    if (!date) return null;
 
     // Duplicate within current editor table
     let repeats = 0;
     for (let i = 0; i < rows.length; i++) {
-      if ((rows[i][0] ?? '').trim() === d) repeats++;
+      if ((rows[i][0] ?? '').trim() === date) repeats++;
     }
     if (repeats > 1) {
-      return `Datum ${d} wird mehrfach in dieser Tabelle verwendet.`;
+      return `Datum ${date} wird mehrfach in dieser Tabelle verwendet.`;
     }
 
     return null;
@@ -259,23 +291,23 @@
 
   function validateLevelDateConflict(
     lengthForThisColumn: number,
-    dateStr: string,
-    value: string,
+    dateStr: string = "",
+    value: string = "",
   ): string | null {
-    const v = (value ?? '').trim();
-    const d = (dateStr ?? '').trim();
-    if (!v || !d) return null;
+    const word = value.trim();
+    const date = dateStr.trim();
+    if (!word || !date) return null;
     if (!existingSlotsLoaded) return null;
 
     const level = CHAR_TO_LEVEL[lengthForThisColumn];
     if (!level) return null;
 
-    return existingLevelDateIndex[`${level}|${d}`]
-      ? `Für dieses Level gibt es am ${d} bereits ein Wort in der DB.`
+    return existingLevelDateIndex[`${level}|${date}`]
+      ? `Für dieses Level gibt es am ${date} bereits ein Wort in der DB.`
       : null;
   }
 
-  let hasDateConflicts = $derived(() => rows.some((r, i) => !!validateReleaseDate(r[0], i)));
+  let hasDateConflicts = $derived(() => rows.some((r) => !!validateReleaseDate(r[0])));
 
   let hasWordListViolations = $derived(() => {
     return rows.some(r => {
@@ -328,11 +360,7 @@
   }
 
   onMount(() => {
-    loadWordSets(detectedLevels);
-    loadExistingLevelDateKeys(detectedLevels);
-  });
-
-  $effect(() => {
+    loadExistingSolutions(detectedLevels);
     loadWordSets(detectedLevels);
     loadExistingLevelDateKeys(detectedLevels);
   });
@@ -386,7 +414,6 @@
         level: p.level, // DB level id (1..4)
         release_date: p.release_date, // ISO yyyy-mm-dd
         solution: p.solution,
-        // published: p.published, // map published -> active
       }));
 
       // Refresh current DB occupancy right before save to avoid stale client data.
@@ -476,7 +503,7 @@
     </thead>
     <tbody>
       {#each rows as r, i (i)}
-        {@const dateMsg = validateReleaseDate(r[0], i)}
+        {@const dateMsg = validateReleaseDate(r[0])}
         <tr>
           <td class="px-2 py-1 w-42.5">
             <input
@@ -497,7 +524,7 @@
             {@const msg = validateAgainstWordListCell(lvl, r[colIndex])}
             {@const levelDateMsg = validateLevelDateConflict(lvl, r[0], r[colIndex])}
             {@const dupMsg = validateAgainstExistingSolutions(lvl, r[colIndex])}
-            {@const tableDupMsg = validateWithinTableDuplicates(lvl, r[colIndex], i, colIndex)}
+            {@const tableDupMsg = validateWithinTableDuplicates(r[colIndex], i, colIndex)}
             <td class="px-2 py-1">
               <input
                 type="text"
