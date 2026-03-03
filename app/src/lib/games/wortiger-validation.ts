@@ -137,3 +137,18 @@ export function getLastUsedInfo(options: {
   if (count === 0) return null;
   return { count, lastDate };
 }
+
+export function hasLevelDateConflict(options: {
+  games: Array<GameWortiger & { id?: number }>;
+  level: number;
+  releaseDate: string;
+  excludeId?: number;
+}): boolean {
+  const normalizedDate = (options.releaseDate ?? '').trim();
+  if (!normalizedDate) return false;
+
+  return options.games.some(game => {
+    if (options.excludeId !== undefined && game.id === options.excludeId) return false;
+    return game.level === options.level && game.release_date === normalizedDate;
+  });
+}

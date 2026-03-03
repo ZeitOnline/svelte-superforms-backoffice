@@ -21,6 +21,7 @@
     fetchLastUsedInfo,
     fetchWordSetForLength,
     getLastUsedInfo,
+    hasLevelDateConflict,
     validateAgainstWordList,
   } from '$lib/games/wortiger-validation';
   import { SvelteDate, SvelteMap } from 'svelte/reactivity';
@@ -172,21 +173,15 @@
           // active: form.data.published
         };
 
-        // Validation logic
-        if (beginning_option === 'edit' && game && isWortigerGame(game)) {
-          // Check unique release date constraint during edit
-          if (game.release_date !== form.data.release_date) {
-            if (data.games.some(g => g.release_date === form.data.release_date)) {
-              setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
-              return;
-            }
-          }
-        } else {
-          // Check unique release date constraint during creation
-          if (data.games.some(g => g.release_date === form.data.release_date)) {
-            setError(form, 'release_date', ERRORS.GAME.RELEASE_DATE.TAKEN);
-            return;
-          }
+        const hasConflict = hasLevelDateConflict({
+          games: data.games,
+          level: form.data.level,
+          releaseDate: form.data.release_date,
+          excludeId: beginning_option === 'edit' && game && isWortigerGame(game) ? game.id : undefined,
+        });
+        if (hasConflict) {
+          setError(form, 'release_date', ERRORS.WORTIGER.LEVEL_DATE_TAKEN);
+          return;
         }
 
         if (!form.valid) {
@@ -284,6 +279,17 @@
   };
 
   const lastUsed = $derived.by(() => lastUsedRemote ?? computeLastUsed($form.level, $form.solution));
+  const levelDateConflict = $derived.by(() =>
+    hasLevelDateConflict({
+      games: data.games,
+      level: $form.level,
+      releaseDate: $form.release_date,
+      excludeId: beginning_option === 'edit' && game && isWortigerGame(game) ? game.id : undefined,
+    }),
+  );
+  const releaseDateError = $derived.by(
+    () => $errors.release_date ?? (levelDateConflict ? ERRORS.WORTIGER.LEVEL_DATE_TAKEN : null),
+  );
 
   function resetAll() {
     reset();
@@ -417,11 +423,11 @@
         name="release_date"
         id="release_date"
         type="date"
-        aria-invalid={$errors.release_date ? 'true' : undefined}
+        aria-invalid={releaseDateError ? 'true' : undefined}
         bind:value={$form.release_date}
       />
 
-      {#if $errors.release_date}
+      {#if releaseDateError}
         <div
           in:blur
           class="text-red-500 invalid flex items-center gap-z-ds-4 text-xs sm:max-w-62.5 mt-2"
@@ -430,7 +436,7 @@
             iconName="error"
             extraClasses="min-w-4 min-h-4 w-4 h-4 text-z-ds-color-accent-100"
           />
-          <span class="text-xs">{$errors.release_date}</span>
+          <span class="text-xs">{releaseDateError}</span>
         </div>
       {/if}
     </div>

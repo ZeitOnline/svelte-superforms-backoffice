@@ -9,6 +9,7 @@
   import { APP_MESSAGES } from '$lib/app-messages';
   import { CONFIG_GAMES } from '$config/games.config';
   import { canBeBuiltFromWordcloud } from '$schemas/spelling-bee';
+  import { isWortigerLength, WORTIGER_LENGTHS } from '$lib/games/wortiger';
 
   function parseCsv(file: File): Promise<string[][]> {
     return new Promise((resolve, reject) => {
@@ -91,7 +92,7 @@
             return;
           }
         } else if (gameName === 'wortiger') {
-          if (fieldSize !== 5) {
+          if (fieldSize !== 2 && fieldSize !== 5) {
             setError(form, 'csv', ERRORS.WORTIGER.CSV.NUMBER_OF_COLUMNS);
             return;
           }
@@ -138,6 +139,82 @@
             setError(form, 'csv', ERRORS.SPELLING_BEE.CSV.SOLUTION_INCOMPATIBLE);
             return;
           }
+        }
+
+        if (gameName === 'wortiger') {
+          const normalizeHeader = (value: string) => value.trim().toLowerCase().replace(/\s+/g, '_');
+          const normalizedHeader = header.map(normalizeHeader);
+
+          const dateIndex = normalizedHeader.findIndex(h =>
+            ['datum', 'date', 'release_date', 'releasedate'].includes(h),
+          );
+
+          const singleWordIndex = normalizedHeader.findIndex(h =>
+            ['wort', 'word', 'solution'].includes(h),
+          );
+
+          const levelIndexByLength: Record<number, number> = {};
+          for (let idx = 0; idx < normalizedHeader.length; idx++) {
+            const match = normalizedHeader[idx].match(/^level[_-]?([0-9]+)$/);
+            if (!match) continue;
+            const levelLen = Number(match[1]);
+            if (isWortigerLength(levelLen)) {
+              levelIndexByLength[levelLen] = idx;
+            }
+          }
+
+          const isSingleLevelFormat = dateIndex >= 0 && singleWordIndex >= 0 && fieldSize === 2;
+          const isLegacyMultiLevelFormat =
+            dateIndex >= 0 && WORTIGER_LENGTHS.every(len => levelIndexByLength[len] !== undefined);
+
+          if (!isSingleLevelFormat && !isLegacyMultiLevelFormat) {
+            setError(form, 'csv', ERRORS.WORTIGER.CSV.INVALID_HEADERS);
+            return;
+          }
+
+          if (isSingleLevelFormat) {
+            const hasMissingValues = cleaned.some(
+              row => !((row[dateIndex] ?? '').trim()) || !((row[singleWordIndex] ?? '').trim()),
+            );
+            if (hasMissingValues) {
+              setError(form, 'csv', ERRORS.WORTIGER.CSV.MISSING_VALUES);
+              return;
+            }
+
+            const lengths = Array.from(
+              new Set(cleaned.map(row => (row[singleWordIndex] ?? '').trim().length).filter(Boolean)),
+            );
+            if (lengths.length !== 1 || !isWortigerLength(lengths[0])) {
+              setError(form, 'csv', ERRORS.WORTIGER.CSV.MIXED_WORD_LENGTHS);
+              return;
+            }
+
+            resultsDataBody = cleaned.map(row => [
+              (row[dateIndex] ?? '').trim(),
+              (row[singleWordIndex] ?? '').trim(),
+            ]);
+            return;
+          }
+
+          const transformed = cleaned.map(row => [
+            (row[dateIndex] ?? '').trim(),
+            ...(WORTIGER_LENGTHS.map(len => (row[levelIndexByLength[len]] ?? '').trim()) as string[]),
+          ]);
+
+          const hasMissingDate = transformed.some(row => !row[0]);
+          if (hasMissingDate) {
+            setError(form, 'csv', ERRORS.WORTIGER.CSV.MISSING_DATE);
+            return;
+          }
+
+          const hasRowsWithoutWords = transformed.some(([, ...words]) => words.every(word => !word));
+          if (hasRowsWithoutWords) {
+            setError(form, 'csv', ERRORS.WORTIGER.CSV.NO_WORDS_IN_ROW);
+            return;
+          }
+
+          resultsDataBody = transformed;
+          return;
         }
 
         resultsDataBody = [];

@@ -49,12 +49,21 @@ export const ERRORS = {
     WORD_TOO_SHORT: 'Das Wort ist nicht lang genug.',
     WORD_TOO_LONG: 'Das Wort ist zu lang.',
     DUPLICATE_WORDS: 'Die Wörter müssen eindeutig sein.',
+    LEVEL_DATE_TAKEN: 'Für dieses Level gibt es an diesem Veröffentlichungsdatum bereits ein Wort.',
     SOLUTION: {
       REQUIRED: 'Die Lösung darf nicht leer sein.',
       TAKEN: 'Diese Lösung ist bereits vergeben.',
     },
     CSV: {
-      NUMBER_OF_COLUMNS: 'Die CSV Datei muss genau 5 Spalten haben.',
+      NUMBER_OF_COLUMNS:
+        'Die CSV Datei muss entweder 2 Spalten (Datum und Wort) oder 5 Spalten (Release_Date, Level_4-7) haben.',
+      MISSING_VALUES: 'Jede Zeile muss ein Datum und ein Wort enthalten.',
+      MISSING_DATE: 'Jede Zeile muss ein Datum enthalten.',
+      NO_WORDS_IN_ROW: 'Jede Zeile muss mindestens ein Wort enthalten.',
+      MIXED_WORD_LENGTHS:
+        'Die CSV darf nur ein einzelnes Level enthalten (alle Wörter müssen gleich lang sein: 4, 5, 6 oder 7 Zeichen).',
+      INVALID_HEADERS:
+        'Wortiger CSV Header ungültig. Erlaubt: Datum+Wort oder Release_Date+Level_4+Level_5+Level_6+Level_7.',
     },
   },
   ECKCHEN: {
