@@ -8,7 +8,6 @@
   import ViewNavigation from '$components/ViewNavigation.svelte';
   import IconHandler from '$components/icons/IconHandler.svelte';
   import WortigerBulkEditor from '$components/games/wortiger/WortigerBulkEditor.svelte';
-  import { WORTIGER_LENGTHS } from '$lib/games/wortiger';
   import { CONFIG_GAMES } from '$config/games.config';
 
   type Props = {
@@ -48,6 +47,7 @@
   );
 
   const csvResultsRenderMode = $derived(CSV_RESULTS_RENDER_MODE[data.gameType]);
+
 </script>
 
 <ViewWrapper>
@@ -59,7 +59,7 @@
       gameName={data.gameType}
     />
     <div class="flex items-center justify-between gap-z-ds-8">
-      {#each ACTIONS as action}
+      {#each ACTIONS as action (action.name)}
         <button
           // add hidden if action.name === 'csv' && !canCSV
           class={[
@@ -98,7 +98,6 @@
           {data}
           bind:beginning_option
           bind:resultsDataBody
-          levels={WORTIGER_LENGTHS}
         />
       {/if}
     {:else}
