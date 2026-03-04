@@ -67,6 +67,7 @@ export const getPostgrestErrorMessage = (error: unknown, fallback = 'Unknown err
 
 export const pg = {
   eq: (value: string | number | boolean) => `eq.${value}`,
+  in: (values: Array<string | number>) => `in.(${values.join(',')})`,
   order: (column: string, direction: 'asc' | 'desc') => `${column}.${direction}`,
 };
 
