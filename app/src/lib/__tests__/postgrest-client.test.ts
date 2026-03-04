@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildQueryParams, requestPostgrest } from '$lib/postgrest-client';
+import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
 
 describe('postgrest-client', () => {
   it('returns parsed JSON data on success', async () => {
@@ -116,5 +116,10 @@ describe('postgrest-client', () => {
       'https://override.test/items',
       expect.objectContaining({ method: 'GET' }),
     );
+  });
+
+  it('builds PostgREST in filters via pg.in', () => {
+    const query = buildQueryParams([['level', pg.in([1, 2, 3])]]);
+    expect(query.toString()).toBe('level=in.%281%2C2%2C3%29');
   });
 });

@@ -86,7 +86,7 @@ export async function createWortigerGame(data: GameComplete): Promise<GameComple
 export async function fetchWortigerGamesByLevels<T extends object>({
   levelIds,
   select,
-  errorMessagePrefix = 'Failed to fetch existing Wortiger games for level',
+  errorMessagePrefix = 'Failed to fetch existing Wortiger games for levels',
 }: {
   levelIds: number[];
   select: string;
@@ -95,19 +95,15 @@ export async function fetchWortigerGamesByLevels<T extends object>({
   if (levelIds.length === 0) return [];
 
   const uniqueLevelIds = Array.from(new Set(levelIds));
-  const responses = await Promise.all(
-    uniqueLevelIds.map(level =>
-      requestPostgrest<T[]>({
-        baseUrl: CONFIG_GAMES.wortiger.apiBase,
-        path: CONFIG_GAMES.wortiger.endpoints.games.name,
-        query: buildQueryParams([
-          ['select', select],
-          ['level', pg.eq(level)],
-        ]),
-        errorMessage: `${errorMessagePrefix} ${level}`,
-      }),
-    ),
-  );
+  const { data } = await requestPostgrest<T[]>({
+    baseUrl: CONFIG_GAMES.wortiger.apiBase,
+    path: CONFIG_GAMES.wortiger.endpoints.games.name,
+    query: buildQueryParams([
+      ['select', select],
+      ['level', pg.in(uniqueLevelIds)],
+    ]),
+    errorMessage: `${errorMessagePrefix} [${uniqueLevelIds.join(', ')}]`,
+  });
 
-  return responses.flatMap(({ data }) => data);
+  return data;
 }

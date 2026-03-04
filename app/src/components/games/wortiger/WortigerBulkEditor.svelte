@@ -20,6 +20,7 @@
   import { onMount } from 'svelte';
   import { isWortigerGame } from '$utils';
   import ViewNavigation from '$components/ViewNavigation.svelte';
+  import { dev } from '$app/environment';
 
   type Props = {
     data: DataProps;
@@ -27,11 +28,7 @@
     beginning_option: BeginningOptions;
   };
 
-  let {
-    data,
-    resultsDataBody = $bindable(),
-    beginning_option = $bindable(),
-  }: Props = $props();
+  let { data, resultsDataBody = $bindable(), beginning_option = $bindable() }: Props = $props();
 
   type ExistingIndex = Record<
     number,
@@ -52,7 +49,9 @@
 
     // Single-level CSV format: [date, word]
     const lengths = Array.from(new Set(inputRows.map(row => (row[1] ?? '').trim().length)));
-    return lengths.length === 1 && isWortigerLength(lengths[0] ?? 0) ? [lengths[0]] : WORTIGER_LENGTHS;
+    return lengths.length === 1 && isWortigerLength(lengths[0] ?? 0)
+      ? [lengths[0]]
+      : WORTIGER_LENGTHS;
   }
   let detectedLevels = $state<number[]>(detectLevelsFromCsvRows(resultsDataBody));
 
@@ -61,16 +60,14 @@
   let error = $state<string | null>(null);
   let existingLevelDateIndex = $state<Record<string, true>>({});
   let existingSlotsLoaded = $state(false);
-  let existingSolutionsRows = $state<Array<{ level: number; solution: string; release_date: string }>>(
-    [],
-  );
+  let existingSolutionsRows = $state<
+    Array<{ level: number; solution: string; release_date: string }>
+  >([]);
   let existingSolutionsLoaded = $state(false);
 
   /** Build warning index from DB-fetched rows (fallback to local data until loaded). */
   const existingIndex = $derived.by<ExistingIndex>(() => {
-    const idx: ExistingIndex = Object.fromEntries(
-      WORTIGER_LENGTHS.map(len => [len, new Map()]),
-    );
+    const idx: ExistingIndex = Object.fromEntries(WORTIGER_LENGTHS.map(len => [len, new Map()]));
 
     const source = existingSolutionsLoaded
       ? existingSolutionsRows
@@ -143,7 +140,9 @@
     } catch (e) {
       console.error(e);
     } finally {
-      console.log('Loaded word sets', wordSets);
+      if (dev) {
+        console.log('Loaded word sets', wordSets);
+      }
     }
   }
 
@@ -218,7 +217,7 @@
   /** Check if the value already exists in previously saved games (same length) */
   function validateAgainstExistingSolutions(
     lengthForThisColumn: number,
-    value: string = "",
+    value: string = '',
   ): string | null {
     const word = value.trim();
     if (!word) return null;
@@ -237,7 +236,7 @@
 
   /** Warn when a value repeats within the current editor table */
   function validateWithinTableDuplicates(
-    value: string = "",
+    value: string = '',
     rowIndex: number,
     colIndex: number,
   ): string | null {
@@ -263,7 +262,7 @@
   }
 
   /** Validate a row's release date against within-table duplicates */
-  function validateReleaseDate(dateStr: string = ""): string | null {
+  function validateReleaseDate(dateStr: string = ''): string | null {
     const date = dateStr.trim();
     if (!date) return null;
 
@@ -291,8 +290,8 @@
 
   function validateLevelDateConflict(
     lengthForThisColumn: number,
-    dateStr: string = "",
-    value: string = "",
+    dateStr: string = '',
+    value: string = '',
   ): string | null {
     const word = value.trim();
     const date = dateStr.trim();
@@ -307,7 +306,7 @@
       : null;
   }
 
-  let hasDateConflicts = $derived(() => rows.some((r) => !!validateReleaseDate(r[0])));
+  let hasDateConflicts = $derived(() => rows.some(r => !!validateReleaseDate(r[0])));
 
   let hasWordListViolations = $derived(() => {
     return rows.some(r => {
