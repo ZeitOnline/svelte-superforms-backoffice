@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { buildWortgeflechtPreviewFromRows, parseWortgeflechtWords, toGridRows } from '$lib/games/wortgeflecht-generator';
+import {
+  buildWortgeflechtPreviewFromRows,
+  generateWortgeflechtLayout,
+  hasSeparatedMatchingInitialWordStarts,
+  hasUnambiguousNextLetterChoices,
+  parseWortgeflechtWords,
+  toGridRows,
+} from '$lib/games/wortgeflecht-generator';
 
 describe('wortgeflecht-generator helpers', () => {
   it('parses words from multiline input and ignores empty lines', () => {
@@ -115,5 +122,126 @@ describe('wortgeflecht-generator helpers', () => {
     expect(preview.paths[0]?.word).toBe('süßlich');
     expect(preview.grid).toContain('ß');
     expect((preview.paths[0]?.cells.length ?? 0) > 0).toBe(true);
+  });
+
+  it('rejects neighboring starts for words with the same initial', () => {
+    expect(
+      hasSeparatedMatchingInitialWordStarts([
+        {
+          word: 'Reck',
+          cells: [
+            { x: 0, y: 0, letter: 'R' },
+            { x: 0, y: 1, letter: 'E' },
+          ],
+        },
+        {
+          word: 'Ringe',
+          cells: [
+            { x: 1, y: 0, letter: 'R' },
+            { x: 2, y: 0, letter: 'I' },
+          ],
+        },
+      ]),
+    ).toBe(false);
+
+    expect(
+      hasSeparatedMatchingInitialWordStarts([
+        {
+          word: 'Reck',
+          cells: [
+            { x: 0, y: 0, letter: 'R' },
+            { x: 0, y: 1, letter: 'E' },
+          ],
+        },
+        {
+          word: 'Ringe',
+          cells: [
+            { x: 3, y: 3, letter: 'R' },
+            { x: 4, y: 3, letter: 'I' },
+          ],
+        },
+      ]),
+    ).toBe(true);
+  });
+
+  it('never returns a generated layout with neighboring same-initial starts', () => {
+    const words = ['rabatten', 'ringelnd', 'kompasse', 'blutader', 'dachform', 'zeitungx'];
+    const generated = generateWortgeflechtLayout({ words, attempts: 200 });
+
+    expect(generated === null || hasSeparatedMatchingInitialWordStarts(generated.paths)).toBe(true);
+  });
+
+  it('still finds a layout for the walz/wanderbuch sample set', () => {
+    const words = ['walz', 'wanderbuch', 'stenz', 'kluft', 'geselle', 'handwerk', 'schallern'];
+    const generated = generateWortgeflechtLayout({ words, attempts: 200 });
+
+    expect(generated).not.toBeNull();
+    expect(hasSeparatedMatchingInitialWordStarts(generated?.paths ?? [])).toBe(true);
+    expect(hasUnambiguousNextLetterChoices(generated?.paths ?? [])).toBe(true);
+  });
+
+  it('rejects paths where the next letter could be taken from another word', () => {
+    expect(
+      hasUnambiguousNextLetterChoices([
+        {
+          word: 'walz',
+          cells: [
+            { x: 0, y: 0, letter: 'w' },
+            { x: 1, y: 0, letter: 'a' },
+            { x: 2, y: 0, letter: 'l' },
+            { x: 3, y: 0, letter: 'z' },
+          ],
+        },
+        {
+          word: 'wa',
+          cells: [
+            { x: 0, y: 2, letter: 'w' },
+            { x: 0, y: 1, letter: 'a' },
+          ],
+        },
+      ]),
+    ).toBe(false);
+
+    expect(
+      hasUnambiguousNextLetterChoices([
+        {
+          word: 'walz',
+          cells: [
+            { x: 0, y: 0, letter: 'w' },
+            { x: 1, y: 0, letter: 'a' },
+            { x: 2, y: 0, letter: 'l' },
+            { x: 3, y: 0, letter: 'z' },
+          ],
+        },
+        {
+          word: 'wa',
+          cells: [
+            { x: 5, y: 2, letter: 'w' },
+            { x: 5, y: 3, letter: 'a' },
+          ],
+        },
+      ]),
+    ).toBe(true);
+
+    expect(
+      hasUnambiguousNextLetterChoices([
+        {
+          word: 'walz',
+          cells: [
+            { x: 0, y: 0, letter: 'w' },
+            { x: 1, y: 0, letter: 'a' },
+            { x: 2, y: 0, letter: 'l' },
+            { x: 3, y: 0, letter: 'z' },
+          ],
+        },
+        {
+          word: 'le',
+          cells: [
+            { x: 1, y: 1, letter: 'l' },
+            { x: 2, y: 1, letter: 'e' },
+          ],
+        },
+      ]),
+    ).toBe(false);
   });
 });
