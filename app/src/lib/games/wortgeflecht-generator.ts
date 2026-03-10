@@ -93,12 +93,12 @@ export const prioritizeWordsForPlacement = (words: string[]) => {
     .map((word, index) => ({ word, index }))
     .sort((a, b) => {
       const initialDiff = (initialCounts.get(initialKey(b.word)) ?? 0) - (initialCounts.get(initialKey(a.word)) ?? 0);
-    if (initialDiff !== 0) return initialDiff;
+      if (initialDiff !== 0) return initialDiff;
 
       const prefixA = Array.from(a.word.trim()).slice(0, 2).join('').toLocaleLowerCase('de-DE');
       const prefixB = Array.from(b.word.trim()).slice(0, 2).join('').toLocaleLowerCase('de-DE');
-    const prefixDiff = (prefixCounts.get(prefixB) ?? 0) - (prefixCounts.get(prefixA) ?? 0);
-    if (prefixDiff !== 0) return prefixDiff;
+      const prefixDiff = (prefixCounts.get(prefixB) ?? 0) - (prefixCounts.get(prefixA) ?? 0);
+      if (prefixDiff !== 0) return prefixDiff;
 
       if (b.word.length !== a.word.length) return b.word.length - a.word.length;
 
@@ -106,6 +106,8 @@ export const prioritizeWordsForPlacement = (words: string[]) => {
     })
     .map(entry => entry.word);
 };
+
+const prioritizeWordsWithRandomTies = (words: string[]) => prioritizeWordsForPlacement(shuffle(words.slice()));
 
 const createGraph = (): Graph => {
   const graph: Graph = {
@@ -493,7 +495,7 @@ const placeWordsSubsets = (words: string[], graph: Graph | null = null): Graph |
         hasSeparatedMatchingInitialWordStarts(candidatePaths) &&
         hasUnambiguousNextLetterChoices(candidatePaths);
       if (valid) {
-        result = placeWordsSubsets(prioritizeWordsForPlacement(shuffle(selected.words.slice(1))), islandGraph);
+        result = placeWordsSubsets(prioritizeWordsWithRandomTies(selected.words.slice(1)), islandGraph);
       }
 
       if (!valid || !result) {
@@ -540,7 +542,7 @@ export const generateWortgeflechtLayout = ({
   for (let i = 0; i < attempts; i++) {
     // `placeWordsSubsets` already enforces the placement invariants while constructing
     // the solution, so we can use the returned graph directly here.
-    const graph = placeWordsSubsets(prioritizeWordsForPlacement(shuffle(words.slice())));
+    const graph = placeWordsSubsets(prioritizeWordsWithRandomTies(words), null);
     if (!graph) continue;
     const grid = gridFromWords(graph.words);
     const rows: WortgeflechtLetterRow[] = [];
