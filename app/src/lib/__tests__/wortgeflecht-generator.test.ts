@@ -9,6 +9,9 @@ import {
   toGridRows,
 } from '$lib/games/wortgeflecht-generator';
 
+// A deterministic PRNG for testing purposes, based on the Mulberry32 algorithm.
+// Always returns the same sequence, which
+// makes a randomized test reproducible and avoids flaky CI failures.
 const mulberry32 = (seed: number) => {
   let state = seed >>> 0;
 
