@@ -5,6 +5,7 @@ import {
   hasSeparatedMatchingInitialWordStarts,
   hasUnambiguousNextLetterChoices,
   parseWortgeflechtWords,
+  prioritizeWordsForPlacement,
   toGridRows,
 } from '$lib/games/wortgeflecht-generator';
 
@@ -27,6 +28,11 @@ describe('wortgeflecht-generator helpers', () => {
     const parsed = parseWortgeflechtWords('TEST\nAB-12\nÖL');
 
     expect(parsed.invalidWords).toEqual(['AB-12']);
+  });
+
+  it('preserves caller order for words with equal placement priority', () => {
+    const ordered = prioritizeWordsForPlacement(['abdd', 'abca', 'abcb']);
+    expect(ordered).toEqual(['abdd', 'abca', 'abcb']);
   });
 
   it('converts a 48-cell array into 8 rows with 6 columns each', () => {

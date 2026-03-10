@@ -76,7 +76,7 @@ const sum = (values: number[]) => values.reduce((acc, value) => acc + value, 0);
 
 const initialKey = (word: string) => Array.from(word.trim())[0]?.toLocaleLowerCase('de-DE') ?? '';
 
-const prioritizeWordsForPlacement = (words: string[]) => {
+export const prioritizeWordsForPlacement = (words: string[]) => {
   const initialCounts = new Map<string, number>();
   const prefixCounts = new Map<string, number>();
 
@@ -87,19 +87,24 @@ const prioritizeWordsForPlacement = (words: string[]) => {
     prefixCounts.set(prefix, (prefixCounts.get(prefix) ?? 0) + 1);
   }
 
-  return [...words].sort((a, b) => {
-    const initialDiff = (initialCounts.get(initialKey(b)) ?? 0) - (initialCounts.get(initialKey(a)) ?? 0);
+  // Preserve the incoming order for equally-constrained words so callers can
+  // inject randomness up front (for example via `shuffle(...)`).
+  return words
+    .map((word, index) => ({ word, index }))
+    .sort((a, b) => {
+      const initialDiff = (initialCounts.get(initialKey(b.word)) ?? 0) - (initialCounts.get(initialKey(a.word)) ?? 0);
     if (initialDiff !== 0) return initialDiff;
 
-    const prefixA = Array.from(a.trim()).slice(0, 2).join('').toLocaleLowerCase('de-DE');
-    const prefixB = Array.from(b.trim()).slice(0, 2).join('').toLocaleLowerCase('de-DE');
+      const prefixA = Array.from(a.word.trim()).slice(0, 2).join('').toLocaleLowerCase('de-DE');
+      const prefixB = Array.from(b.word.trim()).slice(0, 2).join('').toLocaleLowerCase('de-DE');
     const prefixDiff = (prefixCounts.get(prefixB) ?? 0) - (prefixCounts.get(prefixA) ?? 0);
     if (prefixDiff !== 0) return prefixDiff;
 
-    if (b.length !== a.length) return b.length - a.length;
+      if (b.word.length !== a.word.length) return b.word.length - a.word.length;
 
-    return a.localeCompare(b, 'de-DE', { sensitivity: 'base' });
-  });
+      return a.index - b.index;
+    })
+    .map(entry => entry.word);
 };
 
 const createGraph = (): Graph => {
