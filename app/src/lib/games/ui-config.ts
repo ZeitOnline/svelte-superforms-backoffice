@@ -47,8 +47,8 @@ export const GAME_UI_CONFIG: GameUiConfig[] = [
     href: '/eckchen',
     logo: EckchenLogo,
     status: {
-      tag: 'under maintenance',
-      color: 'gray',
+      tag: 'live',
+      color: 'green',
     },
   },
   {
