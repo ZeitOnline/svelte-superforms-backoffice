@@ -17,11 +17,13 @@ import {
   saveWortgeflechtGameFormSchema,
 } from '$schemas/wortgeflecht';
 
+export const PRODUCTION_URL = 'https://spiele.zeit.de';
+export const STAGING_URL = 'https://spiele.staging.zeit.de';
+
 export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   eckchen: {
     label: 'eckchen',
     apiBase: '/backoffice/api/eckchen',
-    productionUrl: 'https://spiele.zeit.de/eckchen',
     endpoints: {
       games: {
         name: 'game',
@@ -104,7 +106,6 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         name: 'wortliste',
       },
     },
-    productionUrl: 'https://spiele.zeit.de/wortiger',
     schemas: {
       generateGameSchema: generateWortigerGameSchema as unknown as ZodValidationSchema,
       saveGameFormSchema: saveWortigerGameFormSchema as unknown as ZodValidationSchema,
@@ -180,7 +181,6 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
       },
       solutions: { name: 'game_solution' },
     },
-    productionUrl: 'https://spiele.zeit.de/spelling-bee',
     schemas: {
       generateGameSchema: generateSpellingBeeGameSchema as unknown as ZodValidationSchema,
       saveGameFormSchema: saveSpellingBeeGameFormSchema as unknown as ZodValidationSchema,
@@ -250,7 +250,6 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
   wortgeflecht: {
     label: 'wortgeflecht',
     apiBase: '/backoffice/api/wortgeflecht',
-    productionUrl: 'https://spiele.zeit.de/wortgeflecht',
     endpoints: {
       games: {
         name: 'game',
