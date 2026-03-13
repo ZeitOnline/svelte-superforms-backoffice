@@ -74,6 +74,41 @@ const intersection = <T>(a: T[], b: T[]) => {
 
 const sum = (values: number[]) => values.reduce((acc, value) => acc + value, 0);
 
+const initialKey = (word: string) => Array.from(word.trim())[0]?.toLocaleLowerCase('de-DE') ?? '';
+
+export const prioritizeWordsForPlacement = (words: string[]) => {
+  const initialCounts = new Map<string, number>();
+  const prefixCounts = new Map<string, number>();
+
+  for (const word of words) {
+    const initial = initialKey(word);
+    const prefix = Array.from(word.trim()).slice(0, 2).join('').toLocaleLowerCase('de-DE');
+    initialCounts.set(initial, (initialCounts.get(initial) ?? 0) + 1);
+    prefixCounts.set(prefix, (prefixCounts.get(prefix) ?? 0) + 1);
+  }
+
+  // Preserve the incoming order for equally-constrained words so callers can
+  // inject randomness up front (for example via `shuffle(...)`).
+  return words
+    .map((word, index) => ({ word, index }))
+    .sort((a, b) => {
+      const initialDiff = (initialCounts.get(initialKey(b.word)) ?? 0) - (initialCounts.get(initialKey(a.word)) ?? 0);
+      if (initialDiff !== 0) return initialDiff;
+
+      const prefixA = Array.from(a.word.trim()).slice(0, 2).join('').toLocaleLowerCase('de-DE');
+      const prefixB = Array.from(b.word.trim()).slice(0, 2).join('').toLocaleLowerCase('de-DE');
+      const prefixDiff = (prefixCounts.get(prefixB) ?? 0) - (prefixCounts.get(prefixA) ?? 0);
+      if (prefixDiff !== 0) return prefixDiff;
+
+      if (b.word.length !== a.word.length) return b.word.length - a.word.length;
+
+      return a.index - b.index;
+    })
+    .map(entry => entry.word);
+};
+
+const prioritizeWordsWithRandomTies = (words: string[]) => prioritizeWordsForPlacement(shuffle(words.slice()));
+
 const createGraph = (): Graph => {
   const graph: Graph = {
     nodes: {} as Record<NodeId, GraphNode>,
@@ -274,12 +309,90 @@ const gridFromWords = (wordPaths: Record<string, NodeId[]>) => {
   return grid;
 };
 
+const isAdjacent = (a: number, b: number) => {
+  const ax = a % GRID_WIDTH;
+  const ay = Math.floor(a / GRID_WIDTH);
+  const bx = b % GRID_WIDTH;
+  const by = Math.floor(b / GRID_WIDTH);
+  return Math.abs(ax - bx) <= 1 && Math.abs(ay - by) <= 1 && !(ax === bx && ay === by);
+};
+
+export const hasSeparatedMatchingInitialWordStarts = (
+  paths: Array<Pick<WortgeflechtWordPath, 'word' | 'cells'>>,
+) => {
+  const startsByInitial = new Map<string, number[]>();
+
+  for (const path of paths) {
+    const start = path.cells[0];
+    const initial = Array.from(path.word.trim())[0]?.toLocaleLowerCase('de-DE') ?? '';
+    if (!start || !initial) continue;
+
+    const startIndex = start.y * GRID_WIDTH + start.x;
+    const existingStarts = startsByInitial.get(initial) ?? [];
+    if (existingStarts.some(existing => isAdjacent(existing, startIndex))) {
+      return false;
+    }
+
+    existingStarts.push(startIndex);
+    startsByInitial.set(initial, existingStarts);
+  }
+
+  return true;
+};
+
+const gridFromPaths = (paths: Array<Pick<WortgeflechtWordPath, 'cells'>>) => {
+  const grid = EMPTY_GRID.slice();
+
+  for (const path of paths) {
+    for (const cell of path.cells) {
+      const index = cell.y * GRID_WIDTH + cell.x;
+      grid[index] = cell.letter || '\u00A0';
+    }
+  }
+
+  return grid;
+};
+
+export const hasUnambiguousNextLetterChoices = (
+  paths: Array<Pick<WortgeflechtWordPath, 'word' | 'cells'>>,
+) => {
+  const grid = gridFromPaths(paths);
+
+  for (const path of paths) {
+    const indices = path.cells.map(cell => cell.y * GRID_WIDTH + cell.x);
+    const letters = Array.from(path.word);
+
+    for (let i = 0; i < indices.length - 1; i++) {
+      const currentIndex = indices[i];
+      const intendedNextIndex = indices[i + 1];
+      const nextLetter = path.cells[i + 1]?.letter || letters[i + 1] || '';
+      if (currentIndex === undefined || intendedNextIndex === undefined || !nextLetter) continue;
+
+      const prefix = indices.slice(0, i + 1);
+      const matches = getFreeNeighbors(currentIndex, prefix).filter(index => grid[index] === nextLetter);
+
+      if (matches.length !== 1 || matches[0] !== intendedNextIndex) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+};
+
 const placeWord = (word: string, path: NodeId[], graph: Graph): NodeId[] | false => {
   const availableNodes = difference(Object.keys(graph.nodes) as NodeId[], graph.visited, path);
   let neighbors = [];
   if (path.length === 0) {
+    const blockedStarts = Object.entries(graph.words)
+      .filter(([existingWord]) => initialKey(existingWord) === initialKey(word))
+      .map(([, existingPath]) => toIndex(existingPath[0] as NodeId));
     // Prefer start nodes that can still fit the whole word in this graph component.
-    const possible = availableNodes.filter(n => (graph.longest?.[n] ?? 0) >= word.length);
+    const possible = availableNodes.filter(n => {
+      if ((graph.longest?.[n] ?? 0) < word.length) return false;
+      const candidateIndex = toIndex(n);
+      return !blockedStarts.some(existingIndex => isAdjacent(existingIndex, candidateIndex));
+    });
     const candidate = randomFrom(possible);
     if (!candidate) return false;
     neighbors.push(candidate);
@@ -366,13 +479,23 @@ const placeWordsSubsets = (words: string[], graph: Graph | null = null): Graph |
       islandGraph.visited = unique([...islandGraph.visited, ...path]);
 
       const candidateWords = { ...graph.words, ...islandGraph.words };
+      const candidatePaths = Object.entries(candidateWords).map(([candidateWord, candidatePath]) => ({
+        word: candidateWord,
+        cells: candidatePath.map((node, index) => ({
+          x: Number(node[1]),
+          y: Number(node[2]),
+          letter: candidateWord[index] ?? '',
+        })),
+      }));
       // Validate the current partial layout before continuing recursion.
       // If it breaks the rules, stop here instead of exploring this branch further.
       const valid =
         isWordPlacementUnique(gridFromWords(candidateWords), Object.keys(candidateWords)) &&
-        hasOnlyIntendedSameLetterAdjacency(candidateWords, graph);
+        hasOnlyIntendedSameLetterAdjacency(candidateWords, graph) &&
+        hasSeparatedMatchingInitialWordStarts(candidatePaths) &&
+        hasUnambiguousNextLetterChoices(candidatePaths);
       if (valid) {
-        result = placeWordsSubsets(shuffle(selected.words.slice(1)), islandGraph);
+        result = placeWordsSubsets(prioritizeWordsWithRandomTies(selected.words.slice(1)), islandGraph);
       }
 
       if (!valid || !result) {
@@ -419,7 +542,7 @@ export const generateWortgeflechtLayout = ({
   for (let i = 0; i < attempts; i++) {
     // `placeWordsSubsets` already enforces the placement invariants while constructing
     // the solution, so we can use the returned graph directly here.
-    const graph = placeWordsSubsets(shuffle(words.slice()));
+    const graph = placeWordsSubsets(prioritizeWordsWithRandomTies(words), null);
     if (!graph) continue;
     const grid = gridFromWords(graph.words);
     const rows: WortgeflechtLetterRow[] = [];
@@ -453,6 +576,14 @@ export const generateWortgeflechtLayout = ({
       continue;
     }
 
+    if (!hasSeparatedMatchingInitialWordStarts(orderedPaths)) {
+      continue;
+    }
+
+    if (!hasUnambiguousNextLetterChoices(orderedPaths)) {
+      continue;
+    }
+
     return { grid, rows, paths: orderedPaths };
   }
   return null;
@@ -468,14 +599,6 @@ export const toGridRows = (grid: string[]) => {
     rows.push(row);
   }
   return rows;
-};
-
-const isAdjacent = (a: number, b: number) => {
-  const ax = a % GRID_WIDTH;
-  const ay = Math.floor(a / GRID_WIDTH);
-  const bx = b % GRID_WIDTH;
-  const by = Math.floor(b / GRID_WIDTH);
-  return Math.abs(ax - bx) <= 1 && Math.abs(ay - by) <= 1 && !(ax === bx && ay === by);
 };
 
 export const buildWortgeflechtPreviewFromRows = (rows: WortgeflechtLetterRow[]) => {

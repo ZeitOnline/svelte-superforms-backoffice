@@ -293,7 +293,7 @@
 
     isGenerating = true;
     try {
-      const generated = generateWortgeflechtLayout({ words: validation.parsed.words, attempts: 50 });
+      const generated = generateWortgeflechtLayout({ words: validation.parsed.words, attempts: 200 });
       if (!generated) {
         generatorError =
           'Kein valides Gitter gefunden. Bitte Wortliste prüfen oder erneut auf "Generieren" klicken.';
