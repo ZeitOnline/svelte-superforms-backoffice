@@ -25,7 +25,7 @@
   import { CloseIcon, EyeIcon, TickIcon } from './icons';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { CONFIG_GAMES } from '../config/games.config';
+  import { CONFIG_GAMES, PRODUCTION_URL, STAGING_URL } from '../config/games.config';
   import { spellingBeeStore, toggleLegend } from '$stores/spelling-bee-word.svelte';
   import WortigerLevelTabs from '$components/games/wortiger/WortigerLevelTabs.svelte';
   import HighlightedText from '$components/HighlightedText.svelte';
@@ -40,6 +40,10 @@
   let { games, gameName, gamesPage, latestActiveGameIds }: Props = $props();
 
   const currentGameConfig = $derived(CONFIG_GAMES[gameName]);
+  const environmentURL = $derived( window.location.hostname.includes('staging') ||
+    window.location.hostname === 'localhost'
+      ? STAGING_URL
+      : PRODUCTION_URL);
   const normalizedGamesPage = $derived({
     page: gamesPage.page ?? 1,
     totalPages: gamesPage.totalPages ?? 1,
@@ -321,11 +325,12 @@
                         title="In der Datenbank aktiv"
                       />
                       {#if isOneOfTwentyLatestActiveGames}
+                        {@const liveViewUrl = `${environmentURL}/${gameName}/#${item.id}`}
                         <a
                           title={`Das Spiel mit ID ${item.id} im ${currentGameConfig.label} anschauen`}
                           target="_blank"
                           rel="nofollow noopener"
-                          href={`${currentGameConfig.productionUrl}/#${item.id}`}
+                          href={liveViewUrl}
                         >
                           <EyeIcon extraClasses="text-black w-5 h-5" />
                         </a>
