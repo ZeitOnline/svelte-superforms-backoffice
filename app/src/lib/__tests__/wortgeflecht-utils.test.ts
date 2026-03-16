@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  analyzeWortgeflechtGenerationInput,
   hasSameWordSetForWortgeflecht,
   normalizeWortgeflechtWordLines,
   normalizeWortgeflechtWordLineValue,
@@ -88,5 +89,28 @@ describe('wortgeflecht-utils', () => {
     ];
     const result = validateWortgeflechtGenerationInput(withDuplicate);
     expect(result.error).toBe('Doppelte Wörter sind nicht erlaubt.');
+  });
+
+  it('collects duplicate words case-insensitively for live feedback', () => {
+    const result = analyzeWortgeflechtGenerationInput(['Abcd', ' efgh ', 'abcd', '']);
+    expect(result.duplicateWords).toEqual(['Abcd']);
+  });
+
+  it('rejects generation input with words shorter than four letters', () => {
+    const result = validateWortgeflechtGenerationInput([
+      'ABCDE',
+      'FGH',
+      'IJKL',
+      'MNOP',
+      'QRST',
+      'UVWX',
+      'YZAB',
+      'CDEF',
+      'GHIJ',
+      'KLMN',
+      'OPQR',
+      'STUV',
+    ]);
+    expect(result.error).toBe('Jedes Wort muss mindestens 4 Buchstaben haben.');
   });
 });
