@@ -1,6 +1,8 @@
 import { CONFIG_GAMES } from '../../config/games.config';
 import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
 
+const normalizeStoredWord = (value: string) => value.trim().toLocaleLowerCase('de-DE');
+
 const fetchWortgeflechtGameIdentityById = async (id: number) =>
   requestPostgrest<Array<{ id: number; game_id: string }>>({
     baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
@@ -197,14 +199,14 @@ export const replaceWortgeflechtLettersByGameId = async ({
 
   if (rows.length === 0) return;
 
-  const uniqueWords = Array.from(new Set(rows.map(r => r.word.trim())));
+  const uniqueWords = Array.from(new Set(rows.map(r => normalizeStoredWord(r.word))));
   const wordsPayload = uniqueWords.map(word => ({ game_id: gameId, word }));
 
   const { data: insertedWords } = await insertGameWords(wordsPayload);
-  const wordIdByWord = new Map(insertedWords.map(w => [w.word, w.id]));
+  const wordIdByWord = new Map(insertedWords.map(w => [normalizeStoredWord(w.word), w.id]));
 
   const lettersPayload = rows.map(r => {
-    const wordId = wordIdByWord.get(r.word.trim());
+    const wordId = wordIdByWord.get(normalizeStoredWord(r.word));
     if (!wordId) {
       throw new Error(`Word id missing for "${r.word}"`);
     }

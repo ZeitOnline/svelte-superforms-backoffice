@@ -9,8 +9,8 @@ import {
 import type { WortgeflechtLetterRow } from '$lib/games/wortgeflecht';
 
 describe('wortgeflecht-utils', () => {
-  it('keeps single line input unchanged (preserve ß)', () => {
-    expect(normalizeWortgeflechtWordLineValue('süßlich')).toBe('süßlich');
+  it('normalizes input to lowercase while preserving ß', () => {
+    expect(normalizeWortgeflechtWordLineValue('SÜẞLICH')).toBe('süßlich');
   });
 
   it('normalizes row list to keep one trailing empty line', () => {

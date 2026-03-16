@@ -3,7 +3,7 @@ import { parseWortgeflechtWords } from '$lib/games/wortgeflecht-generator';
 
 const MIN_WORTGEFLECHT_WORD_LENGTH = 4;
 
-export const normalizeWortgeflechtWordLineValue = (value: string) => value;
+export const normalizeWortgeflechtWordLineValue = (value: string) => value.toLocaleLowerCase('de-DE');
 export const normalizeWortgeflechtWordKey = (value: string) => value.trim().toLocaleLowerCase('de-DE');
 
 const getUniqueWordsByKey = (words: string[]) => {

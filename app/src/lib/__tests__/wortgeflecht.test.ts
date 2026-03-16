@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   fetchWortgeflechtLettersByGameId,
+  replaceWortgeflechtLettersByGameId,
   sortWortgeflechtRowsByWordThenLetter,
   type WortgeflechtLetterRow,
 } from '$lib/games/wortgeflecht';
@@ -70,5 +71,56 @@ describe('wortgeflecht helpers', () => {
       { word: 'wasser', letter: 'a', cx: 6, cy: 1 },
       { word: 'wasser', letter: 's', cx: 8, cy: 2 },
     ]);
+  });
+
+  it('normalizes words to lowercase before inserting wortgeflecht rows', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response('[]', { status: 200, headers: { 'content-type': 'application/json' } }),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify([{ id: 21, word: 'süßlich' }]), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await replaceWortgeflechtLettersByGameId({
+      gameId: '00000000-0000-0000-0000-000000000001',
+      rows: [
+        { word: 'SÜẞLICH', letter: 's', cx: 1, cy: 1 },
+        { word: 'SÜẞLICH', letter: 'ü', cx: 1, cy: 2 },
+      ],
+    });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      expect.stringContaining('/game_word'),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify([
+          {
+            game_id: '00000000-0000-0000-0000-000000000001',
+            word: 'süßlich',
+          },
+        ]),
+      }),
+    );
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      expect.stringContaining('/game_letter'),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify([
+          { word_id: 21, letter: 's', cx: 1, cy: 1 },
+          { word_id: 21, letter: 'ü', cx: 1, cy: 2 },
+        ]),
+      }),
+    );
   });
 });
