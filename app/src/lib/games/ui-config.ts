@@ -71,8 +71,8 @@ export const GAME_UI_CONFIG: GameUiConfig[] = [
     href: '/wortgeflecht',
     logo: WortgeflechtLogo,
     status: {
-      tag: 'coming soon',
-      color: 'gray',
+      tag: 'live',
+      color: 'green',
     },
   },
 ];
