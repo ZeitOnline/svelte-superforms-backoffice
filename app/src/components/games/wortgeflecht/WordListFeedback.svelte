@@ -5,6 +5,8 @@
     wordCount: number;
     totalLetters: number;
     invalidInputWords: string[];
+    duplicateInputWords: string[];
+    tooShortInputWords: string[];
     generatorError: string | null;
     rowsError: string | null;
     isGenerating: boolean;
@@ -16,6 +18,8 @@
     wordCount,
     totalLetters,
     invalidInputWords,
+    duplicateInputWords,
+    tooShortInputWords,
     generatorError,
     rowsError,
     isGenerating,
@@ -30,6 +34,16 @@
 {#if invalidInputWords.length > 0}
   <p class="text-red-600 text-sm mt-z-ds-8">
     Ungültige Einträge: {invalidInputWords.join(', ')}
+  </p>
+{/if}
+{#if duplicateInputWords.length > 0}
+  <p class="text-red-600 text-sm mt-z-ds-8">
+    Doppelte Wörter: {duplicateInputWords.join(', ')}
+  </p>
+{/if}
+{#if tooShortInputWords.length > 0}
+  <p class="text-red-600 text-sm mt-z-ds-8">
+    Zu kurze Wörter (mind. 4 Buchstaben): {tooShortInputWords.join(', ')}
   </p>
 {/if}
 {#if generatorError}
