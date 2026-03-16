@@ -7,6 +7,8 @@
     wordCount: number;
     totalLetters: number;
     invalidInputWords: string[];
+    duplicateInputWords: string[];
+    tooShortInputWords: string[];
     generatorError: string | null;
     rowsError: string | null;
     isGenerating: boolean;
@@ -43,6 +45,8 @@
     wordCount={state.wordCount}
     totalLetters={state.totalLetters}
     invalidInputWords={state.invalidInputWords}
+    duplicateInputWords={state.duplicateInputWords}
+    tooShortInputWords={state.tooShortInputWords}
     generatorError={state.generatorError}
     rowsError={state.rowsError}
     isGenerating={state.isGenerating}

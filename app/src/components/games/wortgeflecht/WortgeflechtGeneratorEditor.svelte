@@ -37,6 +37,8 @@
     wordCount: number;
     totalLetters: number;
     invalidInputWords: string[];
+    duplicateInputWords: string[];
+    tooShortInputWords: string[];
     generatorError: string | null;
     rowsError: string | null;
     isGenerating: boolean;
@@ -56,6 +58,8 @@
     wordCount,
     totalLetters,
     invalidInputWords,
+    duplicateInputWords,
+    tooShortInputWords,
     generatorError,
     rowsError,
     isGenerating,
@@ -110,6 +114,8 @@
       wordCount,
       totalLetters,
       invalidInputWords,
+      duplicateInputWords,
+      tooShortInputWords,
       generatorError,
       rowsError,
       isGenerating,

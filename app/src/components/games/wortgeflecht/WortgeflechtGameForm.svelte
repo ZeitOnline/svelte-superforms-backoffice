@@ -25,11 +25,11 @@
   import {
     buildWortgeflechtPreviewFromRows,
     generateWortgeflechtLayout,
-    parseWortgeflechtWords,
     toGridRows,
     type WortgeflechtWordPath,
   } from '$lib/games/wortgeflecht-generator';
   import {
+    analyzeWortgeflechtGenerationInput,
     hasSameWordSetForWortgeflecht,
     normalizeWortgeflechtWordKey,
     normalizeWortgeflechtWordLines,
@@ -77,6 +77,8 @@
   let wordLines = $state<string[]>(['']);
   let generatorError = $state<string | null>(null);
   let invalidInputWords = $state<string[]>([]);
+  let duplicateInputWords = $state<string[]>([]);
+  let tooShortInputWords = $state<string[]>([]);
   let totalLetters = $state(0);
   let wordCount = $state(0);
   let isGenerating = $state(false);
@@ -107,11 +109,24 @@
       ]),
     ),
   );
+  const invalidWordKeys = $derived(
+    new Set(
+      [...invalidInputWords, ...duplicateInputWords, ...tooShortInputWords]
+        .map(normalizeWortgeflechtWordKey)
+        .filter(Boolean),
+    ),
+  );
 
   function getWordRowStyle(line: string) {
     const key = normalizeWortgeflechtWordKey(line);
     if (!key) return '';
-    return wordStyleByWord.get(key) ?? '';
+    const styles = [];
+    const baseStyle = wordStyleByWord.get(key);
+    if (baseStyle) styles.push(baseStyle);
+    if (invalidWordKeys.has(key)) {
+      styles.push('outline: 2px solid #dc2626; outline-offset: -2px;');
+    }
+    return styles.join(' ');
   }
 
   // svelte-ignore state_referenced_locally
@@ -240,10 +255,13 @@
   }
 
   function refreshWordStats() {
-    const parsed = parseWortgeflechtWords(wordLines.join('\n'));
+    const analysis = analyzeWortgeflechtGenerationInput(wordLines);
+    const { parsed } = analysis;
     wordCount = parsed.words.length;
     totalLetters = parsed.totalLetters;
     invalidInputWords = parsed.invalidWords;
+    duplicateInputWords = analysis.duplicateWords;
+    tooShortInputWords = analysis.tooShortWords;
   }
 
   function updateWordLine(index: number, value: string) {
@@ -469,6 +487,8 @@
         wordCount,
         totalLetters,
         invalidInputWords,
+        duplicateInputWords,
+        tooShortInputWords,
         generatorError,
         rowsError,
         isGenerating,
