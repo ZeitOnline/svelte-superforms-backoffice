@@ -199,7 +199,6 @@ export type TableColumn = {
 export type GameConfig = {
   label: string;
   apiBase: string;
-  productionUrl: string;
   endpoints: {
     games: {
       name: string;
