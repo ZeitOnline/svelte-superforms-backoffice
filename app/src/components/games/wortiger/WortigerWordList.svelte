@@ -105,7 +105,7 @@
     // For German, you might want to keep original casing;
     // If you prefer uppercase storage, uncomment next line:
     // const normalized = word.trim().toLocaleUpperCase('de-DE');
-    const normalized = word.trim();
+    const normalized = word.trim().toLocaleLowerCase('de-DE');
 
     const err = validateWord(normalized, number);
     if (err) {
@@ -172,7 +172,7 @@
     addError = '';
 
     // normalize per your policy; keeping user casing:
-    const next = nextWord.trim();
+    const next = nextWord.trim().toLocaleLowerCase('de-DE');
 
     const err = validateWord(next, number);
     if (err) {
