@@ -154,7 +154,7 @@
       try {
         try {
           await ensureWordSetForLevel(form.data.level);
-        } catch (e) {
+        } catch {
           setError(form, 'solution', 'Wortliste konnte nicht geladen werden.');
           return;
         }

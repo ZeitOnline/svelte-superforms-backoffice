@@ -348,7 +348,9 @@ export async function createGamesBulk({
     return data;
   } catch (error) {
     if (error instanceof PostgrestError) {
-      throw new Error(`Bulk insert failed (${error.status}): ${getPostgrestErrorMessage(error)}`);
+      throw new Error(`Bulk insert failed (${error.status}): ${getPostgrestErrorMessage(error)}`, {
+        cause: error,
+      });
     }
     throw error;
   }

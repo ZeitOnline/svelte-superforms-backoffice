@@ -42,7 +42,7 @@ repos:
       - "--ignore-pattern=**/app/.svelte-kit/**"
       - "--ignore-pattern=**/docs/**"
       additional_dependencies:
-      - eslint@9.30.0
+      - eslint@10.0.0
       - svelte@5.35.4
       - "@vitest/eslint-plugin@1.2.4"
       - eslint-plugin-vitest@0.5.4
