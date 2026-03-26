@@ -56,9 +56,7 @@ describe('wortgeflecht-utils', () => {
   });
 
   it('treats ß and ẞ as same key in set comparison', () => {
-    const rows: WortgeflechtLetterRow[] = [
-      { word: 'SÜẞLICH', letter: 'S', cx: 1, cy: 1 },
-    ];
+    const rows: WortgeflechtLetterRow[] = [{ word: 'SÜẞLICH', letter: 'S', cx: 1, cy: 1 }];
     expect(hasSameWordSetForWortgeflecht({ wordLines: ['süßlich', ''], rows })).toBe(true);
   });
 
@@ -69,7 +67,9 @@ describe('wortgeflecht-utils', () => {
 
   it('rejects generation input with invalid characters', () => {
     const result = validateWortgeflechtGenerationInput(['PACO', 'IMKE-1', '']);
-    expect(result.error).toBe('Ungültige Zeichen gefunden. Erlaubt sind nur Buchstaben (inkl. ÄÖÜẞ).');
+    expect(result.error).toBe(
+      'Ungültige Zeichen gefunden. Erlaubt sind nur Buchstaben (inkl. ÄÖÜẞ).',
+    );
   });
 
   it('rejects generation input with duplicate words', () => {
