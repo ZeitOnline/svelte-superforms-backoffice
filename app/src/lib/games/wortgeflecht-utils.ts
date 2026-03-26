@@ -1,10 +1,12 @@
 import type { WortgeflechtLetterRow } from '$lib/games/wortgeflecht';
 import { parseWortgeflechtWords } from '$lib/games/wortgeflecht-generator';
 
-const MIN_WORTGEFLECHT_WORD_LENGTH = 4;
+export const MIN_WORTGEFLECHT_WORD_LENGTH = 4;
 
-export const normalizeWortgeflechtWordLineValue = (value: string) => value.toLocaleLowerCase('de-DE');
-export const normalizeWortgeflechtWordKey = (value: string) => value.trim().toLocaleLowerCase('de-DE');
+export const normalizeWortgeflechtWordLineValue = (value: string) =>
+  value.toLocaleLowerCase('de-DE');
+export const normalizeWortgeflechtWordKey = (value: string) =>
+  value.trim().toLocaleLowerCase('de-DE');
 
 const getUniqueWordsByKey = (words: string[]) => {
   const wordsByKey = new Map<string, string>();
@@ -49,7 +51,11 @@ export const normalizeWortgeflechtWordLines = (lines: string[]) => {
   if (next[next.length - 1].trim() !== '') {
     next.push('');
   }
-  while (next.length > 1 && next[next.length - 1].trim() === '' && next[next.length - 2].trim() === '') {
+  while (
+    next.length > 1 &&
+    next[next.length - 1].trim() === '' &&
+    next[next.length - 2].trim() === ''
+  ) {
     next.pop();
   }
   return next;
@@ -57,11 +63,7 @@ export const normalizeWortgeflechtWordLines = (lines: string[]) => {
 
 export const getUniqueNormalizedWordsFromRows = (rows: WortgeflechtLetterRow[]) =>
   Array.from(
-    new Set(
-      rows
-        .map(row => normalizeWortgeflechtWordKey(row.word ?? ''))
-        .filter(Boolean),
-    ),
+    new Set(rows.map(row => normalizeWortgeflechtWordKey(row.word ?? '')).filter(Boolean)),
   );
 
 export const hasSameWordSetForWortgeflecht = ({
