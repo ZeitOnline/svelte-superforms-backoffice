@@ -16,7 +16,8 @@ type GameUiRoute =
   | '/wortiger'
   | '/wortiger/wortliste'
   | '/spelling-bee'
-  | '/wortgeflecht';
+  | '/wortgeflecht'
+  | '/wortgeflecht/wortliste';
 
 export type GameUiConfig = {
   id: GameType;
@@ -74,6 +75,10 @@ export const GAME_UI_CONFIG: GameUiConfig[] = [
       tag: 'live',
       color: 'green',
     },
+    subnav: [
+      { label: 'Dashboard', href: '/wortgeflecht', routeId: '/wortgeflecht' },
+      { label: 'Wortliste', href: '/wortgeflecht/wortliste', routeId: '/wortgeflecht/wortliste' },
+    ],
   },
 ];
 
