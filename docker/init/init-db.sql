@@ -68705,6 +68705,12 @@ CREATE TABLE IF NOT EXISTS wortgeflecht.game_letter (
     modified_at timestamp NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS wortgeflecht.dictionary (
+    word varchar(255) PRIMARY KEY,
+    created_at timestamp NOT NULL DEFAULT now(),
+    modified_at timestamp NOT NULL DEFAULT now()
+);
+
 CREATE OR REPLACE VIEW wortgeflecht.game_letters_coordinates AS
 SELECT
     l.id AS id,
@@ -68894,6 +68900,24 @@ JOIN (
     ('tennis', 'n', 8, 6)
 ) AS l(word, letter, cx, cy)
 ON iw.word = l.word AND iw.game_id = (SELECT game_id FROM inserted_game);
+
+INSERT INTO wortgeflecht.dictionary (word)
+VALUES
+    ('zauberlehrling'),
+    ('walle'),
+    ('tücke'),
+    ('wasser'),
+    ('zwecke'),
+    ('besen'),
+    ('meister'),
+    ('golf'),
+    ('lacrosse'),
+    ('badminton'),
+    ('krocket'),
+    ('tennis'),
+    ('baseball'),
+    ('squash')
+ON CONFLICT (word) DO NOTHING;
 
 -- ================================
 -- POSTGREST PERMISSIONS

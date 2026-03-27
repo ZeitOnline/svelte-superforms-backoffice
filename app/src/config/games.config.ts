@@ -11,7 +11,10 @@ import { transformedPublishedData, isGameActive, transformedPublishedDataWithTim
 import { generateEckchenGameSchema, saveEckchenGameFormSchema } from '$schemas/eckchen';
 import { generateWortigerGameSchema, saveWortigerGameFormSchema } from '$schemas/wortiger';
 import type { ZodValidationSchema } from 'sveltekit-superforms/adapters';
-import { generateSpellingBeeGameSchema, saveSpellingBeeGameFormSchema } from '$schemas/spelling-bee';
+import {
+  generateSpellingBeeGameSchema,
+  saveSpellingBeeGameFormSchema,
+} from '$schemas/spelling-bee';
 import {
   generateWortgeflechtGameSchema,
   saveWortgeflechtGameFormSchema,
@@ -55,7 +58,8 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           key: 'release_date',
           label: 'Veröffentlichungsdatum',
           getValue: game => (game as GameEckchenComplete).release_date,
-          getDisplayValue: game => transformedPublishedData((game as GameEckchenComplete).release_date),
+          getDisplayValue: game =>
+            transformedPublishedData((game as GameEckchenComplete).release_date),
           searchable: true,
           sortable: true,
         },
@@ -92,7 +96,7 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         },
       ],
     },
-    creationModes: ["manual", "csv"],
+    creationModes: ['manual', 'csv'],
   },
   wortiger: {
     label: 'wortiger',
@@ -131,7 +135,8 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           key: 'release_date',
           label: 'Veröffentlichungsdatum',
           getValue: game => (game as GameWortigerComplete).release_date,
-          getDisplayValue: game => transformedPublishedData((game as GameWortigerComplete).release_date),
+          getDisplayValue: game =>
+            transformedPublishedData((game as GameWortigerComplete).release_date),
           searchable: true,
           sortable: true,
         },
@@ -169,9 +174,9 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         },
       ],
     },
-    creationModes: ["manual", "csv"],
+    creationModes: ['manual', 'csv'],
   },
-  "spelling-bee": {
+  'spelling-bee': {
     label: 'spelling-bee',
     apiBase: '/backoffice/api/spelling-bee',
     endpoints: {
@@ -206,7 +211,8 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           key: 'start_time',
           label: 'Startzeit',
           getValue: game => (game as GameSpellingBeeComplete).start_time,
-          getDisplayValue: game => transformedPublishedDataWithTime((game as GameSpellingBeeComplete).start_time),
+          getDisplayValue: game =>
+            transformedPublishedDataWithTime((game as GameSpellingBeeComplete).start_time),
           searchable: true,
           sortable: true,
         },
@@ -245,7 +251,7 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         },
       ],
     },
-    creationModes: ["manual", "csv"],
+    creationModes: ['manual', 'csv'],
   },
   wortgeflecht: {
     label: 'wortgeflecht',
@@ -254,6 +260,9 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
       games: {
         name: 'game',
         releaseDateField: 'published_at',
+      },
+      wordList: {
+        name: 'dictionary',
       },
     },
     schemas: {
@@ -333,6 +342,6 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         },
       ],
     },
-    creationModes: ["manual"],
+    creationModes: ['manual'],
   },
 };

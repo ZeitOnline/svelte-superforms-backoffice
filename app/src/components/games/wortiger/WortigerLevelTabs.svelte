@@ -38,7 +38,7 @@
 
   function handleTabKeydown(event: KeyboardEvent, index: number) {
     const lastIndex = wortigerTabs.length - 1;
-    let nextIndex = index;
+    let nextIndex: number;
 
     if (event.key === 'ArrowRight') {
       nextIndex = index === lastIndex ? 0 : index + 1;
