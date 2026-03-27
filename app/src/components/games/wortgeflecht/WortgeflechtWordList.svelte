@@ -37,7 +37,7 @@
     const normalizedCurrentWord = normalizeWortgeflechtWordKey(currentWord ?? '');
 
     if (!normalized) return 'Bitte ein Wort eingeben.';
-    if (!/^[A-Za-zÄÖÜäöüß]+$/.test(normalized)) return 'Nur Buchstaben sind erlaubt.';
+    if (!/^[A-Za-zÄÖÜäöüßẞ]+$/.test(normalized)) return 'Nur Buchstaben sind erlaubt.';
     if (Array.from(normalized).length < MIN_WORTGEFLECHT_WORD_LENGTH) {
       return `Das Wort muss mindestens ${MIN_WORTGEFLECHT_WORD_LENGTH} Buchstaben haben.`;
     }
@@ -207,7 +207,7 @@
           class="border border-black px-2 py-1 text-xs w-full"
           bind:value={newWord}
           minlength={MIN_WORTGEFLECHT_WORD_LENGTH}
-          pattern="[A-Za-zÄÖÜäöüß]+"
+          pattern="[A-Za-zÄÖÜäöüßẞ]+"
           placeholder="Neues Wort"
           autocomplete="off"
           spellcheck="false"
