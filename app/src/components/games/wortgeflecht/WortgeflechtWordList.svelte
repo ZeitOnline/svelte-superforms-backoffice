@@ -204,7 +204,7 @@
           class="border border-black px-2 py-1 text-xs w-full"
           bind:value={newWord}
           minlength={MIN_WORTGEFLECHT_WORD_LENGTH}
-          pattern="[A-Za-zÄÖÜäöüß]+"
+          pattern="[A-Za-zÄÖÜäöüßẞ]+"
           placeholder="Neues Wort"
           autocomplete="off"
           spellcheck="false"
