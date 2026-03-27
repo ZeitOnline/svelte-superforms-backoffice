@@ -9,7 +9,11 @@
     fetchWortgeflechtDictionaryWords,
     updateWortgeflechtDictionaryWord,
   } from '$lib/games/wortgeflecht';
-  import { MIN_WORTGEFLECHT_WORD_LENGTH } from '$lib/games/wortgeflecht-utils';
+  import {
+    hasNormalizedWortgeflechtWord,
+    MIN_WORTGEFLECHT_WORD_LENGTH,
+    normalizeWortgeflechtWordKey,
+  } from '$lib/games/wortgeflecht-utils';
   import { getPostgrestErrorMessage, PostgrestError } from '$lib/postgrest-client';
   import { debounce, highlightMatch } from '$utils';
 
@@ -26,12 +30,11 @@
 
   const sortWords = (input: string[]) => input.slice().sort((a, b) => collator.compare(a, b));
 
-  const hasWord = (candidate: string) =>
-    words.some(word => collator.compare(word, candidate) === 0);
+  const hasWord = (candidate: string) => hasNormalizedWortgeflechtWord(words, candidate);
 
   const validateWord = (value: string, currentWord?: string) => {
-    const normalized = value.trim().toLocaleLowerCase('de-DE');
-    const normalizedCurrentWord = currentWord?.trim().toLocaleLowerCase('de-DE') ?? '';
+    const normalized = normalizeWortgeflechtWordKey(value);
+    const normalizedCurrentWord = normalizeWortgeflechtWordKey(currentWord ?? '');
 
     if (!normalized) return 'Bitte ein Wort eingeben.';
     if (!/^[A-Za-zÄÖÜäöüß]+$/.test(normalized)) return 'Nur Buchstaben sind erlaubt.';

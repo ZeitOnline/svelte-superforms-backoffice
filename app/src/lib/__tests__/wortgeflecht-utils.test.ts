@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   analyzeWortgeflechtGenerationInput,
+  hasNormalizedWortgeflechtWord,
   hasSameWordSetForWortgeflecht,
   normalizeWortgeflechtWordLines,
   normalizeWortgeflechtWordLineValue,
@@ -11,6 +12,11 @@ import type { WortgeflechtLetterRow } from '$lib/games/wortgeflecht';
 describe('wortgeflecht-utils', () => {
   it('normalizes input to lowercase while preserving ß', () => {
     expect(normalizeWortgeflechtWordLineValue('SÜẞLICH')).toBe('süßlich');
+  });
+
+  it('matches duplicates by exact normalized string equality', () => {
+    expect(hasNormalizedWortgeflechtWord([' Äpfel '], 'äpfel')).toBe(true);
+    expect(hasNormalizedWortgeflechtWord(['a'], 'ä')).toBe(false);
   });
 
   it('normalizes row list to keep one trailing empty line', () => {

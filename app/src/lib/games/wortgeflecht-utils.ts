@@ -8,6 +8,13 @@ export const normalizeWortgeflechtWordLineValue = (value: string) =>
 export const normalizeWortgeflechtWordKey = (value: string) =>
   value.trim().toLocaleLowerCase('de-DE');
 
+export const hasNormalizedWortgeflechtWord = (words: string[], candidate: string) => {
+  const normalizedCandidate = normalizeWortgeflechtWordKey(candidate);
+  if (!normalizedCandidate) return false;
+
+  return words.some(word => normalizeWortgeflechtWordKey(word) === normalizedCandidate);
+};
+
 const getUniqueWordsByKey = (words: string[]) => {
   const wordsByKey = new Map<string, string>();
 
