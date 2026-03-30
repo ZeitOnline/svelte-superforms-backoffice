@@ -186,3 +186,12 @@ docker compose logs nginx
 docker compose down -v
 docker compose up -d
 ```
+
+### Optional pagination fixture for Wortgeflecht
+
+The default local dictionary stays realistic and small. If you want more than 100
+dictionary entries locally for pagination/manual QA, apply the optional seed file:
+
+```bash
+docker compose exec -T postgres psql -U postgres -d main < scripts/seed-wortgeflecht-pagination.sql
+```
