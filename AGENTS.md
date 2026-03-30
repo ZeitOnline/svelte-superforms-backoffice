@@ -22,18 +22,18 @@ The app is frontend-heavy and talks directly to PostgREST endpoints for each gam
 - Backend in local dev: PostgreSQL 17 + PostgREST + nginx via Docker Compose
 - Svelte adapter: `@sveltejs/adapter-node`
 
-Key package metadata lives in [app/package.json](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/package.json).
+Key package metadata lives in [app/package.json](app/package.json).
 
 ## Runtime Model
 
 - The Svelte app lives in `app/`.
-- `ssr = false` in [app/src/routes/+layout.ts](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/src/routes/+layout.ts#L10), so this is effectively a client-rendered admin app.
-- In development, SvelteKit runs under the base path `/backoffice`. This is configured in [app/svelte.config.js](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/svelte.config.js#L17).
-- In non-dev environments, access is gated by OIDC login in [app/src/components/OidcLogin.svelte](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/src/components/OidcLogin.svelte#L1).
+- `ssr = false` in [app/src/routes/+layout.ts](app/src/routes/+layout.ts#L10), so this is effectively a client-rendered admin app.
+- In development, SvelteKit runs under the base path `/backoffice`. This is configured in [app/svelte.config.js](app/svelte.config.js#L17).
+- In non-dev environments, access is gated by OIDC login in [app/src/components/OidcLogin.svelte](app/src/components/OidcLogin.svelte#L1).
 
 ## Local Dev Topology
 
-Local services are defined in [docker-compose.yaml](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/docker-compose.yaml):
+Local services are defined in [docker-compose.yaml](docker-compose.yaml):
 
 - `postgres` on `5432`
 - `postgrest_eckchen` on `3001`
@@ -50,7 +50,7 @@ The Vite dev server proxies frontend requests to those PostgREST services throug
 - `/backoffice/api/spelling-bee`
 - `/backoffice/api/wortgeflecht`
 
-Proxy config is in [app/vite.config.ts](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/vite.config.ts#L20).
+Proxy config is in [app/vite.config.ts](app/vite.config.ts#L20).
 
 ## Repo Layout
 
@@ -73,11 +73,11 @@ Important routes:
 - `/wortgeflecht`
 - `/wortgeflecht/wortliste`
 
-The route tree is under [app/src/routes](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/src/routes).
+The route tree is under [app/src/routes](app/src/routes).
 
 ## Game Configuration Contract
 
-`CONFIG_GAMES` in [app/src/config/games.config.ts](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/src/config/games.config.ts#L22) is the central source of truth for game behavior. Each game defines:
+`CONFIG_GAMES` in [app/src/config/games.config.ts](app/src/config/games.config.ts#L22) is the central source of truth for game behavior. Each game defines:
 
 - `apiBase`
 - endpoint names
@@ -97,7 +97,7 @@ Current endpoint mappings:
 
 ## Data Access Pattern
 
-The project uses `requestPostgrest` from [app/src/lib/postgrest-client.ts](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/src/lib/postgrest-client.ts#L156) as the shared HTTP wrapper for PostgREST calls.
+The project uses `requestPostgrest` from [app/src/lib/postgrest-client.ts](app/src/lib/postgrest-client.ts#L156) as the shared HTTP wrapper for PostgREST calls.
 
 Common conventions:
 
@@ -110,8 +110,8 @@ When adding list views, prefer server-side pagination and server-side search ove
 
 ## UI Conventions
 
-- The global app shell is defined in [app/src/routes/+layout.svelte](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/src/routes/+layout.svelte#L1).
-- Toast notifications use the context-based state from [app/src/lib/toast-state.svelte.ts](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/src/lib/toast-state.svelte.ts#L1).
+- The global app shell is defined in [app/src/routes/+layout.svelte](app/src/routes/+layout.svelte#L1).
+- Toast notifications use the context-based state from [app/src/lib/toast-state.svelte.ts](app/src/lib/toast-state.svelte.ts#L1).
 - Shared table controls live in `app/src/components/table/`.
 - Most game-specific UI is under `app/src/components/games/<game>/`.
 
@@ -127,7 +127,7 @@ When adding list views, prefer server-side pagination and server-side search ove
 
 - Dictionary words live in the `dictionary` table
 - Game data is spread across `game`, `game_word`, and `game_letter`
-- The local seed dictionary is defined in [docker/init/init-db.sql](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/docker/init/init-db.sql#L68904)
+- The local seed dictionary is defined in [docker/init/init-db.sql](docker/init/init-db.sql#L68904)
 - If seed changes are made, existing local Docker volumes must be recreated to re-run init SQL:
 
 ```bash
@@ -147,8 +147,8 @@ Primary commands from `app/`:
 
 Test setup:
 
-- Vitest config is in [app/vite.config.ts](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/vite.config.ts#L14)
-- Jest DOM setup is in [app/vitest-setup.js](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/vitest-setup.js#L1)
+- Vitest config is in [app/vite.config.ts](app/vite.config.ts#L14)
+- Jest DOM setup is in [app/vitest-setup.js](app/vitest-setup.js#L1)
 
 Useful test locations:
 
@@ -159,11 +159,11 @@ Useful test locations:
 
 When changing behavior, these are usually the first files to inspect:
 
-- [app/src/config/games.config.ts](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/src/config/games.config.ts)
-- [app/src/lib/queries.ts](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/src/lib/queries.ts)
-- [app/src/lib/postgrest-client.ts](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/src/lib/postgrest-client.ts)
-- [app/src/components/GameTableWrapper.svelte](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/src/components/GameTableWrapper.svelte)
-- [app/src/components/GenericDashboardTable.svelte](/Users/manuel.sanchez/Work/_SPIELE/svelte-superforms-backoffice/app/src/components/GenericDashboardTable.svelte)
+- [app/src/config/games.config.ts](app/src/config/games.config.ts)
+- [app/src/lib/queries.ts](app/src/lib/queries.ts)
+- [app/src/lib/postgrest-client.ts](app/src/lib/postgrest-client.ts)
+- [app/src/components/GameTableWrapper.svelte](app/src/components/GameTableWrapper.svelte)
+- [app/src/components/GenericDashboardTable.svelte](app/src/components/GenericDashboardTable.svelte)
 
 ## Guidance For Future Agents
 
