@@ -186,3 +186,22 @@ docker compose logs nginx
 docker compose down -v
 docker compose up -d
 ```
+
+### Apply German word collation to an existing local DB
+
+Some word-list pagination and ordering now depend on database collation.
+If your local Docker volume already exists, that change will not apply until you
+either recreate the database volume or run the collation script manually:
+
+```bash
+docker compose exec -T postgres psql -U postgres -d main < scripts/apply-german-collation.sql
+```
+
+### Optional pagination fixture for Wortgeflecht
+
+The default local dictionary stays realistic and small. If you want more than 100
+dictionary entries locally for pagination/manual QA, apply the optional seed file:
+
+```bash
+docker compose exec -T postgres psql -U postgres -d main < scripts/seed-wortgeflecht-pagination.sql
+```

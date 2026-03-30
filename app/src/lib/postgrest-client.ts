@@ -80,6 +80,15 @@ export const buildQueryParams = (entries: Array<[string, QueryValue]>) => {
   return params;
 };
 
+export const parseContentRangeTotal = (response: Response, fallback: number) => {
+  const contentRange = response.headers.get('content-range');
+  if (!contentRange) return fallback;
+
+  const [, totalStr] = contentRange.split('/');
+  const parsed = Number(totalStr);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
 const buildEndpointUrl = ({
   url,
   baseUrl,
