@@ -68711,6 +68711,26 @@ CREATE TABLE IF NOT EXISTS wortgeflecht.dictionary (
     modified_at timestamp NOT NULL DEFAULT now()
 );
 
+CREATE OR REPLACE VIEW wortgeflecht.dictionary_read AS
+SELECT
+    d.word AS word,
+    lower(
+        replace(
+            replace(
+                replace(
+                    replace(
+                        replace(lower(d.word), 'ä', 'ae'),
+                        'ö', 'oe'
+                    ),
+                    'ü', 'ue'
+                ),
+                'ß', 'ss'
+            ),
+            'ẞ', 'ss'
+        )
+    ) AS sort_key
+FROM wortgeflecht.dictionary d;
+
 CREATE OR REPLACE VIEW wortgeflecht.game_letters_coordinates AS
 SELECT
     l.id AS id,

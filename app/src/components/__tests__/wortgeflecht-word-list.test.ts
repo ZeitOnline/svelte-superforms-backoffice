@@ -47,9 +47,9 @@ describe('WortgeflechtWordList', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     const calledUrl = getCalledUrl(fetchMock, 0);
-    expect(calledUrl.pathname).toBe('/backoffice/api/wortgeflecht/dictionary');
+    expect(calledUrl.pathname).toBe('/backoffice/api/wortgeflecht/dictionary_read');
     expect(calledUrl.searchParams.get('select')).toBe('word');
-    expect(calledUrl.searchParams.get('order')).toBe('word.asc');
+    expect(calledUrl.searchParams.get('order')).toBe('sort_key.asc,word.asc');
     expect(calledUrl.searchParams.get('limit')).toBe('50');
     expect(calledUrl.searchParams.get('offset')).toBe('0');
   });
