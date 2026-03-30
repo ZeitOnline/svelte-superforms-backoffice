@@ -296,11 +296,7 @@
   </div>
 </div>
 
-{#if loading}
-  <div class="loading" role="status" aria-live="polite">
-    <p>Lade Wörter...</p>
-  </div>
-{:else if !hasLoaded}
+{#if loading || !hasLoaded}
   <div class="loading" role="status" aria-live="polite">
     <p>Lade Wörter...</p>
   </div>
