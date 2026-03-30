@@ -396,7 +396,7 @@
     }
   };
 
-  const switchTab = async (tabNumber: number) => {
+  const switchTab = (tabNumber: number) => {
     if (activeTab === tabNumber) return;
     activeTab = tabNumber;
     sortDir = 'asc';
