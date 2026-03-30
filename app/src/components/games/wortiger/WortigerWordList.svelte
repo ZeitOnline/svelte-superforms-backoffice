@@ -49,14 +49,6 @@
     return `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${length}`;
   }
 
-  function getWordReadTable(length: number) {
-    return `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_read_${length}`;
-  }
-
-  function getWordOrder(direction: SortDirection) {
-    return direction === 'asc' ? 'sort_key.asc,word.asc' : 'sort_key.desc,word.desc';
-  }
-
   function parseTotalCount(response: Response, fallback: number) {
     const contentRange = response.headers.get('content-range');
     if (!contentRange) return fallback;
@@ -97,7 +89,7 @@
     const requestId = ++lastRequestId;
     const normalizedPage = Math.max(1, page);
     const trimmedTerm = term.trim();
-    const table = getWordReadTable(number);
+    const table = getWordTable(number);
 
     loading = true;
 
@@ -107,7 +99,7 @@
         path: table,
         query: buildQueryParams([
           ['select', 'word'],
-          ['order', getWordOrder(direction)],
+          ['order', pg.order('word', direction)],
           ['limit', PAGE_SIZE],
           ['offset', (normalizedPage - 1) * PAGE_SIZE],
           ['word', trimmedTerm ? `ilike.*${trimmedTerm}*` : undefined],
@@ -159,7 +151,7 @@
     direction?: SortDirection;
   } = {}) {
     const trimmedTerm = term.trim();
-    const table = getWordReadTable(number);
+    const table = getWordTable(number);
     const rows: string[] = [];
     let offset = 0;
 
@@ -169,7 +161,7 @@
         path: table,
         query: buildQueryParams([
           ['select', 'word'],
-          ['order', getWordOrder(direction)],
+          ['order', pg.order('word', direction)],
           ['limit', EXPORT_PAGE_SIZE],
           ['offset', offset],
           ['word', trimmedTerm ? `ilike.*${trimmedTerm}*` : undefined],

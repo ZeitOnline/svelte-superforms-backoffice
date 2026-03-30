@@ -93,7 +93,7 @@ describe('wortgeflecht helpers', () => {
     const words = await fetchWortgeflechtDictionaryWords();
 
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/dictionary_read?select=word&order=sort_key.asc%2Cword.asc'),
+      expect.stringContaining('/dictionary?select=word&order=word.asc'),
       {
         method: 'GET',
         headers: expect.any(Headers),
@@ -123,7 +123,7 @@ describe('wortgeflecht helpers', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(
-        '/dictionary_read?select=word&order=sort_key.asc%2Cword.asc&limit=50&offset=50&word=ilike.*wort*',
+        '/dictionary?select=word&order=word.asc&limit=50&offset=50&word=ilike.*wort*',
       ),
       expect.objectContaining({
         method: 'GET',

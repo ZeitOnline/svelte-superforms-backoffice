@@ -92,7 +92,6 @@ const insertGameLetters = async (
   });
 
 const dictionaryPath = CONFIG_GAMES.wortgeflecht.endpoints.wordList?.name ?? 'dictionary';
-const dictionaryReadPath = 'dictionary_read';
 
 const parseTotalCount = (response: Response, fallback: number) => {
   const contentRange = response.headers.get('content-range');
@@ -106,10 +105,10 @@ const parseTotalCount = (response: Response, fallback: number) => {
 const fetchWortgeflechtDictionary = async () =>
   requestPostgrest<Array<{ word: string }>>({
     baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
-    path: dictionaryReadPath,
+    path: dictionaryPath,
     query: buildQueryParams([
       ['select', 'word'],
-      ['order', 'sort_key.asc,word.asc'],
+      ['order', pg.order('word', 'asc')],
     ]),
     errorMessage: 'Failed to fetch wortgeflecht dictionary',
   });
@@ -276,10 +275,10 @@ export const fetchWortgeflechtDictionaryPage = async ({
 
   const { data, response } = await requestPostgrest<Array<{ word: string }>>({
     baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
-    path: dictionaryReadPath,
+    path: dictionaryPath,
     query: buildQueryParams([
       ['select', 'word'],
-      ['order', 'sort_key.asc,word.asc'],
+      ['order', pg.order('word', 'asc')],
       ['limit', normalizedPageSize],
       ['offset', (normalizedPage - 1) * normalizedPageSize],
       ['word', trimmedSearch ? `ilike.*${trimmedSearch}*` : undefined],
