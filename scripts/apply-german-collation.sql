@@ -1,5 +1,7 @@
 -- Apply German phonebook collation for Wortiger and Wortgeflecht word ordering
 -- on an existing local database.
+-- This intentionally removes the old read views because the app now reads directly
+-- from the base tables using database collation for ordering.
 
 CREATE COLLATION IF NOT EXISTS public.de_phonebook (
     provider = icu,
