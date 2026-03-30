@@ -1,5 +1,10 @@
 import { CONFIG_GAMES } from '../../config/games.config';
-import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
+import {
+  buildQueryParams,
+  parseContentRangeTotal,
+  pg,
+  requestPostgrest,
+} from '$lib/postgrest-client';
 import type { GameComplete, SortDirection } from '$types';
 import { toCSV } from '$components/games/wortiger/utils';
 
@@ -26,15 +31,6 @@ const DEFAULT_WORTIGER_EXPORT_PAGE_SIZE = 1000;
 
 const getWortigerWordTable = (length: number) =>
   `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${length}`;
-
-const parseTotalCount = (response: Response, fallback: number) => {
-  const contentRange = response.headers.get('content-range');
-  if (!contentRange) return fallback;
-
-  const [, totalStr] = contentRange.split('/');
-  const parsed = Number(totalStr);
-  return Number.isFinite(parsed) ? parsed : fallback;
-};
 
 const normalizeWords = (data: Array<{ word: string }>) =>
   data
@@ -141,6 +137,7 @@ export async function fetchAllWortigerWordsForExport({
 }) {
   const trimmedSearch = search.trim();
   const table = getWortigerWordTable(length);
+  const normalizedPageSize = Math.max(1, pageSize);
   const rows: string[] = [];
   let offset = 0;
 
@@ -151,7 +148,7 @@ export async function fetchAllWortigerWordsForExport({
       query: buildQueryParams([
         ['select', 'word'],
         ['order', pg.order('word', direction)],
-        ['limit', pageSize],
+        ['limit', normalizedPageSize],
         ['offset', offset],
         ['word', trimmedSearch ? `ilike.*${trimmedSearch}*` : undefined],
       ]),
@@ -161,9 +158,9 @@ export async function fetchAllWortigerWordsForExport({
     });
 
     rows.push(...normalizeWords(data));
-    const total = parseTotalCount(response, rows.length);
+    const total = parseContentRangeTotal(response, rows.length);
     if (rows.length >= total) break;
-    offset += pageSize;
+    offset += normalizedPageSize;
   }
 
   return rows;

@@ -1,5 +1,10 @@
 import { CONFIG_GAMES } from '../../config/games.config';
-import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
+import {
+  buildQueryParams,
+  parseContentRangeTotal,
+  pg,
+  requestPostgrest,
+} from '$lib/postgrest-client';
 
 const normalizeStoredWord = (value: string) => value.trim().toLocaleLowerCase('de-DE');
 
@@ -92,15 +97,6 @@ const insertGameLetters = async (
   });
 
 const dictionaryPath = CONFIG_GAMES.wortgeflecht.endpoints.wordList?.name ?? 'dictionary';
-
-const parseTotalCount = (response: Response, fallback: number) => {
-  const contentRange = response.headers.get('content-range');
-  if (!contentRange) return fallback;
-
-  const [, totalStr] = contentRange.split('/');
-  const parsed = Number(totalStr);
-  return Number.isFinite(parsed) ? parsed : fallback;
-};
 
 const fetchWortgeflechtDictionary = async () =>
   requestPostgrest<Array<{ word: string }>>({
@@ -295,7 +291,7 @@ export const fetchWortgeflechtDictionaryPage = async ({
 
   return {
     words,
-    total: parseTotalCount(response, words.length),
+    total: parseContentRangeTotal(response, words.length),
   };
 };
 
