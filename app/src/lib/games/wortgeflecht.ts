@@ -93,6 +93,15 @@ const insertGameLetters = async (
 
 const dictionaryPath = CONFIG_GAMES.wortgeflecht.endpoints.wordList?.name ?? 'dictionary';
 
+const parseTotalCount = (response: Response, fallback: number) => {
+  const contentRange = response.headers.get('content-range');
+  if (!contentRange) return fallback;
+
+  const [, totalStr] = contentRange.split('/');
+  const parsed = Number(totalStr);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
 const fetchWortgeflechtDictionary = async () =>
   requestPostgrest<Array<{ word: string }>>({
     baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
@@ -249,6 +258,45 @@ export const fetchWortgeflechtDictionaryWords = async () => {
     .map(entry => entry.word)
     .filter((word): word is string => typeof word === 'string' && word.length > 0)
     .sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
+};
+
+export const fetchWortgeflechtDictionaryPage = async ({
+  page = 1,
+  pageSize = 50,
+  search = '',
+}: {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}) => {
+  const normalizedPage = Math.max(1, page);
+  const normalizedPageSize = Math.max(1, pageSize);
+  const trimmedSearch = search.trim();
+
+  const { data, response } = await requestPostgrest<Array<{ word: string }>>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: dictionaryPath,
+    query: buildQueryParams([
+      ['select', 'word'],
+      ['order', pg.order('word', 'asc')],
+      ['limit', normalizedPageSize],
+      ['offset', (normalizedPage - 1) * normalizedPageSize],
+      ['word', trimmedSearch ? `ilike.*${trimmedSearch}*` : undefined],
+    ]),
+    headers: {
+      Prefer: 'count=exact',
+    },
+    errorMessage: 'Failed to fetch paged wortgeflecht dictionary',
+  });
+
+  const words = data
+    .map(entry => entry.word)
+    .filter((word): word is string => typeof word === 'string' && word.length > 0);
+
+  return {
+    words,
+    total: parseTotalCount(response, words.length),
+  };
 };
 
 export const createWortgeflechtDictionaryWord = async (word: string) => {
