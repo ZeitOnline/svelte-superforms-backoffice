@@ -18,6 +18,7 @@
 
   const DEFAULT_LENGTH = WORTIGER_LENGTHS[0] ?? 4;
   const PAGE_SIZE = 50;
+  const EXPORT_PAGE_SIZE = 1000;
 
   let words = $state<string[]>([]);
   let activeTab = $state<number>(DEFAULT_LENGTH);
@@ -46,6 +47,14 @@
 
   function getWordTable(length: number) {
     return `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${length}`;
+  }
+
+  function getWordReadTable(length: number) {
+    return `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_read_${length}`;
+  }
+
+  function getWordOrder(direction: SortDirection) {
+    return direction === 'asc' ? 'sort_key.asc,word.asc' : 'sort_key.desc,word.desc';
   }
 
   function parseTotalCount(response: Response, fallback: number) {
@@ -88,7 +97,7 @@
     const requestId = ++lastRequestId;
     const normalizedPage = Math.max(1, page);
     const trimmedTerm = term.trim();
-    const table = getWordTable(number);
+    const table = getWordReadTable(number);
 
     loading = true;
 
@@ -98,7 +107,7 @@
         path: table,
         query: buildQueryParams([
           ['select', 'word'],
-          ['order', pg.order('word', direction)],
+          ['order', getWordOrder(direction)],
           ['limit', PAGE_SIZE],
           ['offset', (normalizedPage - 1) * PAGE_SIZE],
           ['word', trimmedTerm ? `ilike.*${trimmedTerm}*` : undefined],
@@ -140,12 +149,52 @@
     }
   }
 
+  async function fetchAllWordsForExport({
+    number = activeTab,
+    term = debouncedSearch,
+    direction = sortDir,
+  }: {
+    number?: number;
+    term?: string;
+    direction?: SortDirection;
+  } = {}) {
+    const trimmedTerm = term.trim();
+    const table = getWordReadTable(number);
+    const rows: string[] = [];
+    let offset = 0;
+
+    while (true) {
+      const { data, response } = await requestPostgrest<Array<{ word: string }>>({
+        baseUrl: CONFIG_GAMES.wortiger.apiBase,
+        path: table,
+        query: buildQueryParams([
+          ['select', 'word'],
+          ['order', getWordOrder(direction)],
+          ['limit', EXPORT_PAGE_SIZE],
+          ['offset', offset],
+          ['word', trimmedTerm ? `ilike.*${trimmedTerm}*` : undefined],
+        ]),
+        headers: {
+          Prefer: 'count=exact',
+        },
+      });
+
+      rows.push(...normalizeWords(data));
+      const total = parseTotalCount(response, rows.length);
+      if (rows.length >= total) break;
+      offset += EXPORT_PAGE_SIZE;
+    }
+
+    return rows;
+  }
+
   /**
-   * Export current visible words as CSV with a Datum column.
+   * Export the full filtered list as CSV.
    * Filename example: wortiger_4_2025-09-08.csv
    */
-  function exportCurrentListAsCSV() {
-    const rows: string[][] = [['Wort'], ...visibleWords().map(w => [w])];
+  async function exportCurrentListAsCSV() {
+    const exportWords = await fetchAllWordsForExport();
+    const rows: string[][] = [['Wort'], ...exportWords.map(w => [w])];
 
     // Prepend BOM for Excel & Umlauts
     const csv = '\uFEFF' + toCSV(rows, ';');
@@ -363,10 +412,6 @@
     applyDebouncedSearch(search);
   });
 
-  const visibleWords = $derived(() => {
-    return words;
-  });
-
   $effect(() => {
     const criteria = `${activeTab}:${sortDir}:${debouncedSearch}`;
 
@@ -403,7 +448,7 @@
       type="button"
       class="z-ds-button whitespace-nowrap ml-auto w-full md:w-fit"
       onclick={exportCurrentListAsCSV}
-      disabled={visibleWords().length === 0}
+      disabled={totalWords === 0}
       aria-label="Aktuelle Wortliste als CSV exportieren"
       title="Aktuelle Wortliste als CSV exportieren"
     >
@@ -528,7 +573,7 @@
   <div class="loading">
     <p>Lade Wörter...</p>
   </div>
-{:else if visibleWords().length === 0}
+{:else if words.length === 0}
   <div class="no-words" role="status" aria-live="polite">
     <p>
       {#if debouncedSearch}
@@ -542,7 +587,7 @@
   <div class="word-list-container">
     <div class="text-right my-4 font-bold">{getCountText()}</div>
     <div id="wortiger-grid" class="word-grid grid grid-cols-2 md:grid-cols-4 gap-2">
-      {#each visibleWords() as word, i (i)}
+      {#each words as word, i (i)}
         <div class="word-item border border-black px-2 py-1 bg-gray-50 flex">
           <div class="mr-auto">
             <HighlightedText segments={highlightMatch(word, debouncedSearch)} />

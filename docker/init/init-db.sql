@@ -1791,6 +1791,82 @@ CREATE TABLE wortiger.wortliste_6 (
 CREATE TABLE wortiger.wortliste_7 (
     word character(7) NOT NULL
 );
+CREATE OR REPLACE VIEW wortiger.wortliste_read_4 AS
+SELECT
+    w.word AS word,
+    lower(
+        replace(
+            replace(
+                replace(
+                    replace(
+                        replace(lower(w.word), 'ä', 'ae'),
+                        'ö', 'oe'
+                    ),
+                    'ü', 'ue'
+                ),
+                'ß', 'ss'
+            ),
+            'ẞ', 'ss'
+        )
+    ) AS sort_key
+FROM wortiger.wortliste_4 w;
+CREATE OR REPLACE VIEW wortiger.wortliste_read_5 AS
+SELECT
+    w.word AS word,
+    lower(
+        replace(
+            replace(
+                replace(
+                    replace(
+                        replace(lower(w.word), 'ä', 'ae'),
+                        'ö', 'oe'
+                    ),
+                    'ü', 'ue'
+                ),
+                'ß', 'ss'
+            ),
+            'ẞ', 'ss'
+        )
+    ) AS sort_key
+FROM wortiger.wortliste_5 w;
+CREATE OR REPLACE VIEW wortiger.wortliste_read_6 AS
+SELECT
+    w.word AS word,
+    lower(
+        replace(
+            replace(
+                replace(
+                    replace(
+                        replace(lower(w.word), 'ä', 'ae'),
+                        'ö', 'oe'
+                    ),
+                    'ü', 'ue'
+                ),
+                'ß', 'ss'
+            ),
+            'ẞ', 'ss'
+        )
+    ) AS sort_key
+FROM wortiger.wortliste_6 w;
+CREATE OR REPLACE VIEW wortiger.wortliste_read_7 AS
+SELECT
+    w.word AS word,
+    lower(
+        replace(
+            replace(
+                replace(
+                    replace(
+                        replace(lower(w.word), 'ä', 'ae'),
+                        'ö', 'oe'
+                    ),
+                    'ü', 'ue'
+                ),
+                'ß', 'ss'
+            ),
+            'ẞ', 'ss'
+        )
+    ) AS sort_key
+FROM wortiger.wortliste_7 w;
 ALTER TABLE ONLY wortiger.user_statistics ALTER COLUMN id SET DEFAULT nextval('wortiger.user_statistics_id_seq'::regclass);
 ALTER TABLE ONLY wortiger.wortiger_games ALTER COLUMN id SET DEFAULT nextval('wortiger.wortiger_games_id_seq'::regclass);
 ALTER TABLE ONLY wortiger.wortiger_games
