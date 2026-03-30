@@ -122,12 +122,15 @@ When adding list views, prefer server-side pagination and server-side search ove
 - Word lists are split by length-specific tables: `wortliste_4`, `wortliste_5`, `wortliste_6`, `wortliste_7`
 - Game records live in `wortiger_games`
 - Validation and helper logic live under `app/src/lib/games/wortiger*`
+- Word-list ordering is expected to come from database collation on `word`
+- CSV export for the word list fetches the full filtered dataset, not just the current page
 
 ### Wortgeflecht
 
 - Dictionary words live in the `dictionary` table
 - Game data is spread across `game`, `game_word`, and `game_letter`
 - The local seed dictionary is defined in [docker/init/init-db.sql](docker/init/init-db.sql#L68904)
+- Dictionary ordering is expected to come from database collation on `word`
 - If seed changes are made, existing local Docker volumes must be recreated to re-run init SQL:
 
 ```bash
@@ -169,6 +172,7 @@ When changing behavior, these are usually the first files to inspect:
 
 - Keep new list UIs paginated at the server level.
 - Reuse `requestPostgrest`, `buildQueryParams`, and `pg` rather than building fetch URLs manually.
+- Prefer database collation for language-aware ordering when pagination depends on stable sort order; do not introduce read views for sorting unless collation is not viable.
 - Prefer adding focused component or helper tests when introducing query or pagination behavior.
 - If a change depends on SQL seed data, document whether Docker volumes must be recreated.
 - Preserve the existing game-by-game structure instead of inventing a new abstraction layer unless there is a clear cross-game benefit.
