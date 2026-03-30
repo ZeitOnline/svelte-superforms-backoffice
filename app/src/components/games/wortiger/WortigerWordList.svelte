@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { CONFIG_GAMES } from '$config/games.config';
+  import { TablePagination } from '$components/table';
   import { debounce, highlightMatch } from '$utils';
   import IconHandler from '$components/icons/IconHandler.svelte';
   import HighlightedText from '$components/HighlightedText.svelte';
@@ -17,15 +17,19 @@
   import { WORTIGER_LENGTHS } from '$lib/games/wortiger';
 
   const DEFAULT_LENGTH = WORTIGER_LENGTHS[0] ?? 4;
-  const EMPTY_WORDS = Object.fromEntries(WORTIGER_LENGTHS.map(len => [len, [] as string[]]));
+  const PAGE_SIZE = 50;
 
-  let wordListNumber = $state<number>(DEFAULT_LENGTH);
   let words = $state<string[]>([]);
-  let allWords = $state<Record<number, string[]>>({ ...EMPTY_WORDS });
   let activeTab = $state<number>(DEFAULT_LENGTH);
   let loading = $state<boolean>(false);
   let search = $state('');
   let debouncedSearch = $state('');
+  let currentPage = $state<number>(1);
+  let totalPages = $state<number>(1);
+  let totalWords = $state<number>(0);
+  let hasLoaded = $state<boolean>(false);
+  let lastLoadedCriteria = '';
+  let lastRequestId = 0;
 
   // FOR POST
   let newWord = $state<string>('');
@@ -36,7 +40,104 @@
   let sortDir = $state<SortDirection>('asc');
 
   function setSort(dir: SortDirection) {
+    if (sortDir === dir) return;
     sortDir = dir;
+  }
+
+  function getWordTable(length: number) {
+    return `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${length}`;
+  }
+
+  function parseTotalCount(response: Response, fallback: number) {
+    const contentRange = response.headers.get('content-range');
+    if (!contentRange) return fallback;
+
+    const [, totalStr] = contentRange.split('/');
+    const parsed = Number(totalStr);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  function normalizeWords(data: Array<{ word: string }>) {
+    return data
+      .map(item => item.word)
+      .filter((item): item is string => typeof item === 'string' && item.length > 0);
+  }
+
+  function getCountText() {
+    if (debouncedSearch) {
+      return `${totalWords} Treffer in der ${activeTab}-Buchstaben-Liste`;
+    }
+
+    const start = totalWords === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+    const end = totalWords === 0 ? 0 : Math.min(currentPage * PAGE_SIZE, totalWords);
+
+    return `${start}-${end} von ${totalWords} Wörtern mit ${activeTab} Buchstaben`;
+  }
+
+  async function fetchWordPage({
+    number = activeTab,
+    page = currentPage,
+    term = debouncedSearch,
+    direction = sortDir,
+  }: {
+    number?: number;
+    page?: number;
+    term?: string;
+    direction?: SortDirection;
+  } = {}) {
+    const requestId = ++lastRequestId;
+    const normalizedPage = Math.max(1, page);
+    const trimmedTerm = term.trim();
+    const table = getWordTable(number);
+
+    loading = true;
+
+    try {
+      const { data, response } = await requestPostgrest<Array<{ word: string }>>({
+        baseUrl: CONFIG_GAMES.wortiger.apiBase,
+        path: table,
+        query: buildQueryParams([
+          ['select', 'word'],
+          ['order', pg.order('word', direction)],
+          ['limit', PAGE_SIZE],
+          ['offset', (normalizedPage - 1) * PAGE_SIZE],
+          ['word', trimmedTerm ? `ilike.*${trimmedTerm}*` : undefined],
+        ]),
+        headers: {
+          Prefer: 'count=exact',
+        },
+      });
+
+      if (requestId !== lastRequestId) return;
+
+      const nextWords = normalizeWords(data);
+      const nextTotal = parseTotalCount(response, nextWords.length);
+      const nextTotalPages = Math.max(1, Math.ceil(nextTotal / PAGE_SIZE));
+      const nextPage = Math.min(normalizedPage, nextTotalPages);
+
+      totalWords = nextTotal;
+      totalPages = nextTotalPages;
+
+      if (nextPage !== normalizedPage) {
+        currentPage = nextPage;
+        return;
+      }
+
+      words = nextWords;
+    } catch (error) {
+      if (requestId !== lastRequestId) return;
+
+      console.error('Error fetching words:', error);
+      words = [];
+      totalWords = 0;
+      totalPages = 1;
+      toastManager.add('Fehler beim Laden', getPostgrestErrorMessage(error));
+    } finally {
+      if (requestId === lastRequestId) {
+        hasLoaded = true;
+        loading = false;
+      }
+    }
   }
 
   /**
@@ -70,10 +171,7 @@
     const w = word.trim();
     if (!w) return 'Bitte ein Wort eingeben.';
     if (w.length !== expectedLen) return `Das Wort muss genau ${expectedLen} Zeichen haben.`;
-    // Optional: allow only letters (incl. umlauts and ß). Remove if you support hyphens etc.
     if (!/^[A-Za-zÄÖÜäöüß]+$/.test(w)) return 'Nur Buchstaben sind erlaubt.';
-    // prevent duplicates client-side
-    if (allWords[activeTab]?.includes(w)) return 'Dieses Wort existiert bereits.';
     return '';
   }
 
@@ -113,17 +211,7 @@
       return;
     }
 
-    const table = `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
-
-    // optimistic update
-    const prevWords = words;
-    const prevAll = { ...allWords };
-    words = [...words, normalized].sort((a, b) =>
-      a.localeCompare(b, 'de-DE', { sensitivity: 'base' }),
-    );
-    allWords[number] = [...allWords[number], normalized].sort((a, b) =>
-      a.localeCompare(b, 'de-DE', { sensitivity: 'base' }),
-    );
+    const table = getWordTable(number);
 
     addBusy = true;
     try {
@@ -135,14 +223,14 @@
       });
 
       newWord = '';
+      await fetchWordPage({ number, page: currentPage });
       toastManager.add('Wort hinzugefügt', '');
     } catch (e: unknown) {
-      // rollback on network error
-      words = prevWords;
-      allWords = prevAll;
       if (e instanceof PostgrestError) {
         addError =
-          e.status === 409 ? 'Duplikat: Dieses Wort ist bereits vorhanden.' : `Fehler beim Hinzufügen (${e.status}).`;
+          e.status === 409
+            ? 'Duplikat: Dieses Wort ist bereits vorhanden.'
+            : `Fehler beim Hinzufügen (${e.status}).`;
         toastManager.add('Fehler beim Hinzufügen', getPostgrestErrorMessage(e) || addError);
       } else {
         addError = 'Netzwerkfehler beim Hinzufügen.';
@@ -180,29 +268,12 @@
       return;
     }
 
-    const table = `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
-
-    // optimistic snapshot
-    const prevWords = words;
-    const prevAll = { ...allWords };
+    const table = getWordTable(number);
 
     // 🔁 Update (rename) branch
     if (opts?.oldWord) {
-      const old = opts.oldWord;
-
-      // client-side duplicate check (allow no-op rename)
-      if (next !== old && allWords[number]?.includes(next)) {
-        addError = 'Dieses Wort existiert bereits.';
-        return;
-      }
-
-      // optimistic replace
-      words = words
-        .map(w => (w === old ? next : w))
-        .sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
-      allWords[number] = allWords[number]
-        .map(w => (w === old ? next : w))
-        .sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
+      const old = opts.oldWord.trim().toLocaleLowerCase('de-DE');
+      if (next === old) return;
 
       addBusy = true;
       try {
@@ -218,12 +289,18 @@
         });
 
         newWord = '';
+        await fetchWordPage({ number, page: currentPage });
         toastManager.add('Wort aktualisiert', `${old} → ${next}`);
       } catch (e: unknown) {
-        words = prevWords;
-        allWords = prevAll;
         if (e instanceof PostgrestError) {
-          toastManager.add('Fehler beim Aktualisieren', getPostgrestErrorMessage(e) || `(${e.status})`);
+          addError =
+            e.status === 409
+              ? 'Duplikat: Dieses Wort ist bereits vorhanden.'
+              : `Fehler beim Aktualisieren (${e.status}).`;
+          toastManager.add(
+            'Fehler beim Aktualisieren',
+            getPostgrestErrorMessage(e) || `(${e.status})`,
+          );
           return;
         }
         addError = 'Netzwerkfehler beim Aktualisieren.';
@@ -239,47 +316,8 @@
     await addWord(number, next);
   };
 
-  const fetchWordLists = async (number: number = 4) => {
-    if (allWords[number].length > 0) {
-      // Already loaded this word list
-      words = allWords[number];
-      return;
-    }
-
-    const table = `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
-    loading = true;
-
-    try {
-      const { data } = await requestPostgrest<Array<{ word: string }>>({
-        baseUrl: CONFIG_GAMES.wortiger.apiBase,
-        path: table,
-      });
-
-      const convertedWords = data
-        .map(item => item.word)
-        .filter((item): item is string => typeof item === 'string' && item.length > 0)
-        .sort((a, b) =>
-          a.localeCompare(b, 'de-DE', { sensitivity: 'base' }),
-        );
-
-      allWords[number] = convertedWords;
-      words = convertedWords;
-    } catch (error) {
-      console.error('Error fetching words:', error);
-      words = [];
-    } finally {
-      loading = false;
-    }
-  };
-
   const deleteWord = async (number: number, word: string): Promise<void> => {
-    const table = `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${number}`;
-
-    // optimistic update
-    const prevWords = words;
-    const prevAll = { ...allWords };
-    words = words.filter(w => w !== word);
-    allWords[number] = allWords[number].filter(w => w !== word);
+    const table = getWordTable(number);
 
     loading = true;
     try {
@@ -292,13 +330,15 @@
           Prefer: 'return=minimal',
         },
       });
+      await fetchWordPage({ number, page: currentPage });
       toastManager.add('Wort gelöscht', '');
     } catch (err: unknown) {
-      words = prevWords;
-      allWords = prevAll;
       console.error('Error deleting word:', err);
       if (err instanceof PostgrestError) {
-        toastManager.add('Fehler beim Löschen', `(${err.status}): ${getPostgrestErrorMessage(err)}`);
+        toastManager.add(
+          'Fehler beim Löschen',
+          `(${err.status}): ${getPostgrestErrorMessage(err)}`,
+        );
       } else {
         toastManager.add('Fehler beim Löschen', getPostgrestErrorMessage(err));
       }
@@ -308,9 +348,9 @@
   };
 
   const switchTab = async (tabNumber: number) => {
+    if (activeTab === tabNumber) return;
     activeTab = tabNumber;
     sortDir = 'asc';
-    await fetchWordLists(tabNumber);
   };
 
   /** Debounced writer for `debouncedSearch` to keep filtering light while typing */
@@ -323,26 +363,26 @@
     applyDebouncedSearch(search);
   });
 
-  onMount(() => {
-    fetchWordLists(wordListNumber);
-  });
-
   const visibleWords = $derived(() => {
-    const term = debouncedSearch.toLocaleLowerCase('de-DE');
-    const base = words;
-    const filtered = term ? base.filter(w => w.toLocaleLowerCase('de-DE').includes(term)) : base;
-
-    const collator = new Intl.Collator('de-DE', { sensitivity: 'base' });
-
-    if (sortDir === 'asc') {
-      return filtered.slice().sort((a, b) => collator.compare(a, b));
-    } else {
-      return filtered.slice().sort((a, b) => collator.compare(b, a));
-    }
+    return words;
   });
 
-  /** Title-safe count for the summary line */
-  const countText = $derived(`${visibleWords().length} Wörter mit ${activeTab} Buchstaben`);
+  $effect(() => {
+    const criteria = `${activeTab}:${sortDir}:${debouncedSearch}`;
+
+    if (criteria !== lastLoadedCriteria && currentPage !== 1) {
+      currentPage = 1;
+      return;
+    }
+
+    lastLoadedCriteria = criteria;
+    fetchWordPage({
+      number: activeTab,
+      page: currentPage,
+      term: debouncedSearch,
+      direction: sortDir,
+    });
+  });
 </script>
 
 <!-- Tab Navigation -->
@@ -405,13 +445,15 @@
   </div>
 </fieldset>
 
-
 <div class="flex flex-col md:flex-row my-6 w-full justify-between items-center gap-4">
   <!-- New Word Form  -->
   <div class="flex flex-col w-full gap-2">
     <form
       class="flex items-end gap-2 w-full"
-      onsubmit={() => addWord(activeTab, newWord)}
+      onsubmit={event => {
+        event.preventDefault();
+        addWord(activeTab, newWord);
+      }}
       aria-describedby="add-word-help add-word-error"
     >
       <div class="flex flex-col gap-2 w-full">
@@ -482,7 +524,11 @@
 </div>
 
 <!-- Word List -->
-{#if visibleWords().length === 0}
+{#if loading && !hasLoaded}
+  <div class="loading">
+    <p>Lade Wörter...</p>
+  </div>
+{:else if visibleWords().length === 0}
   <div class="no-words" role="status" aria-live="polite">
     <p>
       {#if debouncedSearch}
@@ -494,11 +540,13 @@
   </div>
 {:else if !loading}
   <div class="word-list-container">
-    <div class="text-right my-4 font-bold">{countText}</div>
+    <div class="text-right my-4 font-bold">{getCountText()}</div>
     <div id="wortiger-grid" class="word-grid grid grid-cols-2 md:grid-cols-4 gap-2">
       {#each visibleWords() as word, i (i)}
         <div class="word-item border border-black px-2 py-1 bg-gray-50 flex">
-          <div class="mr-auto"><HighlightedText segments={highlightMatch(word, debouncedSearch)} /></div>
+          <div class="mr-auto">
+            <HighlightedText segments={highlightMatch(word, debouncedSearch)} />
+          </div>
           <button
             aria-label="Spiel bearbeiten"
             onclick={() => requestRename(word)}
@@ -520,6 +568,7 @@
         </div>
       {/each}
     </div>
+    <TablePagination bind:currentPage {totalPages} />
   </div>
 {:else}
   <div class="loading">
