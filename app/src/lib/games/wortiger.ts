@@ -1,6 +1,7 @@
 import { CONFIG_GAMES } from '../../config/games.config';
 import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
-import type { GameComplete } from '$types';
+import type { GameComplete, SortDirection } from '$types';
+import { toCSV } from '$components/games/wortiger/utils';
 
 /**
  * The characters per level in the Wortiger game.
@@ -20,6 +21,25 @@ export const LENGTH_TO_LEVEL: Record<number, number> = Object.fromEntries(
 
 export const isWortigerLength = (length: number): length is (typeof WORTIGER_LENGTHS)[number] =>
   WORTIGER_LENGTHS.includes(length);
+
+const DEFAULT_WORTIGER_EXPORT_PAGE_SIZE = 1000;
+
+const getWortigerWordTable = (length: number) =>
+  `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${length}`;
+
+const parseTotalCount = (response: Response, fallback: number) => {
+  const contentRange = response.headers.get('content-range');
+  if (!contentRange) return fallback;
+
+  const [, totalStr] = contentRange.split('/');
+  const parsed = Number(totalStr);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const normalizeWords = (data: Array<{ word: string }>) =>
+  data
+    .map(item => item.word)
+    .filter((item): item is string => typeof item === 'string' && item.length > 0);
 
 const deleteWortigerGameById = async (id: number) =>
   requestPostgrest<unknown>({
@@ -106,4 +126,72 @@ export async function fetchWortigerGamesByLevels<T extends object>({
   });
 
   return data;
+}
+
+export async function fetchAllWortigerWordsForExport({
+  length,
+  search = '',
+  direction = 'asc',
+  pageSize = DEFAULT_WORTIGER_EXPORT_PAGE_SIZE,
+}: {
+  length: number;
+  search?: string;
+  direction?: SortDirection;
+  pageSize?: number;
+}) {
+  const trimmedSearch = search.trim();
+  const table = getWortigerWordTable(length);
+  const rows: string[] = [];
+  let offset = 0;
+
+  while (true) {
+    const { data, response } = await requestPostgrest<Array<{ word: string }>>({
+      baseUrl: CONFIG_GAMES.wortiger.apiBase,
+      path: table,
+      query: buildQueryParams([
+        ['select', 'word'],
+        ['order', pg.order('word', direction)],
+        ['limit', pageSize],
+        ['offset', offset],
+        ['word', trimmedSearch ? `ilike.*${trimmedSearch}*` : undefined],
+      ]),
+      headers: {
+        Prefer: 'count=exact',
+      },
+    });
+
+    rows.push(...normalizeWords(data));
+    const total = parseTotalCount(response, rows.length);
+    if (rows.length >= total) break;
+    offset += pageSize;
+  }
+
+  return rows;
+}
+
+export async function exportWortigerWordListCsv({
+  length,
+  search = '',
+  direction = 'asc',
+}: {
+  length: number;
+  search?: string;
+  direction?: SortDirection;
+}) {
+  const exportWords = await fetchAllWortigerWordsForExport({
+    length,
+    search,
+    direction,
+  });
+  const rows: string[][] = [['Wort'], ...exportWords.map(word => [word])];
+  const csv = '\uFEFF' + toCSV(rows, ';');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `wortiger_${length}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  URL.revokeObjectURL(a.href);
+  a.remove();
 }

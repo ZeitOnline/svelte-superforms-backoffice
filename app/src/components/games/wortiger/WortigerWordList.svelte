@@ -12,13 +12,11 @@
     PostgrestError,
     requestPostgrest,
   } from '$lib/postgrest-client';
-  import { toCSV } from './utils';
   import type { SortDirection } from '$types';
-  import { WORTIGER_LENGTHS } from '$lib/games/wortiger';
+  import { exportWortigerWordListCsv, WORTIGER_LENGTHS } from '$lib/games/wortiger';
 
   const DEFAULT_LENGTH = WORTIGER_LENGTHS[0] ?? 4;
   const PAGE_SIZE = 50;
-  const EXPORT_PAGE_SIZE = 1000;
 
   let words = $state<string[]>([]);
   let activeTab = $state<number>(DEFAULT_LENGTH);
@@ -141,64 +139,16 @@
     }
   }
 
-  async function fetchAllWordsForExport({
-    number = activeTab,
-    term = debouncedSearch,
-    direction = sortDir,
-  }: {
-    number?: number;
-    term?: string;
-    direction?: SortDirection;
-  } = {}) {
-    const trimmedTerm = term.trim();
-    const table = getWordTable(number);
-    const rows: string[] = [];
-    let offset = 0;
-
-    while (true) {
-      const { data, response } = await requestPostgrest<Array<{ word: string }>>({
-        baseUrl: CONFIG_GAMES.wortiger.apiBase,
-        path: table,
-        query: buildQueryParams([
-          ['select', 'word'],
-          ['order', pg.order('word', direction)],
-          ['limit', EXPORT_PAGE_SIZE],
-          ['offset', offset],
-          ['word', trimmedTerm ? `ilike.*${trimmedTerm}*` : undefined],
-        ]),
-        headers: {
-          Prefer: 'count=exact',
-        },
-      });
-
-      rows.push(...normalizeWords(data));
-      const total = parseTotalCount(response, rows.length);
-      if (rows.length >= total) break;
-      offset += EXPORT_PAGE_SIZE;
-    }
-
-    return rows;
-  }
-
   /**
    * Export the full filtered list as CSV.
    * Filename example: wortiger_4_2025-09-08.csv
    */
   async function exportCurrentListAsCSV() {
-    const exportWords = await fetchAllWordsForExport();
-    const rows: string[][] = [['Wort'], ...exportWords.map(w => [w])];
-
-    // Prepend BOM for Excel & Umlauts
-    const csv = '\uFEFF' + toCSV(rows, ';');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `wortiger_${activeTab}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(a.href);
-    a.remove();
+    await exportWortigerWordListCsv({
+      length: activeTab,
+      search: debouncedSearch,
+      direction: sortDir,
+    });
   }
 
   /**
