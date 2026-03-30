@@ -124,6 +124,47 @@ export async function fetchWortigerGamesByLevels<T extends object>({
   return data;
 }
 
+export async function fetchWortigerWordListPage({
+  length,
+  page = 1,
+  pageSize = 50,
+  search = '',
+  direction = 'asc',
+}: {
+  length: number;
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  direction?: SortDirection;
+}) {
+  const normalizedPage = Math.max(1, page);
+  const normalizedPageSize = Math.max(1, pageSize);
+  const trimmedSearch = search.trim();
+  const table = getWortigerWordTable(length);
+
+  const { data, response } = await requestPostgrest<Array<{ word: string }>>({
+    baseUrl: CONFIG_GAMES.wortiger.apiBase,
+    path: table,
+    query: buildQueryParams([
+      ['select', 'word'],
+      ['order', pg.order('word', direction)],
+      ['limit', normalizedPageSize],
+      ['offset', (normalizedPage - 1) * normalizedPageSize],
+      ['word', trimmedSearch ? `ilike.*${trimmedSearch}*` : undefined],
+    ]),
+    headers: {
+      Prefer: 'count=exact',
+    },
+  });
+
+  const words = normalizeWords(data);
+
+  return {
+    words,
+    total: parseContentRangeTotal(response, words.length),
+  };
+}
+
 export async function fetchAllWortigerWordsForExport({
   length,
   search = '',
@@ -136,29 +177,20 @@ export async function fetchAllWortigerWordsForExport({
   pageSize?: number;
 }) {
   const trimmedSearch = search.trim();
-  const table = getWortigerWordTable(length);
   const normalizedPageSize = Math.max(1, pageSize);
   const rows: string[] = [];
   let offset = 0;
 
   while (true) {
-    const { data, response } = await requestPostgrest<Array<{ word: string }>>({
-      baseUrl: CONFIG_GAMES.wortiger.apiBase,
-      path: table,
-      query: buildQueryParams([
-        ['select', 'word'],
-        ['order', pg.order('word', direction)],
-        ['limit', normalizedPageSize],
-        ['offset', offset],
-        ['word', trimmedSearch ? `ilike.*${trimmedSearch}*` : undefined],
-      ]),
-      headers: {
-        Prefer: 'count=exact',
-      },
+    const { words, total } = await fetchWortigerWordListPage({
+      length,
+      page: Math.floor(offset / normalizedPageSize) + 1,
+      pageSize: normalizedPageSize,
+      search: trimmedSearch,
+      direction,
     });
 
-    rows.push(...normalizeWords(data));
-    const total = parseContentRangeTotal(response, rows.length);
+    rows.push(...words);
     if (rows.length >= total) break;
     offset += normalizedPageSize;
   }

@@ -13,7 +13,11 @@
     requestPostgrest,
   } from '$lib/postgrest-client';
   import type { SortDirection } from '$types';
-  import { exportWortigerWordListCsv, WORTIGER_LENGTHS } from '$lib/games/wortiger';
+  import {
+    exportWortigerWordListCsv,
+    fetchWortigerWordListPage,
+    WORTIGER_LENGTHS,
+  } from '$lib/games/wortiger';
 
   const DEFAULT_LENGTH = WORTIGER_LENGTHS[0] ?? 4;
   const PAGE_SIZE = 50;
@@ -47,21 +51,6 @@
     return `${CONFIG_GAMES.wortiger.endpoints.wordList!.name}_${length}`;
   }
 
-  function parseTotalCount(response: Response, fallback: number) {
-    const contentRange = response.headers.get('content-range');
-    if (!contentRange) return fallback;
-
-    const [, totalStr] = contentRange.split('/');
-    const parsed = Number(totalStr);
-    return Number.isFinite(parsed) ? parsed : fallback;
-  }
-
-  function normalizeWords(data: Array<{ word: string }>) {
-    return data
-      .map(item => item.word)
-      .filter((item): item is string => typeof item === 'string' && item.length > 0);
-  }
-
   function getCountText() {
     if (debouncedSearch) {
       return `${totalWords} Treffer in der ${activeTab}-Buchstaben-Liste`;
@@ -86,31 +75,20 @@
   } = {}) {
     const requestId = ++lastRequestId;
     const normalizedPage = Math.max(1, page);
-    const trimmedTerm = term.trim();
-    const table = getWordTable(number);
 
     loading = true;
 
     try {
-      const { data, response } = await requestPostgrest<Array<{ word: string }>>({
-        baseUrl: CONFIG_GAMES.wortiger.apiBase,
-        path: table,
-        query: buildQueryParams([
-          ['select', 'word'],
-          ['order', pg.order('word', direction)],
-          ['limit', PAGE_SIZE],
-          ['offset', (normalizedPage - 1) * PAGE_SIZE],
-          ['word', trimmedTerm ? `ilike.*${trimmedTerm}*` : undefined],
-        ]),
-        headers: {
-          Prefer: 'count=exact',
-        },
+      const { words: nextWords, total: nextTotal } = await fetchWortigerWordListPage({
+        length: number,
+        page: normalizedPage,
+        pageSize: PAGE_SIZE,
+        search: term,
+        direction,
       });
 
       if (requestId !== lastRequestId) return;
 
-      const nextWords = normalizeWords(data);
-      const nextTotal = parseTotalCount(response, nextWords.length);
       const nextTotalPages = Math.max(1, Math.ceil(nextTotal / PAGE_SIZE));
       const nextPage = Math.min(normalizedPage, nextTotalPages);
 
