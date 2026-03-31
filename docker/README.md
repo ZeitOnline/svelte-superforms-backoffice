@@ -187,14 +187,14 @@ docker compose down -v
 docker compose up -d
 ```
 
-### Apply German word collation to an existing local DB
+### Apply German word collation migration to an existing local DB
 
 Some word-list pagination and ordering now depend on database collation.
 If your local Docker volume already exists, that change will not apply until you
-either recreate the database volume or run the collation script manually:
+either recreate the database volume or run the collation migration manually:
 
 ```bash
-docker compose exec -T postgres psql -U postgres -d main < scripts/apply-german-collation.sql
+docker compose exec -T postgres psql -U postgres -d main < migrations/apply-german-collation.sql
 ```
 
 ### Optional pagination fixture for Wortgeflecht
