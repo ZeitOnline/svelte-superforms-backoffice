@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createWortgeflechtDictionaryWord,
   deleteWortgeflechtDictionaryWord,
+  fetchWortgeflechtDictionaryPage,
   fetchWortgeflechtDictionaryWords,
   fetchWortgeflechtLettersByGameId,
   replaceWortgeflechtLettersByGameId,
@@ -100,6 +101,39 @@ describe('wortgeflecht helpers', () => {
       },
     );
     expect(words).toEqual(['ähre', 'apfel', 'zebra']);
+  });
+
+  it('fetches wortgeflecht dictionary pages with count-aware search params', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify([{ word: 'wortalpha' }, { word: 'wortbeta' }]), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+          'content-range': '100-101/145',
+        },
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await fetchWortgeflechtDictionaryPage({
+      page: 2,
+      pageSize: 50,
+      search: 'wort',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '/dictionary?select=word&order=word.asc&limit=50&offset=50&word=ilike.*wort*',
+      ),
+      expect.objectContaining({
+        method: 'GET',
+        headers: expect.any(Headers),
+      }),
+    );
+    expect(result).toEqual({
+      words: ['wortalpha', 'wortbeta'],
+      total: 145,
+    });
   });
 
   it('normalizes dictionary words to lowercase before inserting them', async () => {

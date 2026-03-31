@@ -7,6 +7,10 @@ CREATE SCHEMA IF NOT EXISTS eckchen;
 CREATE SCHEMA IF NOT EXISTS wortiger;
 CREATE SCHEMA IF NOT EXISTS spelling_bee;
 CREATE SCHEMA IF NOT EXISTS wortgeflecht;
+CREATE COLLATION IF NOT EXISTS public.de_phonebook (
+    provider = icu,
+    locale = 'de-u-co-phonebk'
+);
 
 -- Create PostgREST role
 DO $$
@@ -1791,6 +1795,14 @@ CREATE TABLE wortiger.wortliste_6 (
 CREATE TABLE wortiger.wortliste_7 (
     word character(7) NOT NULL
 );
+ALTER TABLE wortiger.wortliste_4
+    ALTER COLUMN word TYPE character(4) COLLATE "public"."de_phonebook" USING word;
+ALTER TABLE wortiger.wortliste_5
+    ALTER COLUMN word TYPE character(5) COLLATE "public"."de_phonebook" USING word;
+ALTER TABLE wortiger.wortliste_6
+    ALTER COLUMN word TYPE character(6) COLLATE "public"."de_phonebook" USING word;
+ALTER TABLE wortiger.wortliste_7
+    ALTER COLUMN word TYPE character(7) COLLATE "public"."de_phonebook" USING word;
 ALTER TABLE ONLY wortiger.user_statistics ALTER COLUMN id SET DEFAULT nextval('wortiger.user_statistics_id_seq'::regclass);
 ALTER TABLE ONLY wortiger.wortiger_games ALTER COLUMN id SET DEFAULT nextval('wortiger.wortiger_games_id_seq'::regclass);
 ALTER TABLE ONLY wortiger.wortiger_games
@@ -68710,6 +68722,8 @@ CREATE TABLE IF NOT EXISTS wortgeflecht.dictionary (
     created_at timestamp NOT NULL DEFAULT now(),
     modified_at timestamp NOT NULL DEFAULT now()
 );
+ALTER TABLE wortgeflecht.dictionary
+    ALTER COLUMN word TYPE varchar(255) COLLATE "public"."de_phonebook" USING word;
 
 CREATE OR REPLACE VIEW wortgeflecht.game_letters_coordinates AS
 SELECT
