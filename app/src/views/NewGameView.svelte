@@ -60,8 +60,8 @@
     />
     <div class="flex items-center justify-between gap-z-ds-8">
       {#each ACTIONS as action (action.name)}
+          <!-- add hidden if action.name === 'csv' && !canCSV -->
         <button
-          // add hidden if action.name === 'csv' && !canCSV
           class={[
             'relative flex-1 z-ds-button z-ds-button-outline flex items-center min-h-50 text-sm',
             action.name === 'csv' && !canCSV ? 'hidden!' : '',
