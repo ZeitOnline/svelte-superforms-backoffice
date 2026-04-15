@@ -196,7 +196,7 @@ export const requestPostgrest = async <TResponse, TBody = unknown>({
   }
 
   if (oidc?.accessToken) {
-    requestHeaders.set('X-API-Token', oidc.accessToken);
+    requestHeaders.set('Authorization', `Bearer ${oidc.accessToken}`);
   }
 
   const response = await fetchFn(finalUrl, {
