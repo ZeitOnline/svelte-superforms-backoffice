@@ -33,6 +33,8 @@
     gameName,
     resultsDataBody = $bindable(),
     data,
+    // `beginning_option` is intentionally declared as a bindable prop and later mutated.
+    // eslint-disable-next-line no-useless-assignment
     beginning_option = $bindable(),
   }: {
     gameName: GameType;

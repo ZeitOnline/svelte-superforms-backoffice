@@ -1,9 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  createWortgeflechtDictionaryWord,
+  deleteWortgeflechtDictionaryWord,
+  fetchWortgeflechtDictionaryPage,
+  fetchWortgeflechtDictionaryWords,
   fetchWortgeflechtLettersByGameId,
   replaceWortgeflechtLettersByGameId,
   sortWortgeflechtRowsByWordThenLetter,
   type WortgeflechtLetterRow,
+  updateWortgeflechtDictionaryWord,
 } from '$lib/games/wortgeflecht';
 
 describe('wortgeflecht helpers', () => {
@@ -71,6 +76,123 @@ describe('wortgeflecht helpers', () => {
       { word: 'wasser', letter: 'a', cx: 6, cy: 1 },
       { word: 'wasser', letter: 's', cx: 8, cy: 2 },
     ]);
+  });
+
+  it('fetches wortgeflecht dictionary words sorted alphabetically', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify([{ word: 'zebra' }, { word: 'ähre' }, { word: 'apfel' }, { word: '' }]),
+        {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const words = await fetchWortgeflechtDictionaryWords();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/dictionary?select=word&order=word.asc'),
+      {
+        method: 'GET',
+        headers: expect.any(Headers),
+        body: undefined,
+      },
+    );
+    expect(words).toEqual(['ähre', 'apfel', 'zebra']);
+  });
+
+  it('fetches wortgeflecht dictionary pages with count-aware search params', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify([{ word: 'wortalpha' }, { word: 'wortbeta' }]), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+          'content-range': '100-101/145',
+        },
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await fetchWortgeflechtDictionaryPage({
+      page: 2,
+      pageSize: 50,
+      search: 'wort',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '/dictionary?select=word&order=word.asc&limit=50&offset=50&word=ilike.*wort*',
+      ),
+      expect.objectContaining({
+        method: 'GET',
+        headers: expect.any(Headers),
+      }),
+    );
+    expect(result).toEqual({
+      words: ['wortalpha', 'wortbeta'],
+      total: 145,
+    });
+  });
+
+  it('normalizes dictionary words to lowercase before inserting them', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify([{ word: 'süßlich' }]), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const word = await createWortgeflechtDictionaryWord('SÜẞLICH');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/dictionary'),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ word: 'süßlich' }),
+      }),
+    );
+    expect(word).toBe('süßlich');
+  });
+
+  it('normalizes dictionary words before updating them', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify([{ word: 'süßholz' }]), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const word = await updateWortgeflechtDictionaryWord({
+      oldWord: 'SÜẞLICH',
+      nextWord: 'SÜẞHOLZ',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/dictionary?word=eq.s%C3%BC%C3%9Flich'),
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ word: 'süßholz' }),
+      }),
+    );
+    expect(word).toBe('süßholz');
+  });
+
+  it('normalizes dictionary words before deleting them', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await deleteWortgeflechtDictionaryWord('SÜẞLICH');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/dictionary?word=eq.s%C3%BC%C3%9Flich'),
+      expect.objectContaining({
+        method: 'DELETE',
+      }),
+    );
   });
 
   it('normalizes words to lowercase before inserting wortgeflecht rows', async () => {

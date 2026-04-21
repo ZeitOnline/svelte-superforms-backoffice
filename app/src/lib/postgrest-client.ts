@@ -80,6 +80,15 @@ export const buildQueryParams = (entries: Array<[string, QueryValue]>) => {
   return params;
 };
 
+export const parseContentRangeTotal = (response: Response, fallback: number) => {
+  const contentRange = response.headers.get('content-range');
+  if (!contentRange) return fallback;
+
+  const [, totalStr] = contentRange.split('/');
+  const parsed = Number(totalStr);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
 const buildEndpointUrl = ({
   url,
   baseUrl,
@@ -187,7 +196,7 @@ export const requestPostgrest = async <TResponse, TBody = unknown>({
   }
 
   if (oidc?.accessToken) {
-    requestHeaders.set('X-API-Token', oidc.accessToken);
+    requestHeaders.set('Authorization', `Bearer ${oidc.accessToken}`);
   }
 
   const response = await fetchFn(finalUrl, {

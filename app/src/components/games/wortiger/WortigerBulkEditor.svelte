@@ -28,6 +28,8 @@
     beginning_option: BeginningOptions;
   };
 
+  // These props are intentionally bindable and updated from inside the editor.
+  // eslint-disable-next-line no-useless-assignment
   let { data, resultsDataBody = $bindable(), beginning_option = $bindable() }: Props = $props();
 
   type ExistingIndex = Record<

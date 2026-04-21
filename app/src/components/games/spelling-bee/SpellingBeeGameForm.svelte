@@ -32,8 +32,8 @@
 
   type DataProps = {
     games: GameSpellingBeeComplete[];
-    generateGameForm: SuperValidated<any>;
-    saveGameForm: SuperValidated<any>;
+    generateGameForm: SuperValidated<SaveSpellingBeeGameFormSchema>;
+    saveGameForm: SuperValidated<SaveSpellingBeeGameFormSchema>;
   };
 
   type SpellingBeeGameFormProps = {

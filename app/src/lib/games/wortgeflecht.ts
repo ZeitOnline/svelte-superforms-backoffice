@@ -1,5 +1,10 @@
 import { CONFIG_GAMES } from '../../config/games.config';
-import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
+import {
+  buildQueryParams,
+  parseContentRangeTotal,
+  pg,
+  requestPostgrest,
+} from '$lib/postgrest-client';
 
 const normalizeStoredWord = (value: string) => value.trim().toLocaleLowerCase('de-DE');
 
@@ -89,6 +94,62 @@ const insertGameLetters = async (
     method: 'POST',
     body: lettersPayload,
     errorMessage: 'Failed to insert letters',
+  });
+
+const dictionaryPath = CONFIG_GAMES.wortgeflecht.endpoints.wordList?.name ?? 'dictionary';
+
+const fetchWortgeflechtDictionary = async () =>
+  requestPostgrest<Array<{ word: string }>>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: dictionaryPath,
+    query: buildQueryParams([
+      ['select', 'word'],
+      ['order', pg.order('word', 'asc')],
+    ]),
+    errorMessage: 'Failed to fetch wortgeflecht dictionary',
+  });
+
+const insertWortgeflechtDictionaryWord = async (word: string) =>
+  requestPostgrest<Array<{ word: string }>, { word: string }>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: dictionaryPath,
+    method: 'POST',
+    headers: {
+      Prefer: 'return=representation',
+    },
+    body: { word },
+    errorMessage: 'Failed to insert wortgeflecht dictionary word',
+  });
+
+const updateWortgeflechtDictionaryWordRow = async ({
+  oldWord,
+  nextWord,
+}: {
+  oldWord: string;
+  nextWord: string;
+}) =>
+  requestPostgrest<Array<{ word: string }>, { word: string }>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: dictionaryPath,
+    method: 'PATCH',
+    query: buildQueryParams([['word', pg.eq(oldWord)]]),
+    headers: {
+      Prefer: 'return=representation',
+    },
+    body: { word: nextWord },
+    errorMessage: 'Failed to update wortgeflecht dictionary word',
+  });
+
+const deleteWortgeflechtDictionaryWordRow = async (word: string) =>
+  requestPostgrest<unknown>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: dictionaryPath,
+    method: 'DELETE',
+    query: buildQueryParams([['word', pg.eq(word)]]),
+    headers: {
+      Prefer: 'return=minimal',
+    },
+    errorMessage: 'Failed to delete wortgeflecht dictionary word',
   });
 
 const updateWortgeflechtGameById = async (
@@ -184,6 +245,83 @@ export const fetchWortgeflechtLettersByGameId = async (gameId: string) => {
   }
 
   return sortWortgeflechtRowsByWordThenLetter(rows);
+};
+
+export const fetchWortgeflechtDictionaryWords = async () => {
+  const { data } = await fetchWortgeflechtDictionary();
+
+  return data
+    .map(entry => entry.word)
+    .filter((word): word is string => typeof word === 'string' && word.length > 0)
+    .sort((a, b) => a.localeCompare(b, 'de-DE', { sensitivity: 'base' }));
+};
+
+export const fetchWortgeflechtDictionaryPage = async ({
+  page = 1,
+  pageSize = 50,
+  search = '',
+}: {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}) => {
+  const normalizedPage = Math.max(1, page);
+  const normalizedPageSize = Math.max(1, pageSize);
+  const trimmedSearch = search.trim();
+
+  const { data, response } = await requestPostgrest<Array<{ word: string }>>({
+    baseUrl: CONFIG_GAMES.wortgeflecht.apiBase,
+    path: dictionaryPath,
+    query: buildQueryParams([
+      ['select', 'word'],
+      ['order', pg.order('word', 'asc')],
+      ['limit', normalizedPageSize],
+      ['offset', (normalizedPage - 1) * normalizedPageSize],
+      ['word', trimmedSearch ? `ilike.*${trimmedSearch}*` : undefined],
+    ]),
+    headers: {
+      Prefer: 'count=exact',
+    },
+    errorMessage: 'Failed to fetch paged wortgeflecht dictionary',
+  });
+
+  const words = data
+    .map(entry => entry.word)
+    .filter((word): word is string => typeof word === 'string' && word.length > 0);
+
+  return {
+    words,
+    total: parseContentRangeTotal(response, words.length),
+  };
+};
+
+export const createWortgeflechtDictionaryWord = async (word: string) => {
+  const normalized = normalizeStoredWord(word);
+  const { data } = await insertWortgeflechtDictionaryWord(normalized);
+
+  return data[0]?.word ?? normalized;
+};
+
+export const updateWortgeflechtDictionaryWord = async ({
+  oldWord,
+  nextWord,
+}: {
+  oldWord: string;
+  nextWord: string;
+}) => {
+  const normalizedOldWord = normalizeStoredWord(oldWord);
+  const normalizedNextWord = normalizeStoredWord(nextWord);
+  const { data } = await updateWortgeflechtDictionaryWordRow({
+    oldWord: normalizedOldWord,
+    nextWord: normalizedNextWord,
+  });
+
+  return data[0]?.word ?? normalizedNextWord;
+};
+
+export const deleteWortgeflechtDictionaryWord = async (word: string) => {
+  const normalized = normalizeStoredWord(word);
+  await deleteWortgeflechtDictionaryWordRow(normalized);
 };
 
 export const replaceWortgeflechtLettersByGameId = async ({
