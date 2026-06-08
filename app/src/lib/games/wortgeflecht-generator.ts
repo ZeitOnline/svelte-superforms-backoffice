@@ -96,7 +96,8 @@ export const prioritizeWordsForPlacement = (words: string[]) => {
   return words
     .map((word, index) => ({ word, index }))
     .sort((a, b) => {
-      const initialDiff = (initialCounts.get(initialKey(b.word)) ?? 0) - (initialCounts.get(initialKey(a.word)) ?? 0);
+      const initialDiff =
+        (initialCounts.get(initialKey(b.word)) ?? 0) - (initialCounts.get(initialKey(a.word)) ?? 0);
       if (initialDiff !== 0) return initialDiff;
 
       const prefixA = Array.from(a.word.trim()).slice(0, 2).join('').toLocaleLowerCase('de-DE');
@@ -111,7 +112,8 @@ export const prioritizeWordsForPlacement = (words: string[]) => {
     .map(entry => entry.word);
 };
 
-const prioritizeWordsWithRandomTies = (words: string[]) => prioritizeWordsForPlacement(shuffle(words.slice()));
+const prioritizeWordsWithRandomTies = (words: string[]) =>
+  prioritizeWordsForPlacement(shuffle(words.slice()));
 
 const createGraph = (): Graph => {
   const graph: Graph = {
@@ -286,7 +288,9 @@ const canCompleteRemainingLetters = (
 
   for (const neighbor of getFreeNeighbors(currentIndex, used)) {
     if (grid[neighbor] !== remainingLetters[0]) continue;
-    if (canCompleteRemainingLetters(grid, neighbor, [...used, neighbor], remainingLetters.slice(1))) {
+    if (
+      canCompleteRemainingLetters(grid, neighbor, [...used, neighbor], remainingLetters.slice(1))
+    ) {
       return true;
     }
   }
@@ -356,7 +360,9 @@ export const hasUnambiguousNextLetterChoices = (
       if (currentIndex === undefined || intendedNextIndex === undefined || !nextLetter) continue;
 
       const prefix = indices.slice(0, i + 1);
-      const matches = getFreeNeighbors(currentIndex, prefix).filter(index => grid[index] === nextLetter);
+      const matches = getFreeNeighbors(currentIndex, prefix).filter(
+        index => grid[index] === nextLetter,
+      );
 
       if (!matches.includes(intendedNextIndex)) {
         return false;
@@ -465,19 +471,21 @@ const getAvailableComponents = (graph: Graph, visited: Set<NodeId>) => {
   return components;
 };
 
-const canAssignLengthsToComponentSizes = (componentSizes: number[], wordLengths: number[]) => {
+const canAssignLengthsToComponentSizes = (
+  componentSizes: number[],
+  wordLengths: number[],
+  deadline: number | null,
+) => {
   const sortedSizes = componentSizes.slice().sort((a, b) => b - a);
   const sortedLengths = wordLengths.slice().sort((a, b) => b - a);
 
   const assign = (sizeIndex: number, remainingLengths: number[]): boolean => {
+    if (isPastDeadline(deadline)) return false;
     if (sizeIndex === sortedSizes.length) return remainingLengths.length === 0;
 
     const target = sortedSizes[sizeIndex];
-    const collect = (
-      start: number,
-      selectedIndices: number[],
-      selectedSum: number,
-    ): boolean => {
+    const collect = (start: number, selectedIndices: number[], selectedSum: number): boolean => {
+      if (isPastDeadline(deadline)) return false;
       if (selectedSum === target) {
         const selected = new Set(selectedIndices);
         return assign(
@@ -488,6 +496,7 @@ const canAssignLengthsToComponentSizes = (componentSizes: number[], wordLengths:
       if (selectedSum > target) return false;
 
       for (let i = start; i < remainingLengths.length; i++) {
+        if (isPastDeadline(deadline)) return false;
         if (i > start && remainingLengths[i] === remainingLengths[i - 1]) continue;
         if (collect(i + 1, [...selectedIndices, i], selectedSum + remainingLengths[i])) {
           return true;
@@ -503,9 +512,16 @@ const canAssignLengthsToComponentSizes = (componentSizes: number[], wordLengths:
   return assign(0, sortedLengths);
 };
 
-const canRemainingWordsFillAvailableComponents = (graph: Graph, visited: Set<NodeId>, words: string[]) => {
+const canRemainingWordsFillAvailableComponents = (
+  graph: Graph,
+  visited: Set<NodeId>,
+  words: string[],
+  deadline: number | null,
+) => {
+  if (isPastDeadline(deadline)) return false;
   if (words.length === 0) return visited.size === GRID_SIZE;
   const components = getAvailableComponents(graph, visited);
+  if (isPastDeadline(deadline)) return false;
   const componentSizes = components.map(component => component.length);
   const wordLengths = words.map(word => word.length);
 
@@ -513,7 +529,7 @@ const canRemainingWordsFillAvailableComponents = (graph: Graph, visited: Set<Nod
   if (Math.max(...componentSizes) < Math.max(...wordLengths)) return false;
   if (Math.min(...componentSizes) < Math.min(...wordLengths)) return false;
 
-  return canAssignLengthsToComponentSizes(componentSizes, wordLengths);
+  return canAssignLengthsToComponentSizes(componentSizes, wordLengths, deadline);
 };
 
 const findRandomPathForWord = ({
@@ -548,13 +564,17 @@ const findRandomPathForWord = ({
     if (steps++ > stepLimit) return false;
     if (path.length === word.length) {
       const nextVisited = new Set([...visited, ...path]);
-      return canRemainingWordsFillAvailableComponents(graph, nextVisited, remainingWords) ? path.slice() : false;
+      return canRemainingWordsFillAvailableComponents(graph, nextVisited, remainingWords, deadline)
+        ? path.slice()
+        : false;
     }
 
     const current = path[path.length - 1];
     const pathSet = new Set(path);
     const neighbors = shuffle(
-      graph.nodes[current].neighbors.filter(neighbor => !visited.has(neighbor) && !pathSet.has(neighbor)),
+      graph.nodes[current].neighbors.filter(
+        neighbor => !visited.has(neighbor) && !pathSet.has(neighbor),
+      ),
     );
 
     for (const next of neighbors) {
@@ -685,7 +705,11 @@ const placeWordsSubsets = (
         hasSeparatedMatchingInitialWordStarts(candidatePaths) &&
         hasUnambiguousNextLetterChoices(candidatePaths);
       if (valid) {
-        result = placeWordsSubsets(prioritizeWordsWithRandomTies(selected.words.slice(1)), islandGraph, deadline);
+        result = placeWordsSubsets(
+          prioritizeWordsWithRandomTies(selected.words.slice(1)),
+          islandGraph,
+          deadline,
+        );
       }
 
       if (!valid || !result) {
