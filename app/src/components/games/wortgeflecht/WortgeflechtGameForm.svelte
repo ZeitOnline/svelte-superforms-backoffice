@@ -4,7 +4,7 @@
   import type { SuperValidated } from 'sveltekit-superforms';
   import { superForm, setError } from 'sveltekit-superforms';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { blur } from 'svelte/transition';
   import { SvelteDate } from 'svelte/reactivity';
   import ViewNavigation from '../../ViewNavigation.svelte';
@@ -69,7 +69,7 @@
     { fill: '#fae8ff', stroke: '#9660cc' },
     { fill: '#fef3c7', stroke: '#b08a07' },
   ];
-  const DEBUG_WORDS = ['blumig', 'modrig', 'säuerlich', 'stechend', 'süßlich', 'muffig', 'ranzig'];
+  const DEBUG_WORDS = ['scheffel', 'unze', 'klafter', 'lachter', 'fuder', 'zentner', 'heller', 'gros'];
   const toastManager = getToastState();
   let rows = $state<WortgeflechtLetterRow[]>([]);
   let rowsError = $state<string | null>(null);
@@ -311,7 +311,14 @@
 
     isGenerating = true;
     try {
-      const generated = generateWortgeflechtLayout({ words: validation.parsed.words, attempts: 200 });
+      await tick();
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      const generated = generateWortgeflechtLayout({
+        words: validation.parsed.words,
+        attempts: 200,
+        maxDurationMs: 6000,
+      });
       if (!generated) {
         generatorError =
           'Kein valides Gitter gefunden. Bitte Wortliste prüfen oder erneut auf "Generieren" klicken.';

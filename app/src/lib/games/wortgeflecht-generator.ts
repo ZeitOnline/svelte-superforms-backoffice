@@ -76,6 +76,10 @@ const sum = (values: number[]) => values.reduce((acc, value) => acc + value, 0);
 
 const initialKey = (word: string) => Array.from(word.trim())[0]?.toLocaleLowerCase('de-DE') ?? '';
 
+const totalWordLength = (words: string[]) => sum(words.map(word => word.length));
+
+const isPastDeadline = (deadline: number | null) => deadline !== null && Date.now() >= deadline;
+
 export const prioritizeWordsForPlacement = (words: string[]) => {
   const initialCounts = new Map<string, number>();
   const prefixCounts = new Map<string, number>();
@@ -250,52 +254,15 @@ const findWord = (grid: string[], word: string) => {
   return locations;
 };
 
-const isWordPlacementUnique = (grid: string[], words: string[]) => {
-  for (const word of words) {
-    if (!word) continue;
-    const locations = findWord(grid, word);
-    if (locations.length !== 1) return false;
-  }
-  return true;
-};
-
-const edgeKey = (a: number, b: number) => (a < b ? `${a}-${b}` : `${b}-${a}`);
-
-const hasOnlyIntendedSameLetterAdjacency = (
-  wordPaths: Record<string, NodeId[]>,
-  graph: Graph,
-) => {
-  const grid = gridFromWords(wordPaths);
-  const intendedSameLetterEdges = new Set<string>();
-
-  // Same-letter neighbors are only allowed when that exact edge is part of a placed
-  // word path (for example, consecutive identical letters in the same word).
-  for (const [word, path] of Object.entries(wordPaths)) {
-    for (let i = 1; i < path.length; i++) {
-      const prevLetter = word[i - 1];
-      const nextLetter = word[i];
-      if (!prevLetter || !nextLetter || prevLetter !== nextLetter) continue;
-      intendedSameLetterEdges.add(edgeKey(toIndex(path[i - 1]), toIndex(path[i])));
+const wordOwnerGridFromPaths = (paths: Array<Pick<WortgeflechtWordPath, 'word' | 'cells'>>) => {
+  const owners = Array<string>(GRID_SIZE).fill('');
+  for (const path of paths) {
+    const wordKey = normalizeWordKey(path.word);
+    for (const cell of path.cells) {
+      owners[cell.y * GRID_WIDTH + cell.x] = wordKey;
     }
   }
-
-  // Use the graph's edges (allowed connections), not just geometric grid neighbors.
-  // Some diagonal grid neighbors are intentionally disconnected in `createGraph()`.
-  for (const node of Object.keys(graph.nodes) as NodeId[]) {
-    const i = toIndex(node);
-    const letter = grid[i];
-    if (!letter || letter === '\u00A0') continue;
-    for (const neighborNode of graph.nodes[node].neighbors) {
-      const neighbor = toIndex(neighborNode);
-      if (neighbor <= i) continue;
-      if (grid[neighbor] !== letter) continue;
-      if (!intendedSameLetterEdges.has(edgeKey(i, neighbor))) {
-        return false;
-      }
-    }
-  }
-
-  return true;
+  return owners;
 };
 
 const gridFromWords = (wordPaths: Record<string, NodeId[]>) => {
@@ -307,6 +274,24 @@ const gridFromWords = (wordPaths: Record<string, NodeId[]>) => {
     });
   }
   return grid;
+};
+
+const canCompleteRemainingLetters = (
+  grid: string[],
+  currentIndex: number,
+  used: number[],
+  remainingLetters: string[],
+): boolean => {
+  if (remainingLetters.length === 0) return true;
+
+  for (const neighbor of getFreeNeighbors(currentIndex, used)) {
+    if (grid[neighbor] !== remainingLetters[0]) continue;
+    if (canCompleteRemainingLetters(grid, neighbor, [...used, neighbor], remainingLetters.slice(1))) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 const isAdjacent = (a: number, b: number) => {
@@ -357,10 +342,12 @@ export const hasUnambiguousNextLetterChoices = (
   paths: Array<Pick<WortgeflechtWordPath, 'word' | 'cells'>>,
 ) => {
   const grid = gridFromPaths(paths);
+  const owners = wordOwnerGridFromPaths(paths);
 
   for (const path of paths) {
     const indices = path.cells.map(cell => cell.y * GRID_WIDTH + cell.x);
     const letters = Array.from(path.word);
+    const wordKey = normalizeWordKey(path.word);
 
     for (let i = 0; i < indices.length - 1; i++) {
       const currentIndex = indices[i];
@@ -371,9 +358,17 @@ export const hasUnambiguousNextLetterChoices = (
       const prefix = indices.slice(0, i + 1);
       const matches = getFreeNeighbors(currentIndex, prefix).filter(index => grid[index] === nextLetter);
 
-      if (matches.length !== 1 || matches[0] !== intendedNextIndex) {
+      if (!matches.includes(intendedNextIndex)) {
         return false;
       }
+
+      const remainingLetters = letters.slice(i + 2);
+      const hasForeignCompletion = matches.some(index => {
+        if (index === intendedNextIndex || owners[index] === wordKey) return false;
+        return canCompleteRemainingLetters(grid, index, [...prefix, index], remainingLetters);
+      });
+
+      if (hasForeignCompletion) return false;
     }
   }
 
@@ -434,7 +429,210 @@ const graphFromIsland = (island: NodeId[], graph: Graph): Graph => {
   return subsetGraph;
 };
 
-const placeWordsSubsets = (words: string[], graph: Graph | null = null): Graph | false => {
+const pathCellsFromWords = (wordPaths: Record<string, NodeId[]>) =>
+  Object.entries(wordPaths).map(([word, path]) => ({
+    word,
+    cells: path.map((node, index) => ({
+      x: Number(node[1]),
+      y: Number(node[2]),
+      letter: word[index] ?? '',
+    })),
+  }));
+
+const getAvailableComponents = (graph: Graph, visited: Set<NodeId>) => {
+  const available = new Set(difference(Object.keys(graph.nodes) as NodeId[], Array.from(visited)));
+  const components: NodeId[][] = [];
+
+  while (available.size) {
+    const first = available.values().next().value as NodeId;
+    const queue = [first];
+    const component: NodeId[] = [];
+    available.delete(first);
+
+    while (queue.length) {
+      const current = queue.shift() as NodeId;
+      component.push(current);
+      for (const neighbor of graph.nodes[current].neighbors) {
+        if (!available.has(neighbor)) continue;
+        available.delete(neighbor);
+        queue.push(neighbor);
+      }
+    }
+
+    components.push(component);
+  }
+
+  return components;
+};
+
+const canAssignLengthsToComponentSizes = (componentSizes: number[], wordLengths: number[]) => {
+  const sortedSizes = componentSizes.slice().sort((a, b) => b - a);
+  const sortedLengths = wordLengths.slice().sort((a, b) => b - a);
+
+  const assign = (sizeIndex: number, remainingLengths: number[]): boolean => {
+    if (sizeIndex === sortedSizes.length) return remainingLengths.length === 0;
+
+    const target = sortedSizes[sizeIndex];
+    const collect = (
+      start: number,
+      selectedIndices: number[],
+      selectedSum: number,
+    ): boolean => {
+      if (selectedSum === target) {
+        const selected = new Set(selectedIndices);
+        return assign(
+          sizeIndex + 1,
+          remainingLengths.filter((_, index) => !selected.has(index)),
+        );
+      }
+      if (selectedSum > target) return false;
+
+      for (let i = start; i < remainingLengths.length; i++) {
+        if (i > start && remainingLengths[i] === remainingLengths[i - 1]) continue;
+        if (collect(i + 1, [...selectedIndices, i], selectedSum + remainingLengths[i])) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    return collect(0, [], 0);
+  };
+
+  return assign(0, sortedLengths);
+};
+
+const canRemainingWordsFillAvailableComponents = (graph: Graph, visited: Set<NodeId>, words: string[]) => {
+  if (words.length === 0) return visited.size === GRID_SIZE;
+  const components = getAvailableComponents(graph, visited);
+  const componentSizes = components.map(component => component.length);
+  const wordLengths = words.map(word => word.length);
+
+  if (sum(componentSizes) !== sum(wordLengths)) return false;
+  if (Math.max(...componentSizes) < Math.max(...wordLengths)) return false;
+  if (Math.min(...componentSizes) < Math.min(...wordLengths)) return false;
+
+  return canAssignLengthsToComponentSizes(componentSizes, wordLengths);
+};
+
+const findRandomPathForWord = ({
+  word,
+  graph,
+  visited,
+  remainingWords,
+  deadline,
+}: {
+  word: string;
+  graph: Graph;
+  visited: Set<NodeId>;
+  remainingWords: string[];
+  deadline: number | null;
+}) => {
+  const allNodes = Object.keys(graph.nodes) as NodeId[];
+  const blockedStarts = Object.entries(graph.words)
+    .filter(([existingWord]) => initialKey(existingWord) === initialKey(word))
+    .map(([, existingPath]) => toIndex(existingPath[0] as NodeId));
+  const starts = shuffle(
+    allNodes.filter(node => {
+      if (visited.has(node)) return false;
+      const index = toIndex(node);
+      return !blockedStarts.some(existingIndex => isAdjacent(existingIndex, index));
+    }),
+  );
+  let steps = 0;
+  const stepLimit = 20000;
+
+  const visit = (path: NodeId[]): NodeId[] | false => {
+    if (isPastDeadline(deadline)) return false;
+    if (steps++ > stepLimit) return false;
+    if (path.length === word.length) {
+      const nextVisited = new Set([...visited, ...path]);
+      return canRemainingWordsFillAvailableComponents(graph, nextVisited, remainingWords) ? path.slice() : false;
+    }
+
+    const current = path[path.length - 1];
+    const pathSet = new Set(path);
+    const neighbors = shuffle(
+      graph.nodes[current].neighbors.filter(neighbor => !visited.has(neighbor) && !pathSet.has(neighbor)),
+    );
+
+    for (const next of neighbors) {
+      path.push(next);
+      const result = visit(path);
+      if (result) return result;
+      path.pop();
+    }
+
+    return false;
+  };
+
+  for (const start of starts) {
+    if (isPastDeadline(deadline)) return false;
+    const result = visit([start]);
+    if (result) return result;
+  }
+
+  return false;
+};
+
+const placeWordsExactFill = (words: string[], deadline: number | null): Graph | false => {
+  if (totalWordLength(words) !== GRID_SIZE) return false;
+
+  const graph = createGraph();
+  const orderedWords = prioritizeWordsWithRandomTies(words);
+  const visited = new Set<NodeId>();
+
+  const search = (wordIndex: number): Graph | false => {
+    if (isPastDeadline(deadline)) return false;
+    if (wordIndex === orderedWords.length) {
+      return visited.size === GRID_SIZE ? graph : false;
+    }
+
+    const word = orderedWords[wordIndex];
+    const remainingWords = orderedWords.slice(wordIndex + 1);
+    const seenPaths = new Set<string>();
+
+    for (let attempt = 0; attempt < 250; attempt++) {
+      if (isPastDeadline(deadline)) return false;
+      const path = findRandomPathForWord({ word, graph, visited, remainingWords, deadline });
+      if (!path) continue;
+
+      const pathKey = path.join(',');
+      if (seenPaths.has(pathKey)) continue;
+      seenPaths.add(pathKey);
+
+      graph.words[word] = path;
+      for (const node of path) visited.add(node);
+      graph.visited = Array.from(visited);
+
+      const candidatePaths = pathCellsFromWords(graph.words);
+      const valid =
+        hasSeparatedMatchingInitialWordStarts(candidatePaths) &&
+        hasUnambiguousNextLetterChoices(candidatePaths);
+
+      if (valid) {
+        const result = search(wordIndex + 1);
+        if (result) return result;
+      }
+
+      delete graph.words[word];
+      for (const node of path) visited.delete(node);
+      graph.visited = Array.from(visited);
+    }
+
+    return false;
+  };
+
+  return search(0);
+};
+
+const placeWordsSubsets = (
+  words: string[],
+  graph: Graph | null = null,
+  deadline: number | null = null,
+): Graph | false => {
+  if (isPastDeadline(deadline)) return false;
   if (!graph) {
     graph = createGraph();
   }
@@ -472,6 +670,7 @@ const placeWordsSubsets = (words: string[], graph: Graph | null = null): Graph |
     let result: Graph | false = false;
     let tries = 0;
     while (!result && tries < 50) {
+      if (isPastDeadline(deadline)) return false;
       tries++;
       const path = placeWord(firstWord, [], islandGraph);
       if (!path) return false;
@@ -479,23 +678,14 @@ const placeWordsSubsets = (words: string[], graph: Graph | null = null): Graph |
       islandGraph.visited = unique([...islandGraph.visited, ...path]);
 
       const candidateWords = { ...graph.words, ...islandGraph.words };
-      const candidatePaths = Object.entries(candidateWords).map(([candidateWord, candidatePath]) => ({
-        word: candidateWord,
-        cells: candidatePath.map((node, index) => ({
-          x: Number(node[1]),
-          y: Number(node[2]),
-          letter: candidateWord[index] ?? '',
-        })),
-      }));
+      const candidatePaths = pathCellsFromWords(candidateWords);
       // Validate the current partial layout before continuing recursion.
       // If it breaks the rules, stop here instead of exploring this branch further.
       const valid =
-        isWordPlacementUnique(gridFromWords(candidateWords), Object.keys(candidateWords)) &&
-        hasOnlyIntendedSameLetterAdjacency(candidateWords, graph) &&
         hasSeparatedMatchingInitialWordStarts(candidatePaths) &&
         hasUnambiguousNextLetterChoices(candidatePaths);
       if (valid) {
-        result = placeWordsSubsets(prioritizeWordsWithRandomTies(selected.words.slice(1)), islandGraph);
+        result = placeWordsSubsets(prioritizeWordsWithRandomTies(selected.words.slice(1)), islandGraph, deadline);
       }
 
       if (!valid || !result) {
@@ -534,15 +724,23 @@ export const parseWortgeflechtWords = (input: string) => {
 export const generateWortgeflechtLayout = ({
   words,
   attempts = 50,
+  maxDurationMs = null,
 }: {
   words: string[];
   attempts?: number;
+  maxDurationMs?: number | null;
 }) => {
+  const deadline = maxDurationMs === null ? null : Date.now() + maxDurationMs;
   // Graph construction and path placement are randomized, so retry until a valid layout is found.
   for (let i = 0; i < attempts; i++) {
+    if (isPastDeadline(deadline)) break;
     // `placeWordsSubsets` already enforces the placement invariants while constructing
     // the solution, so we can use the returned graph directly here.
-    const graph = placeWordsSubsets(prioritizeWordsWithRandomTies(words), null);
+    const placementWords = prioritizeWordsWithRandomTies(words);
+    const graph =
+      totalWordLength(words) === GRID_SIZE
+        ? placeWordsExactFill(words, deadline)
+        : placeWordsSubsets(placementWords, null, deadline);
     if (!graph) continue;
     const grid = gridFromWords(graph.words);
     const rows: WortgeflechtLetterRow[] = [];

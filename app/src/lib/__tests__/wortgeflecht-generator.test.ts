@@ -190,7 +190,8 @@ describe('wortgeflecht-generator helpers', () => {
 
   it('never returns a generated layout with neighboring same-initial starts', () => {
     const words = ['rabatten', 'ringelnd', 'kompasse', 'blutader', 'dachform', 'zeitungx'];
-    const generated = generateWortgeflechtLayout({ words, attempts: 200 });
+    vi.spyOn(Math, 'random').mockImplementation(mulberry32(0x5eed1111));
+    const generated = generateWortgeflechtLayout({ words, attempts: 1 });
 
     expect(generated === null || hasSeparatedMatchingInitialWordStarts(generated.paths)).toBe(true);
   });
@@ -209,7 +210,41 @@ describe('wortgeflecht-generator helpers', () => {
     15000,
   );
 
-  it('rejects paths where the next letter could be taken from another word', () => {
+  it(
+    'finds a layout for words with repeated letters in the same word',
+    () => {
+      const words = ['Scheffel', 'Unze', 'klafter', 'Lachter', 'Fuder', 'Zentner', 'Heller', 'Gros'];
+      vi.spyOn(Math, 'random').mockImplementation(mulberry32(0x5eed2026));
+      const generated = generateWortgeflechtLayout({ words, attempts: 200 });
+
+      expect(generated).not.toBeNull();
+      expect(hasSeparatedMatchingInitialWordStarts(generated?.paths ?? [])).toBe(true);
+      expect(hasUnambiguousNextLetterChoices(generated?.paths ?? [])).toBe(true);
+    },
+    15000,
+  );
+
+  it(
+    'can generate different layouts for the repeated-letter sample set',
+    () => {
+      const words = ['Scheffel', 'Unze', 'klafter', 'Lachter', 'Fuder', 'Zentner', 'Heller', 'Gros'];
+      vi.spyOn(Math, 'random').mockImplementation(mulberry32(0x5eed2026));
+      const first = generateWortgeflechtLayout({ words, attempts: 200 });
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockImplementation(mulberry32(0x5eed2027));
+      const second = generateWortgeflechtLayout({ words, attempts: 200 });
+
+      expect(first).not.toBeNull();
+      expect(second).not.toBeNull();
+      expect(first?.paths.map(path => path.cells.map(cell => `${cell.x},${cell.y}`).join('|')).join('/')).not.toBe(
+        second?.paths.map(path => path.cells.map(cell => `${cell.x},${cell.y}`).join('|')).join('/'),
+      );
+    },
+    15000,
+  );
+
+  it('allows foreign next-letter dead ends but rejects foreign completions', () => {
     expect(
       hasUnambiguousNextLetterChoices([
         {
@@ -229,7 +264,7 @@ describe('wortgeflecht-generator helpers', () => {
           ],
         },
       ]),
-    ).toBe(false);
+    ).toBe(true);
 
     expect(
       hasUnambiguousNextLetterChoices([
@@ -264,10 +299,76 @@ describe('wortgeflecht-generator helpers', () => {
           ],
         },
         {
+          word: 'lz',
+          cells: [
+            { x: 1, y: 1, letter: 'l' },
+            { x: 2, y: 1, letter: 'z' },
+          ],
+        },
+      ]),
+    ).toBe(false);
+
+    expect(
+      hasUnambiguousNextLetterChoices([
+        {
+          word: 'walz',
+          cells: [
+            { x: 0, y: 0, letter: 'w' },
+            { x: 1, y: 0, letter: 'a' },
+            { x: 2, y: 0, letter: 'l' },
+            { x: 3, y: 0, letter: 'z' },
+          ],
+        },
+        {
           word: 'le',
           cells: [
             { x: 1, y: 1, letter: 'l' },
             { x: 2, y: 1, letter: 'e' },
+          ],
+        },
+      ]),
+    ).toBe(true);
+  });
+
+  it('allows matching next-letter choices when they belong to the same word path', () => {
+    expect(
+      hasUnambiguousNextLetterChoices([
+        {
+          word: 'hall',
+          cells: [
+            { x: 0, y: 0, letter: 'h' },
+            { x: 1, y: 0, letter: 'a' },
+            { x: 2, y: 0, letter: 'l' },
+            { x: 1, y: 1, letter: 'l' },
+          ],
+        },
+        {
+          word: 'rot',
+          cells: [
+            { x: 5, y: 5, letter: 'r' },
+            { x: 5, y: 6, letter: 'o' },
+            { x: 5, y: 7, letter: 't' },
+          ],
+        },
+      ]),
+    ).toBe(true);
+
+    expect(
+      hasUnambiguousNextLetterChoices([
+        {
+          word: 'hal',
+          cells: [
+            { x: 0, y: 0, letter: 'h' },
+            { x: 1, y: 0, letter: 'a' },
+            { x: 2, y: 0, letter: 'l' },
+          ],
+        },
+        {
+          word: 'lot',
+          cells: [
+            { x: 1, y: 1, letter: 'l' },
+            { x: 2, y: 1, letter: 'o' },
+            { x: 3, y: 1, letter: 't' },
           ],
         },
       ]),
