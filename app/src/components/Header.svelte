@@ -32,7 +32,7 @@
 
   <div class="flex items-center justify-between gap-3">
     {#if selectedGameLogo}
-      {@const SelectedGameLogo = selectedGameLogo}
+      {const SelectedGameLogo = selectedGameLogo}
       <SelectedGameLogo classExtra="w-6 h-6"></SelectedGameLogo>
     {/if}
   </div>

@@ -93,7 +93,7 @@
 <ViewWrapper>
   <div class="flex flex-col items-center gap-z-ds-14 py-z-ds-32">
     {#if game !== undefined}
-      {@const message = getDeleteMessageParts(game)}
+      {const message = getDeleteMessageParts(game)}
       <div>
         {#if message}
           {message.before}<strong>{message.value}</strong>{message.after}
