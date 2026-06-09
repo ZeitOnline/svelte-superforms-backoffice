@@ -309,7 +309,7 @@
     <tbody>
       {#if games.length > 0}
         {#each games as item (item.id)}
-          {@const isOneOfTwentyLatestActiveGames =
+          {const isOneOfTwentyLatestActiveGames =
             currentGameConfig.table.hasLiveView && latestActiveGameIds.includes(item.id)}
 
           <tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
@@ -325,7 +325,7 @@
                         title="In der Datenbank aktiv"
                       />
                       {#if isOneOfTwentyLatestActiveGames}
-                        {@const liveViewUrl = `${environmentURL}/${gameName}/#${item.id}`}
+                        {const liveViewUrl = `${environmentURL}/${gameName}/#${item.id}`}
                         <a
                           title={`Das Spiel mit ID ${item.id} im ${currentGameConfig.label} anschauen`}
                           target="_blank"
@@ -341,13 +341,13 @@
                   {/if}
                 {:else if gameName === 'spelling-bee' && column.key === 'wordcloud'}
                   <HighlightedText segments={renderCellContent(item, column)} />
-                  {@const solutionsForGame = (item as GameSpellingBeeComplete).game_solution ?? []}
-                  {@const maxPoints = solutionsForGame.reduce(
+                  {const solutionsForGame = (item as GameSpellingBeeComplete).game_solution ?? []}
+                  {const maxPoints = solutionsForGame.reduce(
                     (max, current) => Math.max(max, current.points),
                     0,
                   )}
 
-                  {@const wordsWithMaxPoints = solutionsForGame.filter(
+                  {const wordsWithMaxPoints = solutionsForGame.filter(
                     solution => solution.points === maxPoints,
                   )}
                   <br />
@@ -377,7 +377,7 @@
             <td>
               <div class="flex justify-end gap-z-ds-4">
                 {#if gameName === 'spelling-bee' && isSpellingBeeGame(item)}
-                  {@const solutionsForGame = (item as GameSpellingBeeComplete).game_solution ?? []}
+                  {const solutionsForGame = (item as GameSpellingBeeComplete).game_solution ?? []}
 
                   {#if solutionsForGame.length > 0}
                     <button

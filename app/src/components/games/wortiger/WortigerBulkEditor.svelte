@@ -504,7 +504,7 @@
     </thead>
     <tbody>
       {#each rows as r, i (i)}
-        {@const dateMsg = validateReleaseDate(r[0])}
+        {const dateMsg = validateReleaseDate(r[0])}
         <tr>
           <td class="px-2 py-1 w-42.5">
             <input
@@ -520,12 +520,12 @@
           </td>
 
           {#each detectedLevels as lvl, j (lvl)}
-            {@const expected = MAP_LEVEL_CHARACTERS[lvl]}
-            {@const colIndex = 1 + j}
-            {@const msg = validateAgainstWordListCell(lvl, r[colIndex])}
-            {@const levelDateMsg = validateLevelDateConflict(lvl, r[0], r[colIndex])}
-            {@const dupMsg = validateAgainstExistingSolutions(lvl, r[colIndex])}
-            {@const tableDupMsg = validateWithinTableDuplicates(r[colIndex], i, colIndex)}
+            {const expected = MAP_LEVEL_CHARACTERS[lvl]}
+            {const colIndex = 1 + j}
+            {const msg = validateAgainstWordListCell(lvl, r[colIndex])}
+            {const levelDateMsg = validateLevelDateConflict(lvl, r[0], r[colIndex])}
+            {const dupMsg = validateAgainstExistingSolutions(lvl, r[colIndex])}
+            {const tableDupMsg = validateWithinTableDuplicates(r[colIndex], i, colIndex)}
             <td class="px-2 py-1">
               <input
                 type="text"

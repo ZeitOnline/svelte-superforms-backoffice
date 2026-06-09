@@ -121,7 +121,7 @@
 <div class="flex items-center gap-3">
   <div role="tablist" aria-label="Wortiger Level Filter" class="flex items-center gap-2">
     {#each wortigerTabs as tab, index (tab[0])}
-      {@const [label, length] = tab}
+      {const [label, length] = tab}
       <button
         role="tab"
         id={`wortiger-tab-${index}`}
