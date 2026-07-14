@@ -16,18 +16,15 @@ export type GameType = 'eckchen' | 'wortiger' | 'spelling-bee' | 'wortgeflecht';
  */
 export type View = 'dashboard' | 'new-game' | 'edit-game' | 'delete-game';
 
-
 /**
  * These are the possible creation modes for a game
  */
-export type CreationMode = 'manual' | 'csv'
-
+export type CreationMode = 'manual' | 'csv';
 
 /**
  * Rendering mode for CSV results
  */
 export type CsvResultsRenderMode = 'table' | 'bulk';
-
 
 /**
  * These are the possible icons in the app (used for the logs for example)
@@ -76,6 +73,7 @@ export type GameWortgeflecht = BaseGame & {
   name: string;
   description?: string;
   published_at: string;
+  game_word?: Array<{ word: string }>;
 };
 
 export type GameSpellingBee = BaseGame & {
@@ -207,8 +205,7 @@ export type GameConfig = {
     wordList?: {
       name: string;
     };
-    solutions?:
-    { name: string };
+    solutions?: { name: string };
   };
   schemas: {
     generateGameSchema: ZodValidationSchema;
@@ -234,4 +231,9 @@ export type FormField = {
   validation?: Record<string, unknown>; // For custom validation rules
 };
 
-export type SpellingBeeSolutionItem = Array<{ solution: string; points: number, solution_type: string; solution_explanation: string }>;
+export type SpellingBeeSolutionItem = Array<{
+  solution: string;
+  points: number;
+  solution_type: string;
+  solution_explanation: string;
+}>;

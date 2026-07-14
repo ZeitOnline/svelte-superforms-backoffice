@@ -63,6 +63,37 @@ describe('queries.getAllGames', () => {
     expect(calledUrl.searchParams.get('select')).toContain('game_solution');
   });
 
+  it('embeds puzzle words for wortgeflecht without a search term', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse([{ id: 5 }], '0-0/1'));
+
+    await getAllGames({
+      gameName: 'wortgeflecht',
+      fetch: fetchMock as unknown as typeof fetch,
+    });
+
+    const calledUrl = getCalledUrl(fetchMock);
+    expect(calledUrl.pathname).toBe('/backoffice/api/wortgeflecht/game');
+    expect(calledUrl.searchParams.get('select')).toBe('*,game_word(word)');
+    expect(calledUrl.searchParams.get('term')).toBeNull();
+  });
+
+  it('uses wortgeflecht RPC path and term when searching (searches puzzle words)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse([{ id: 8 }], '0-0/1'));
+
+    await getAllGames({
+      gameName: 'wortgeflecht',
+      fetch: fetchMock as unknown as typeof fetch,
+      search: 'Vogel',
+      sort: 'dateDesc',
+    });
+
+    const calledUrl = getCalledUrl(fetchMock);
+    expect(calledUrl.pathname).toBe('/backoffice/api/wortgeflecht/rpc/search_wortgeflecht');
+    expect(calledUrl.searchParams.get('term')).toBe('Vogel');
+    expect(calledUrl.searchParams.get('or')).toBeNull();
+    expect(calledUrl.searchParams.get('select')).toBe('*,game_word(word)');
+  });
+
   it('applies active filter when active column exists', async () => {
     const fetchMock = vi.fn().mockResolvedValue(makeJsonResponse([{ id: 1 }], '0-0/1'));
 
