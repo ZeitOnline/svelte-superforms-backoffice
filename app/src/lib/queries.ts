@@ -157,17 +157,23 @@ export const getAllGames = async ({
   levelLength?: number | null;
 }) => {
   const trimmedSearch = search.trim();
-  const useSpellingBeeSearchRpc =
-    gameName === 'spelling-bee' && !!trimmedSearch;
+  const useSpellingBeeSearchRpc = gameName === 'spelling-bee' && !!trimmedSearch;
+  const useWortgeflechtSearchRpc = gameName === 'wortgeflecht' && !!trimmedSearch;
+  const useSearchRpc = useSpellingBeeSearchRpc || useWortgeflechtSearchRpc;
 
-  // If this is spelling-bee, embed solutions directly
+  // Embed related rows directly so the table can show/search them:
+  // - spelling-bee: the solutions
+  // - wortgeflecht: the puzzle words
   const selectParam =
     gameName === 'spelling-bee'
       ? 'id,name,start_time,wordcloud,game_solution(solution,points,solution_type,solution_explanation)'
-      : '*';
+      : gameName === 'wortgeflecht'
+        ? '*,game_word(word)'
+        : '*';
 
-  const baseUrl = useSpellingBeeSearchRpc
-    ? `${CONFIG_GAMES[gameName].apiBase}/rpc/search_spelling_bee`
+  const searchRpcName = useSpellingBeeSearchRpc ? 'search_spelling_bee' : 'search_wortgeflecht';
+  const baseUrl = useSearchRpc
+    ? `${CONFIG_GAMES[gameName].apiBase}/rpc/${searchRpcName}`
     : `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`;
   const offset = (page - 1) * pageSize;
 
@@ -175,7 +181,7 @@ export const getAllGames = async ({
   params.set('select', selectParam);
   params.set('limit', String(pageSize));
   params.set('offset', String(offset));
-  if (useSpellingBeeSearchRpc) {
+  if (useSearchRpc) {
     params.set('term', trimmedSearch);
   }
 
@@ -183,7 +189,7 @@ export const getAllGames = async ({
   setActiveParam({ params, gameName, activeFilter });
   setWortigerLevelParam({ params, gameName, levelLength });
 
-  if (!useSpellingBeeSearchRpc) {
+  if (!useSearchRpc) {
     setSearchParam({ params, gameName, search });
   }
 
@@ -331,20 +337,22 @@ export async function createGamesBulk({
   onConflict?: string;
 }) {
   try {
-    const { data } = await requestPostgrest<Array<Partial<GameComplete> & Record<string, unknown>>>({
-      baseUrl: `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`,
-      method: 'POST',
-      query: onConflict ? buildQueryParams([['on_conflict', onConflict]]) : undefined,
-      headers: {
-        // Use `resolution=merge-duplicates` to upsert instead of insert-only
-        // Remove it if you want pure inserts that error on duplicates.
-        Prefer: onConflict
-          ? 'resolution=merge-duplicates,return=representation'
-          : 'return=representation',
+    const { data } = await requestPostgrest<Array<Partial<GameComplete> & Record<string, unknown>>>(
+      {
+        baseUrl: `${CONFIG_GAMES[gameName].apiBase}/${CONFIG_GAMES[gameName].endpoints.games.name}`,
+        method: 'POST',
+        query: onConflict ? buildQueryParams([['on_conflict', onConflict]]) : undefined,
+        headers: {
+          // Use `resolution=merge-duplicates` to upsert instead of insert-only
+          // Remove it if you want pure inserts that error on duplicates.
+          Prefer: onConflict
+            ? 'resolution=merge-duplicates,return=representation'
+            : 'return=representation',
+        },
+        body: rows,
+        errorMessage: 'Bulk insert failed',
       },
-      body: rows,
-      errorMessage: 'Bulk insert failed',
-    });
+    );
     return data;
   } catch (error) {
     if (error instanceof PostgrestError) {

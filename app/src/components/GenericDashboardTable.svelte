@@ -2,6 +2,7 @@
   import type {
     GameComplete,
     GameSpellingBeeComplete,
+    GameWortgeflechtComplete,
     GameType,
     GamesPageInfo,
     ActiveFilter,
@@ -17,6 +18,7 @@
     highlightMatch,
     isGameActive,
     isSpellingBeeGame,
+    isWortgeflechtGame,
     type HighlightSegment,
   } from '$utils';
   import { blur } from 'svelte/transition';
@@ -27,6 +29,12 @@
   import { page } from '$app/state';
   import { CONFIG_GAMES, PRODUCTION_URL, STAGING_URL } from '../config/games.config';
   import { spellingBeeStore, toggleLegend } from '$stores/spelling-bee-word.svelte';
+  import {
+    wortgeflechtStore,
+    toggleWortgeflechtLegend,
+    showWortgeflechtLegendFromSearch,
+    clearAutoSelectedWortgeflechtLegend,
+  } from '$stores/wortgeflecht-word.svelte';
   import WortigerLevelTabs from '$components/games/wortiger/WortigerLevelTabs.svelte';
   import HighlightedText from '$components/HighlightedText.svelte';
 
@@ -149,6 +157,31 @@
   $effect(() => {
     if (currentPage === normalizedGamesPage.page) return;
     updateQuery({ page: currentPage });
+  });
+
+  // When searching Wortgeflecht by a word, auto-open the legend for the first
+  // result whose puzzle actually contains that word.
+  $effect(() => {
+    if (gameName !== 'wortgeflecht') return;
+
+    const term = debouncedSearchTerm.trim().toLocaleLowerCase('de-DE');
+    if (!term) {
+      clearAutoSelectedWortgeflechtLegend();
+      return;
+    }
+
+    const match = games.find(
+      game =>
+        isWortgeflechtGame(game) &&
+        ((game as GameWortgeflechtComplete).game_word ?? []).some(entry =>
+          entry.word.toLocaleLowerCase('de-DE').includes(term),
+        ),
+    );
+
+    if (match) {
+      const words = ((match as GameWortgeflechtComplete).game_word ?? []).map(entry => entry.word);
+      showWortgeflechtLegendFromSearch(match as GameWortgeflechtComplete, words);
+    }
   });
 
   function resetAllFilters() {
@@ -389,6 +422,28 @@
                       class="z-ds-button z-ds-button-outline aria-pressed:bg-black! aria-pressed:text-white!"
                     >
                       {#if spellingBeeStore.word === item.wordcloud}
+                        <IconHandler extraClasses="w-5 h-5" iconName="eye-scan" />
+                      {:else}
+                        <IconHandler extraClasses="w-5 h-5" iconName="eye" />
+                      {/if}
+                    </button>
+                  {/if}
+                {/if}
+                {#if gameName === 'wortgeflecht' && isWortgeflechtGame(item)}
+                  {const wordsForGame = ((item as GameWortgeflechtComplete).game_word ?? []).map(
+                    entry => entry.word,
+                  )}
+
+                  {#if wordsForGame.length > 0}
+                    <button
+                      aria-pressed={wortgeflechtStore.gameId === item.id}
+                      aria-label="Wörter im Rätsel anzeigen"
+                      onclick={() => {
+                        toggleWortgeflechtLegend(item as GameWortgeflechtComplete, wordsForGame);
+                      }}
+                      class="z-ds-button z-ds-button-outline aria-pressed:bg-black! aria-pressed:text-white!"
+                    >
+                      {#if wortgeflechtStore.gameId === item.id}
                         <IconHandler extraClasses="w-5 h-5" iconName="eye-scan" />
                       {:else}
                         <IconHandler extraClasses="w-5 h-5" iconName="eye" />
