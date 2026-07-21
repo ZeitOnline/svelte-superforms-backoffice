@@ -39,7 +39,7 @@
     "sveltekit-superforms": "^2.29.1",
     "tailwindcss": "^4.1.18",
     "typebox": "^1.0.81",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.0",
     "typescript-eslint": "^8.59.0",
     "vite": "^8.0.0",
     "vitest": "^4.0.18",
