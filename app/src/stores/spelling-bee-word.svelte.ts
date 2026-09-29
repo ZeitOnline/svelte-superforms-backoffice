@@ -1,5 +1,5 @@
 import type { SpellingBeeSolutionItem, GameSpellingBeeComplete } from "$types";
-import { composeWordcloud, getSpellingBeeLetters, type SpellingBeeType } from '$lib/games/spelling-bee-letters';
+import { getDisplayWordcloud, getSpellingBeeLetters, type SpellingBeeType } from '$lib/games/spelling-bee-letters';
 
 type SpellingBeeStore = {
   gameId: number | null;
@@ -35,9 +35,9 @@ export const toggleLegend = (item: GameSpellingBeeComplete, solutionsForGame: Sp
     }
     return;
   }
-  const { type, centralLetter, otherLetters } = getSpellingBeeLetters(item);
+  const { type, centralLetter } = getSpellingBeeLetters(item);
   spellingBeeStore.gameId = item.id;
-  spellingBeeStore.word = composeWordcloud(centralLetter, otherLetters);
+  spellingBeeStore.word = getDisplayWordcloud(item);
   spellingBeeStore.centralLetter = centralLetter;
   spellingBeeStore.type = type;
   spellingBeeStore.solutions = solutionsForGame;

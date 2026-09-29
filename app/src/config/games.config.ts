@@ -16,7 +16,7 @@ import {
   saveSpellingBeeGameFormSchema,
 } from '$schemas/spelling-bee';
 import {
-  composeWordcloud,
+  getDisplayWordcloud,
   getSpellingBeeLetters,
   SPELLING_BEE_TYPE_LABELS,
 } from '$lib/games/spelling-bee-letters';
@@ -232,12 +232,7 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
         {
           key: 'wordcloud',
           label: 'Wortwolke',
-          getValue: game => {
-            const { centralLetter, otherLetters } = getSpellingBeeLetters(
-              game as GameSpellingBeeComplete,
-            );
-            return composeWordcloud(centralLetter, otherLetters);
-          },
+          getValue: game => getDisplayWordcloud(game as GameSpellingBeeComplete),
           searchable: true,
           sortable: true,
         },
