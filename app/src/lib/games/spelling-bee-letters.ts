@@ -57,6 +57,31 @@ export const getSpellingBeeLetters = (game: SpellingBeeLetterSource) => {
   return { type, centralLetter, otherLetters };
 };
 
+// Show the stored column: it's what the search RPC matches (the mini cronjob uses its own layout).
+export const getDisplayWordcloud = (game: SpellingBeeLetterSource) => {
+  if (game.wordcloud) return game.wordcloud.toUpperCase();
+  const { centralLetter, otherLetters } = getSpellingBeeLetters(game);
+  return composeWordcloud(centralLetter, otherLetters);
+};
+
+// Keep the stored wordcloud when the letters are unchanged, so edits don't rewrite its layout.
+export const resolveWordcloud = (
+  centralLetter: string,
+  otherLetters: string,
+  existing?: SpellingBeeLetterSource | null,
+) => {
+  if (existing?.wordcloud) {
+    const current = getSpellingBeeLetters(existing);
+    if (
+      current.centralLetter === centralLetter.toUpperCase() &&
+      current.otherLetters === otherLetters.toUpperCase()
+    ) {
+      return existing.wordcloud;
+    }
+  }
+  return composeWordcloud(centralLetter, otherLetters);
+};
+
 // Order-independent key, so shuffled letter sets count as duplicates.
 export const getLetterSetKey = (centralLetter: string, otherLetters: string) =>
   `${centralLetter.toUpperCase()}:${otherLetters.toUpperCase().split('').sort().join('')}`;

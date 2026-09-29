@@ -23,11 +23,11 @@
     type SaveSpellingBeeSolutionSchema,
   } from '$schemas/spelling-bee';
   import {
-    composeWordcloud,
     getLetterSetKey,
     getOtherLettersCount,
     getSpellingBeeLetters,
     getSpellingBeeSolutionIssue,
+    resolveWordcloud,
     SPELLING_BEE_LETTER_COUNT,
     SPELLING_BEE_TYPE_LABELS,
     splitWordcloud,
@@ -77,6 +77,8 @@
       try {
         const centralLetter = form.data.central_letter.toUpperCase();
         const otherLetters = form.data.other_letters.toUpperCase();
+        const editedGame =
+          beginning_option === 'edit' && game && isSpellingBeeGame(game) ? game : null;
         const finalData = {
           name: form.data.name,
           start_time: form.data.start_time,
@@ -84,11 +86,9 @@
           central_letter: centralLetter,
           other_letters: otherLetters,
           // Legacy column, still read by the search RPC.
-          wordcloud: composeWordcloud(centralLetter, otherLetters),
+          wordcloud: resolveWordcloud(centralLetter, otherLetters, editedGame),
         };
         const letterSetKey = getLetterSetKey(centralLetter, otherLetters);
-        const editedGame =
-          beginning_option === 'edit' && game && isSpellingBeeGame(game) ? game : null;
         const originalLetters = editedGame ? getSpellingBeeLetters(editedGame) : null;
         const otherGames = data.games.filter(g => g.id !== editedGame?.id);
 

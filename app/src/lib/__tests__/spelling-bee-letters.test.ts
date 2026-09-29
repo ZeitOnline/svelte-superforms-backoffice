@@ -2,9 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   canBeBuiltFromLetters,
   composeWordcloud,
+  getDisplayWordcloud,
   getLetterSetKey,
   getSpellingBeeLetters,
   getSpellingBeeSolutionIssue,
+  resolveWordcloud,
   splitWordcloud,
   validateSpellingBeeCsvRows,
 } from '$lib/games/spelling-bee-letters';
@@ -40,6 +42,22 @@ describe('spelling-bee letters', () => {
       centralLetter: 'K',
       otherLetters: 'PULSURTE',
     });
+  });
+
+  it('displays the stored wordcloud so it matches the search', () => {
+    const cronjobMini = { wordcloud: 'ILLBLEAS', central_letter: 'B', other_letters: 'ILLLEAS' };
+    expect(getDisplayWordcloud(cronjobMini)).toBe('ILLBLEAS');
+    expect(getDisplayWordcloud({ wordcloud: 'pulskurte' })).toBe('PULSKURTE');
+    expect(
+      getDisplayWordcloud({ wordcloud: '', central_letter: 'K', other_letters: 'PULSURT' }),
+    ).toBe('PULSKURT');
+  });
+
+  it('keeps the stored wordcloud only while the letters are unchanged', () => {
+    const cronjobMini = { wordcloud: 'ILLBLEAS', central_letter: 'B', other_letters: 'ILLLEAS' };
+    expect(resolveWordcloud('b', 'illleas', cronjobMini)).toBe('ILLBLEAS');
+    expect(resolveWordcloud('B', 'LILLEAS', cronjobMini)).toBe('LILLBEAS');
+    expect(resolveWordcloud('K', 'PULSURT', null)).toBe('PULSKURT');
   });
 
   it('treats shuffled letter sets as equal', () => {
