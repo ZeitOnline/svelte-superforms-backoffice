@@ -8,7 +8,7 @@
   import { ERRORS } from '$lib/error-messages';
   import { APP_MESSAGES } from '$lib/app-messages';
   import { CONFIG_GAMES } from '$config/games.config';
-  import { canBeBuiltFromWordcloud } from '$schemas/spelling-bee';
+  import { validateSpellingBeeCsvRows } from '$lib/games/spelling-bee-letters';
   import { isWortigerLength, WORTIGER_LENGTHS } from '$lib/games/wortiger';
 
   function parseCsv(file: File): Promise<string[][]> {
@@ -113,32 +113,9 @@
         }
 
         if (gameName === 'spelling-bee') {
-          const wordclouds = cleaned
-            .map(row => (row[0] ?? '').trim().toUpperCase())
-            .filter(Boolean);
-          const [wordcloud] = wordclouds;
-
-          if (!wordcloud || wordcloud.length !== 9) {
-            setError(form, 'csv', ERRORS.SPELLING_BEE.CSV.WORDCLOUD_INVALID);
-            return;
-          }
-
-          if (wordclouds.some(value => value !== wordcloud)) {
-            setError(form, 'csv', ERRORS.SPELLING_BEE.CSV.WORDCLOUD_MISMATCH);
-            return;
-          }
-
-          const solutions = cleaned.map(row => (row[1] ?? '').trim()).filter(Boolean);
-          if (solutions.length === 0) {
-            setError(form, 'csv', ERRORS.SPELLING_BEE.CSV.NO_SOLUTIONS);
-            return;
-          }
-
-          const hasIncompatibleSolution = solutions.some(
-            solution => !canBeBuiltFromWordcloud(solution, wordcloud),
-          );
-          if (hasIncompatibleSolution) {
-            setError(form, 'csv', ERRORS.SPELLING_BEE.CSV.SOLUTION_INCOMPATIBLE);
+          const spellingBeeError = validateSpellingBeeCsvRows(cleaned);
+          if (spellingBeeError) {
+            setError(form, 'csv', ERRORS.SPELLING_BEE.CSV[spellingBeeError]);
             return;
           }
         }

@@ -29,6 +29,7 @@
   import { page } from '$app/state';
   import { CONFIG_GAMES, PRODUCTION_URL, STAGING_URL } from '../config/games.config';
   import { spellingBeeStore, toggleLegend } from '$stores/spelling-bee-word.svelte';
+  import { getSpellingBeeLetters } from '$lib/games/spelling-bee-letters';
   import {
     wortgeflechtStore,
     toggleWortgeflechtLegend,
@@ -384,6 +385,9 @@
                     solution => solution.points === maxPoints,
                   )}
                   <br />
+                  <span class="flex text-z-ds-12">
+                    Hauptbuchstabe: {getSpellingBeeLetters(item as GameSpellingBeeComplete).centralLetter}
+                  </span>
                   <span class="flex text-z-ds-12"> ({solutionsForGame.length} Lösungen)</span>
                   {#if wordsWithMaxPoints.length > 0}
                     <div class="flex flex-wrap gap-1 mt-1 max-w-[100px]">
@@ -414,14 +418,14 @@
 
                   {#if solutionsForGame.length > 0}
                     <button
-                      aria-pressed={spellingBeeStore.word === item.wordcloud}
+                      aria-pressed={spellingBeeStore.gameId === item.id}
                       aria-label="Lösungen in Store laden"
                       onclick={() => {
                         toggleLegend(item, solutionsForGame);
                       }}
                       class="z-ds-button z-ds-button-outline aria-pressed:bg-black! aria-pressed:text-white!"
                     >
-                      {#if spellingBeeStore.word === item.wordcloud}
+                      {#if spellingBeeStore.gameId === item.id}
                         <IconHandler extraClasses="w-5 h-5" iconName="eye-scan" />
                       {:else}
                         <IconHandler extraClasses="w-5 h-5" iconName="eye" />

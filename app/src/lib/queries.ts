@@ -166,7 +166,7 @@ export const getAllGames = async ({
   // - wortgeflecht: the puzzle words
   const selectParam =
     gameName === 'spelling-bee'
-      ? 'id,name,start_time,wordcloud,game_solution(solution,points,solution_type,solution_explanation)'
+      ? 'id,name,start_time,wordcloud,type,central_letter,other_letters,game_solution(solution,points,solution_type,solution_explanation)'
       : gameName === 'wortgeflecht'
         ? '*,game_word(word)'
         : '*';
@@ -377,6 +377,8 @@ export const getNextAvailableDateForGame = async (gameName: GameType, apiBaseUrl
     path: CONFIG_GAMES[gameName].endpoints.games.name,
     query: buildQueryParams([
       ['select', dateField],
+      // Minis are scheduled ahead by a cronjob and must not push the next regular date.
+      ['or', gameName === 'spelling-bee' ? '(type.is.null,type.neq.mini)' : null],
       ['order', pg.order(dateField, 'desc')],
       ['limit', 1],
     ]),
