@@ -16,6 +16,11 @@ import {
   saveSpellingBeeGameFormSchema,
 } from '$schemas/spelling-bee';
 import {
+  composeWordcloud,
+  getSpellingBeeLetters,
+  SPELLING_BEE_TYPE_LABELS,
+} from '$lib/games/spelling-bee-letters';
+import {
   generateWortgeflechtGameSchema,
   saveWortgeflechtGameFormSchema,
 } from '$schemas/wortgeflecht';
@@ -217,9 +222,22 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           sortable: true,
         },
         {
+          key: 'type',
+          label: 'Typ',
+          getValue: game =>
+            SPELLING_BEE_TYPE_LABELS[getSpellingBeeLetters(game as GameSpellingBeeComplete).type],
+          searchable: false,
+          sortable: false,
+        },
+        {
           key: 'wordcloud',
           label: 'Wortwolke',
-          getValue: game => (game as GameSpellingBeeComplete).wordcloud,
+          getValue: game => {
+            const { centralLetter, otherLetters } = getSpellingBeeLetters(
+              game as GameSpellingBeeComplete,
+            );
+            return composeWordcloud(centralLetter, otherLetters);
+          },
           searchable: true,
           sortable: true,
         },
@@ -242,12 +260,19 @@ export const CONFIG_GAMES: Record<GameType, GameConfig> = {
           required: true,
         },
         {
-          key: 'wordcloud',
-          label: 'Wortwolke (9 Zeichen)',
+          key: 'central_letter',
+          label: 'Hauptbuchstabe',
           type: 'text',
-          placeholder: 'z. B. abcdefghi',
+          placeholder: 'z. B. k',
           required: true,
-          validation: { length: 9 },
+          validation: { length: 1 },
+        },
+        {
+          key: 'other_letters',
+          label: 'Weitere Buchstaben (8 normal / 7 mini)',
+          type: 'text',
+          placeholder: 'z. B. pulsurte',
+          required: true,
         },
       ],
     },
