@@ -4,6 +4,7 @@
   import { spellingBeeStore } from '$stores/spelling-bee-word.svelte.js';
   import IconHandler from '$components/icons/IconHandler.svelte';
   import type { DataProps, SpellingBeeSolutionItem } from '$types';
+  import { SPELLING_BEE_TYPE_LABELS } from '$lib/games/spelling-bee-letters';
 
   let { data } = $props();
 
@@ -33,15 +34,21 @@
   <details id="legend-spelling-bee">
     <summary>Legende bei Buchstabiene</summary>
     <hr class="mt-2" />
-    <div class="my-2">Wortwolke: {spellingBeeStore.word}</div>
+    <div class="my-2">
+      Wortwolke: {spellingBeeStore.word}
+      {#if spellingBeeStore.type}({SPELLING_BEE_TYPE_LABELS[spellingBeeStore.type]}){/if}
+    </div>
+    {#if spellingBeeStore.centralLetter}
+      <div class="mb-2">Hauptbuchstabe: {spellingBeeStore.centralLetter}</div>
+    {/if}
     {#if Object.keys(groupedSolutions).length}
       <div class="max-h-60 overflow-y-auto">
         <div class="font-bold mb-1">Lösungen:</div>
-        {#each Object.entries(groupedSolutions) as [letter, items]}
+        {#each Object.entries(groupedSolutions) as [letter, items] (letter)}
           <div class="mb-2">
             <div class="font-bold text-[0.6rem] mb-1">{letter}</div>
             <ul role="list" class="flex flex-wrap gap-2">
-              {#each items as item}
+              {#each items as item (item)}
                 <li class="text-[0.5rem] border bg-gray-200 rounded-2xl px-2 border-gray-700 py-1">
                   {item.points} - {item.solution}
                 </li>

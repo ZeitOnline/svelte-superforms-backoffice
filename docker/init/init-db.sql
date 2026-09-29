@@ -68546,7 +68546,10 @@ CREATE TABLE spelling_bee.game (
     id integer NOT NULL DEFAULT nextval('spelling_bee.game_id_seq'::regclass),
     name text NOT NULL,
     start_time date NOT NULL,
-    wordcloud text NOT NULL
+    wordcloud text NOT NULL,
+    central_letter varchar(1),
+    other_letters varchar(8),
+    type varchar
 );
 
 CREATE TABLE spelling_bee.game_solution (
@@ -68574,9 +68577,10 @@ ALTER TABLE ONLY spelling_bee.game_solution
     FOREIGN KEY (game_id) REFERENCES spelling_bee.game(id);
 
 -- Seed data
-COPY spelling_bee.game (id, name, start_time, wordcloud) FROM stdin;
-1	Buchstabiene Nr.001	2025-01-01	PULSKURTE
-2	Buchstabiene Nr.002	2025-01-02	CETTOKBIJ
+COPY spelling_bee.game (id, name, start_time, wordcloud, central_letter, other_letters, type) FROM stdin;
+1	Buchstabiene Nr.001	2025-01-01	PULSKURTE	K	PULSURTE	regular
+2	Buchstabiene Nr.002	2025-01-02	CETTOKBIJ	O	CETTKBIJ	regular
+3	Mini-Buchstabiene 001	2025-01-01	PULSKURT	K	PULSURT	mini
 \.
 
 COPY spelling_bee.game_solution (id, game_id, solution, points, solution_type, solution_explanation) FROM stdin;
@@ -68671,10 +68675,32 @@ COPY spelling_bee.game_solution (id, game_id, solution, points, solution_type, s
 89	2	TOB	2	Verbform	Imp. von "toben", "tob doch nicht gleich!"
 90	2	OIE	2	Nomen	kleine Ostseeinsel
 91	2	TOT	2	Adjektiv	leblos
+92	3	SKULPTUR	8	Nomen	dreidimensionales (Kunst)Werk
+93	3	KULTUR	6	Nomen	Gesamtheit kreativer Schöpfungen etc. einer Gemeinschaft
+94	3	KULTUS	6	Nomen	Verehrung (=Kult)
+95	3	PULKS	5	Nomen	Gen. von "Pulk" (Anhäufung)
+96	3	SPUKT	5	Verbform	von "spuken", "es spukt im Haus"
+97	3	KULTS	5	Nomen	Gen. von "Kult" (Verehrung)
+98	3	ULKST	5	Verbform	von "ulken" (spaßen), "du ulkst doch"
+99	3	ULKUS	5	Nomen	Geschwür
+100	3	KURST	5	Verbform	von "kuren" (eine Kur machen), "du kurst"
+101	3	KURUS	5	Nomen	Untereinheit der türk. Lira
+102	3	PULK	3	Nomen	Anhäufung
+103	3	SPUK	3	Nomen	Gespenst, gespenstische Szenerie
+104	3	KLUS	3	Nomen	schweiz. für schluchtenartiges Quertal
+105	3	KULT	3	Nomen	Verehrung
+106	3	LUKS	3	Nomen	Gen. von "Luk" (Öffnung auf Schiffen)
+107	3	ULKS	3	Nomen	Gen. von "Ulk" (Spaß)
+108	3	ULKT	3	Verbform	von "ulken" (spaßen), "sie ulkt den ganzen Tag"
+109	3	KURS	3	Nomen	Lehrgang, Richtung
+110	3	KURT	3	Verbform	von "kuren" (eine Kur machen), "er kurt"
+111	3	LUK	2	Nomen	Öffnung auf Schiffen
+112	3	ULK	2	Nomen	Spaß
+113	3	KUR	2	Nomen	Erholungsaufenthalt
 \.
 
-SELECT pg_catalog.setval('spelling_bee.game_id_seq', 2, true);
-SELECT pg_catalog.setval('spelling_bee.game_solution_id_seq', 91, true);
+SELECT pg_catalog.setval('spelling_bee.game_id_seq', 3, true);
+SELECT pg_catalog.setval('spelling_bee.game_solution_id_seq', 113, true);
 
 -- ================================
 -- WORTGEFLECHT SCHEMA DEFINITIONS

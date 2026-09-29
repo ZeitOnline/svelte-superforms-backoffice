@@ -77,10 +77,27 @@ export const ERRORS = {
       WORDCLOUD_INVALID: 'Die Wortwolke muss ausgefüllt sein und genau 9 Zeichen haben.',
       WORDCLOUD_MISMATCH: 'Alle Zeilen müssen dieselbe Wortwolke verwenden.',
       SOLUTION_INCOMPATIBLE: 'Mindestens eine Lösung lässt sich nicht aus der Wortwolke bilden.',
+      SOLUTION_MISSING_CENTRAL:
+        'Mindestens eine Lösung enthält nicht den Hauptbuchstaben (5. Zeichen der Wortwolke).',
       NO_SOLUTIONS: 'Keine Lösungen in der CSV gefunden.',
     },
-    WORDCLOUD: {
-      LENGTH: 'Die Wortwolke muss genau 9 Buchstaben enthalten.',
+    TYPE: {
+      INVALID: 'Ungültiger Spieltyp.',
+    },
+    CENTRAL_LETTER: {
+      LENGTH: 'Der Hauptbuchstabe muss genau ein Buchstabe sein.',
+      INVALID: 'Der Hauptbuchstabe darf nur A–Z, Ä, Ö oder Ü sein.',
+    },
+    OTHER_LETTERS: {
+      INVALID: 'Die weiteren Buchstaben dürfen nur A–Z, Ä, Ö oder Ü enthalten.',
+      LENGTH_REGULAR: 'Ein normales Spiel braucht genau 8 weitere Buchstaben.',
+      LENGTH_MINI: 'Ein Mini-Spiel braucht genau 7 weitere Buchstaben.',
+    },
+    SOLUTION_RULES: {
+      TOO_SHORT: 'Lösungen müssen mindestens 3 Buchstaben lang sein.',
+      TOO_LONG: 'Lösung ist länger als die Wortwolke.',
+      MISSING_CENTRAL: 'Lösung enthält nicht den Hauptbuchstaben.',
+      INCOMPATIBLE: 'Lösung lässt sich nicht mit den Buchstaben der Wortwolke bilden.',
     },
     SOLUTION: {
       GAME_ID: {

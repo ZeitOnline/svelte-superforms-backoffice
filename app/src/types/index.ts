@@ -1,5 +1,6 @@
 import type { SaveEckchenGameFormSchema } from '$schemas/eckchen';
 import type { SaveSpellingBeeGameFormSchema } from '$schemas/spelling-bee';
+import type { SpellingBeeType } from '$lib/games/spelling-bee-letters';
 import type { SaveWortgeflechtGameFormSchema } from '$schemas/wortgeflecht';
 import type { SaveWortigerGameFormSchema } from '$schemas/wortiger';
 import type { SuperValidated } from 'sveltekit-superforms';
@@ -80,6 +81,9 @@ export type GameSpellingBee = BaseGame & {
   name: string;
   start_time: string;
   wordcloud: string;
+  type?: SpellingBeeType | null;
+  central_letter?: string | null;
+  other_letters?: string | null;
   game_solution?: SpellingBeeSolutionItem;
 };
 
