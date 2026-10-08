@@ -1,7 +1,7 @@
-import { SHOULD_DELETE_STATE } from '$lib/queries';
-import { Orientation, type GameComplete, type GameEckchen, type Question, type QuestionComplete } from '$types';
+import { SHOULD_DELETE_STATE } from '#lib/queries.js';
+import { Orientation, type GameComplete, type GameEckchen, type Question, type QuestionComplete } from '#types';
 import { CONFIG_GAMES } from '../../config/games.config';
-import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
+import { buildQueryParams, pg, requestPostgrest } from '#lib/postgrest-client.js';
 
 export function serializeRow(row: string[] | number[]): Question {
   return {

@@ -1,25 +1,25 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
-  import type { BeginningOptions, DataProps, GameComplete } from '$types';
-  import { view } from '$stores/view-state-store.svelte';
+  import type { BeginningOptions, DataProps, GameComplete } from '#types';
+  import { view } from '#stores/view-state-store.svelte.js';
   import {
     fetchWortigerGamesByLevels,
     isWortigerLength,
     MAP_LEVEL_CHARACTERS,
     WORTIGER_LENGTHS,
-  } from '$lib/games/wortiger';
+  } from '#lib/games/wortiger.js';
   import {
     fetchWordSetForLength,
     normalizeWortigerWord,
     validateAgainstWordList as validateAgainstWordListRule,
-  } from '$lib/games/wortiger-validation';
-  import IconHandler from '$components/icons/IconHandler.svelte';
-  import { createGamesBulk } from '$lib/queries';
-  import { getToastState } from '$lib/toast-state.svelte';
-  import { CONFIG_GAMES } from '$config/games.config';
+  } from '#lib/games/wortiger-validation.js';
+  import IconHandler from '#components/icons/IconHandler.svelte';
+  import { createGamesBulk } from '#lib/queries.js';
+  import { getToastState } from '#lib/toast-state.svelte.js';
+  import { CONFIG_GAMES } from '#config/games.config.js';
   import { onMount } from 'svelte';
-  import { isWortigerGame } from '$utils';
-  import ViewNavigation from '$components/ViewNavigation.svelte';
+  import { isWortigerGame } from '#utils';
+  import ViewNavigation from '#components/ViewNavigation.svelte';
   import { dev } from '$app/env';
 
   type Props = {

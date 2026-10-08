@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { IconOption } from '$types';
+	import type { IconOption } from '#types';
 	import { ChevronRightIcon, EditIcon, ErrorIcon, SearchIcon, TickIcon, UploadIcon, DeleteIcon, DownloadIcon, EyeIcon, EyeScanIcon } from '.';
 
 	let { iconName, extraClasses }: { iconName: IconOption; extraClasses?: string } = $props();

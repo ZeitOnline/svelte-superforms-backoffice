@@ -1,13 +1,13 @@
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
-import { CONFIG_GAMES } from '$config/games.config';
-import { getAllGames, getLatestActiveGameIds } from '$lib/queries';
+import { CONFIG_GAMES } from '#config/games.config.js';
+import { getAllGames, getLatestActiveGameIds } from '#lib/queries.js';
 
 import type { LayoutLoad } from './$types';
-import type { GameType } from '$types';
-import { DEFAULT_SORT, isActiveFilterOption, isSortOption } from '$lib/game-table-utils';
-import { isWortigerLength } from '$lib/games/wortiger';
+import type { GameType } from '#types';
+import { DEFAULT_SORT, isActiveFilterOption, isSortOption } from '#lib/game-table-utils.js';
+import { isWortigerLength } from '#lib/games/wortiger.js';
 
 export const ssr = false;
 

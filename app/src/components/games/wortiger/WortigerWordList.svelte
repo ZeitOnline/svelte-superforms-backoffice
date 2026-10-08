@@ -1,23 +1,23 @@
 <script lang="ts">
-  import { CONFIG_GAMES } from '$config/games.config';
-  import { TablePagination } from '$components/table';
-  import { debounce, highlightMatch } from '$utils';
-  import IconHandler from '$components/icons/IconHandler.svelte';
-  import HighlightedText from '$components/HighlightedText.svelte';
-  import { getToastState } from '$lib/toast-state.svelte';
+  import { CONFIG_GAMES } from '#config/games.config.js';
+  import { TablePagination } from '#components/table/index.js';
+  import { debounce, highlightMatch } from '#utils';
+  import IconHandler from '#components/icons/IconHandler.svelte';
+  import HighlightedText from '#components/HighlightedText.svelte';
+  import { getToastState } from '#lib/toast-state.svelte.js';
   import {
     buildQueryParams,
     getPostgrestErrorMessage,
     pg,
     PostgrestError,
     requestPostgrest,
-  } from '$lib/postgrest-client';
-  import type { SortDirection } from '$types';
+  } from '#lib/postgrest-client.js';
+  import type { SortDirection } from '#types';
   import {
     exportWortigerWordListCsv,
     fetchWortigerWordListPage,
     WORTIGER_LENGTHS,
-  } from '$lib/games/wortiger';
+  } from '#lib/games/wortiger.js';
 
   const DEFAULT_LENGTH = WORTIGER_LENGTHS[0] ?? 4;
   const PAGE_SIZE = 50;

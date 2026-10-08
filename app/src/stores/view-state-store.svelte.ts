@@ -1,4 +1,4 @@
-import type { View } from '$types';
+import type { View } from '#types';
 
 export const view = $state({
   current: 'dashboard' as View,

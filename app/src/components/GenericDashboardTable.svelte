@@ -9,10 +9,10 @@
     ActiveFilterOption,
     SortOption,
     TableColumn,
-  } from '$types';
-  import { DEFAULT_SORT, isSortOption } from '$lib/game-table-utils';
+  } from '#types';
+  import { DEFAULT_SORT, isSortOption } from '#lib/game-table-utils.js';
   import { cubicInOut } from 'svelte/easing';
-  import { view } from '$stores/view-state-store.svelte';
+  import { view } from '#stores/view-state-store.svelte.js';
   import {
     debounce,
     highlightMatch,
@@ -20,7 +20,7 @@
     isSpellingBeeGame,
     isWortgeflechtGame,
     type HighlightSegment,
-  } from '$utils';
+  } from '#utils';
   import { blur } from 'svelte/transition';
   import IconHandler from './icons/IconHandler.svelte';
   import { TableFilters, TableSearch, TablePagination } from './table';
@@ -28,16 +28,16 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { CONFIG_GAMES, PRODUCTION_URL, STAGING_URL } from '../config/games.config';
-  import { spellingBeeStore, toggleLegend } from '$stores/spelling-bee-word.svelte';
-  import { getSpellingBeeLetters } from '$lib/games/spelling-bee-letters';
+  import { spellingBeeStore, toggleLegend } from '#stores/spelling-bee-word.svelte.js';
+  import { getSpellingBeeLetters } from '#lib/games/spelling-bee-letters.js';
   import {
     wortgeflechtStore,
     toggleWortgeflechtLegend,
     showWortgeflechtLegendFromSearch,
     clearAutoSelectedWortgeflechtLegend,
-  } from '$stores/wortgeflecht-word.svelte';
-  import WortigerLevelTabs from '$components/games/wortiger/WortigerLevelTabs.svelte';
-  import HighlightedText from '$components/HighlightedText.svelte';
+  } from '#stores/wortgeflecht-word.svelte.js';
+  import WortigerLevelTabs from '#components/games/wortiger/WortigerLevelTabs.svelte';
+  import HighlightedText from '#components/HighlightedText.svelte';
 
   type Props = {
     games: GameComplete[];

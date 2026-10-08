@@ -6,8 +6,8 @@ import {
   normalizeWortgeflechtWordLines,
   normalizeWortgeflechtWordLineValue,
   validateWortgeflechtGenerationInput,
-} from '$lib/games/wortgeflecht-utils';
-import type { WortgeflechtLetterRow } from '$lib/games/wortgeflecht';
+} from '#lib/games/wortgeflecht-utils.js';
+import type { WortgeflechtLetterRow } from '#lib/games/wortgeflecht.js';
 
 describe('wortgeflecht-utils', () => {
   it('normalizes input to lowercase while preserving ß', () => {

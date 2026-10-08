@@ -1,4 +1,4 @@
-import type { ToastType } from '$types';
+import type { ToastType } from '#types';
 import { getContext, onDestroy, setContext } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 

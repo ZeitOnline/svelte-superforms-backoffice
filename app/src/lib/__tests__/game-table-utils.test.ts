@@ -5,7 +5,7 @@ import {
   SORT_OPTIONS,
   isActiveFilterOption,
   isSortOption,
-} from '$lib/game-table-utils';
+} from '#lib/game-table-utils.js';
 
 describe('game-table-utils', () => {
   it('accepts all known sort options', () => {

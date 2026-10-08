@@ -1,5 +1,5 @@
-import type { ActiveFilter, GameComplete, GameType, SortOption } from '$types';
-import { DEFAULT_SORT } from '$lib/game-table-utils';
+import type { ActiveFilter, GameComplete, GameType, SortOption } from '#types';
+import { DEFAULT_SORT } from '#lib/game-table-utils.js';
 import type { LoadEvent } from '@sveltejs/kit';
 import { CONFIG_GAMES } from '../config/games.config';
 import { deleteEckchenGame } from './games/eckchen';

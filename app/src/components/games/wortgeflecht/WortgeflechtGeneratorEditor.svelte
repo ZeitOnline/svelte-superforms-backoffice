@@ -1,7 +1,7 @@
 <script lang="ts">
   import GridPreview from './GridPreview.svelte';
   import WordListEditor from './WordListEditor.svelte';
-  import type { WortgeflechtWordPath } from '$lib/games/wortgeflecht-generator';
+  import type { WortgeflechtWordPath } from '#lib/games/wortgeflecht-generator.js';
 
   type PathCell = {
     x: number;

@@ -1,7 +1,7 @@
 import { render } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { TablePagination } from '$components/table';
+import { TablePagination } from '#components/table/index.js';
 
 describe('Pagination', () => {
   it('should render pagination controls', () => {

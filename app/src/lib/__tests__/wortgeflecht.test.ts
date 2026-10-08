@@ -9,7 +9,7 @@ import {
   sortWortgeflechtRowsByWordThenLetter,
   type WortgeflechtLetterRow,
   updateWortgeflechtDictionaryWord,
-} from '$lib/games/wortgeflecht';
+} from '#lib/games/wortgeflecht.js';
 
 describe('wortgeflecht helpers', () => {
   afterEach(() => {

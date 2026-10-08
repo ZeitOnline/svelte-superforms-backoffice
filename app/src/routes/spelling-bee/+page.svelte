@@ -1,10 +1,10 @@
 <script lang="ts">
-  import App from '$components/App.svelte';
-  import Header from '$components/Header.svelte';
-  import { spellingBeeStore } from '$stores/spelling-bee-word.svelte.js';
-  import IconHandler from '$components/icons/IconHandler.svelte';
-  import type { DataProps, SpellingBeeSolutionItem } from '$types';
-  import { SPELLING_BEE_TYPE_LABELS } from '$lib/games/spelling-bee-letters';
+  import App from '#components/App.svelte';
+  import Header from '#components/Header.svelte';
+  import { spellingBeeStore } from '#stores/spelling-bee-word.svelte.js';
+  import IconHandler from '#components/icons/IconHandler.svelte';
+  import type { DataProps, SpellingBeeSolutionItem } from '#types';
+  import { SPELLING_BEE_TYPE_LABELS } from '#lib/games/spelling-bee-letters.js';
 
   let { data } = $props();
 

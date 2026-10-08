@@ -1,10 +1,10 @@
 <script lang="ts">
-  import ViewWrapper from '$components/ViewWrapper.svelte';
-  import type { BeginningOptions, GameComplete } from '$types';
-  import GameTableWrapper from '$components/GameTableWrapper.svelte';
+  import ViewWrapper from '#components/ViewWrapper.svelte';
+  import type { BeginningOptions, GameComplete } from '#types';
+  import GameTableWrapper from '#components/GameTableWrapper.svelte';
   import { onMount } from 'svelte';
-  import { getResultBodyForGame } from '$lib/games/eckchen';
-  import { view } from '$stores/view-state-store.svelte';
+  import { getResultBodyForGame } from '#lib/games/eckchen.js';
+  import { view } from '#stores/view-state-store.svelte.js';
 
   let { data, gameName } = $props();
 

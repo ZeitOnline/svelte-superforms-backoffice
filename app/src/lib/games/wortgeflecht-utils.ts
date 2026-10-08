@@ -1,5 +1,5 @@
-import type { WortgeflechtLetterRow } from '$lib/games/wortgeflecht';
-import { parseWortgeflechtWords } from '$lib/games/wortgeflecht-generator';
+import type { WortgeflechtLetterRow } from '#lib/games/wortgeflecht.js';
+import { parseWortgeflechtWords } from '#lib/games/wortgeflecht-generator.js';
 
 export const MIN_WORTGEFLECHT_WORD_LENGTH = 4;
 

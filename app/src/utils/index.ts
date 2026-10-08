@@ -8,7 +8,7 @@ import type {
   GameWortiger,
   GameWortigerComplete,
   TableColumn,
-} from '$types';
+} from '#types';
 
 export type HighlightSegment = {
   text: string;

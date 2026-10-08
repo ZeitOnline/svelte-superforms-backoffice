@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ERRORS } from '$lib/error-messages';
+import { ERRORS } from '#lib/error-messages.js';
 
 export const generateWortgeflechtGameSchema = z.object({
   csv: z

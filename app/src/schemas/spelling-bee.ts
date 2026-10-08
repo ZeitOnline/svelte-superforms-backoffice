@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ERRORS } from '$lib/error-messages';
+import { ERRORS } from '#lib/error-messages.js';
 import {
   getOtherLettersCount,
   getSpellingBeeSolutionIssue,
@@ -7,7 +7,7 @@ import {
   SPELLING_BEE_TYPES,
   type SpellingBeeSolutionIssue,
   type SpellingBeeType,
-} from '$lib/games/spelling-bee-letters';
+} from '#lib/games/spelling-bee-letters.js';
 import { saveSpellingBeeSolutionArraySchema, saveSpellingBeeSolutionSchema } from './spelling-bee_game-solutions';
 
 export const SPELLING_BEE_SOLUTION_ISSUE_MESSAGES: Record<SpellingBeeSolutionIssue, string> = {

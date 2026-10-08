@@ -5,25 +5,25 @@ import type {
   GameType,
   GameWortgeflechtComplete,
   GameWortigerComplete,
-} from '$types';
-import { transformedPublishedData, isGameActive, transformedPublishedDataWithTime } from '$utils';
+} from '#types';
+import { transformedPublishedData, isGameActive, transformedPublishedDataWithTime } from '#utils';
 // Schemas for the games
-import { generateEckchenGameSchema, saveEckchenGameFormSchema } from '$schemas/eckchen';
-import { generateWortigerGameSchema, saveWortigerGameFormSchema } from '$schemas/wortiger';
+import { generateEckchenGameSchema, saveEckchenGameFormSchema } from '#schemas/eckchen.js';
+import { generateWortigerGameSchema, saveWortigerGameFormSchema } from '#schemas/wortiger.js';
 import type { ZodValidationSchema } from 'sveltekit-superforms/adapters';
 import {
   generateSpellingBeeGameSchema,
   saveSpellingBeeGameFormSchema,
-} from '$schemas/spelling-bee';
+} from '#schemas/spelling-bee.js';
 import {
   getDisplayWordcloud,
   getSpellingBeeLetters,
   SPELLING_BEE_TYPE_LABELS,
-} from '$lib/games/spelling-bee-letters';
+} from '#lib/games/spelling-bee-letters.js';
 import {
   generateWortgeflechtGameSchema,
   saveWortgeflechtGameFormSchema,
-} from '$schemas/wortgeflecht';
+} from '#schemas/wortgeflecht.js';
 
 export const PRODUCTION_URL = 'https://spiele.zeit.de';
 export const STAGING_URL = 'https://spiele.staging.zeit.de';

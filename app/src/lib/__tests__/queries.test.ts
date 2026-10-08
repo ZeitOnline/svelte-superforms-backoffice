@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getAllGames } from '$lib/queries';
+import { getAllGames } from '#lib/queries.js';
 
 const makeJsonResponse = (data: unknown, contentRange?: string) =>
   new Response(JSON.stringify(data), {

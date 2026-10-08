@@ -1,10 +1,10 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
-  import ViewWrapper from '$components/ViewWrapper.svelte';
-  import type { GameComplete, GameType } from '$types';
-  import { view } from '$stores/view-state-store.svelte';
-  import { deleteGame } from '$lib/queries';
-  import { getToastState } from '$lib/toast-state.svelte';
+  import ViewWrapper from '#components/ViewWrapper.svelte';
+  import type { GameComplete, GameType } from '#types';
+  import { view } from '#stores/view-state-store.svelte.js';
+  import { deleteGame } from '#lib/queries.js';
+  import { getToastState } from '#lib/toast-state.svelte.js';
   import { isEckchenGame, isSpellingBeeGame, isWortgeflechtGame, isWortigerGame } from '../utils';
 
   let {

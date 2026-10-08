@@ -1,6 +1,6 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
-  import type { GameComplete, GameSpellingBeeComplete, SpellingBeeSolutionItem } from '$types';
+  import type { GameComplete, GameSpellingBeeComplete, SpellingBeeSolutionItem } from '#types';
   import { superForm, setError, arrayProxy } from 'sveltekit-superforms';
   import type { SuperValidated } from 'sveltekit-superforms';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
@@ -8,20 +8,20 @@
   import { blur } from 'svelte/transition';
   import IconHandler from '../../icons/IconHandler.svelte';
   import ViewNavigation from '../../ViewNavigation.svelte';
-  import type { BeginningOptions } from '$types';
-  import { view } from '$stores/view-state-store.svelte';
-  import { getNextAvailableDateForGame } from '$lib/queries';
-  import { CONFIG_GAMES } from '$config/games.config';
-  import { APP_MESSAGES } from '$lib/app-messages';
-  import { ERRORS } from '$lib/error-messages';
-  import { getToastState } from '$lib/toast-state.svelte';
-  import { isSpellingBeeGame } from '$utils';
+  import type { BeginningOptions } from '#types';
+  import { view } from '#stores/view-state-store.svelte.js';
+  import { getNextAvailableDateForGame } from '#lib/queries.js';
+  import { CONFIG_GAMES } from '#config/games.config.js';
+  import { APP_MESSAGES } from '#lib/app-messages.js';
+  import { ERRORS } from '#lib/error-messages.js';
+  import { getToastState } from '#lib/toast-state.svelte.js';
+  import { isSpellingBeeGame } from '#utils';
   import { SvelteDate } from 'svelte/reactivity';
   import {
     SPELLING_BEE_SOLUTION_ISSUE_MESSAGES,
     type SaveSpellingBeeGameFormSchema,
     type SaveSpellingBeeSolutionSchema,
-  } from '$schemas/spelling-bee';
+  } from '#schemas/spelling-bee.js';
   import {
     getLetterSetKey,
     getOtherLettersCount,
@@ -32,14 +32,14 @@
     SPELLING_BEE_TYPE_LABELS,
     splitWordcloud,
     type SpellingBeeSolutionIssue,
-  } from '$lib/games/spelling-bee-letters';
+  } from '#lib/games/spelling-bee-letters.js';
   import {
     createSpellingBeeGame,
     DEFAULT_SPELLING_BEE_SOLUTION,
     createSpellingBeeSolutions,
     replaceSpellingBeeSolutions,
     updateSpellingBeeGame,
-  } from '$lib/games/spelling-bee';
+  } from '#lib/games/spelling-bee.js';
 
   type DataProps = {
     games: GameSpellingBeeComplete[];

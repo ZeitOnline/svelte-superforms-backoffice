@@ -9,9 +9,9 @@ import {
   resolveWordcloud,
   splitWordcloud,
   validateSpellingBeeCsvRows,
-} from '$lib/games/spelling-bee-letters';
-import { saveSpellingBeeGameFormSchema } from '$schemas/spelling-bee';
-import { getNextAvailableDateForGame } from '$lib/queries';
+} from '#lib/games/spelling-bee-letters.js';
+import { saveSpellingBeeGameFormSchema } from '#schemas/spelling-bee.js';
+import { getNextAvailableDateForGame } from '#lib/queries.js';
 
 const regular = { type: 'regular' as const, centralLetter: 'K', otherLetters: 'PULSURTE' };
 const mini = { type: 'mini' as const, centralLetter: 'K', otherLetters: 'PULSURT' };

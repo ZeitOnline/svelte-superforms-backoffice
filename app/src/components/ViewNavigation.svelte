@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { GameType } from '$types';
+  import type { GameType } from '#types';
 
   type Props = {
     viewName: string;

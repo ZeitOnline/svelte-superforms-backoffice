@@ -1,20 +1,20 @@
 <script lang="ts">
-  import { TablePagination } from '$components/table';
-  import IconHandler from '$components/icons/IconHandler.svelte';
-  import HighlightedText from '$components/HighlightedText.svelte';
-  import { getToastState } from '$lib/toast-state.svelte';
+  import { TablePagination } from '#components/table/index.js';
+  import IconHandler from '#components/icons/IconHandler.svelte';
+  import HighlightedText from '#components/HighlightedText.svelte';
+  import { getToastState } from '#lib/toast-state.svelte.js';
   import {
     createWortgeflechtDictionaryWord,
     deleteWortgeflechtDictionaryWord,
     fetchWortgeflechtDictionaryPage,
     updateWortgeflechtDictionaryWord,
-  } from '$lib/games/wortgeflecht';
+  } from '#lib/games/wortgeflecht.js';
   import {
     MIN_WORTGEFLECHT_WORD_LENGTH,
     normalizeWortgeflechtWordKey,
-  } from '$lib/games/wortgeflecht-utils';
-  import { getPostgrestErrorMessage, PostgrestError } from '$lib/postgrest-client';
-  import { debounce, highlightMatch } from '$utils';
+  } from '#lib/games/wortgeflecht-utils.js';
+  import { getPostgrestErrorMessage, PostgrestError } from '#lib/postgrest-client.js';
+  import { debounce, highlightMatch } from '#utils';
 
   const PAGE_SIZE = 50;
   const toastManager = getToastState();

@@ -1,4 +1,4 @@
-import type { GameWortgeflechtComplete } from '$types';
+import type { GameWortgeflechtComplete } from '#types';
 
 type WortgeflechtStore = {
   gameId: number | null;

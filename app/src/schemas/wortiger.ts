@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ERRORS } from '$lib/error-messages';
-import { MAP_LEVEL_CHARACTERS } from '$lib/games/wortiger';
+import { ERRORS } from '#lib/error-messages.js';
+import { MAP_LEVEL_CHARACTERS } from '#lib/games/wortiger.js';
 
 export const generateWortigerGameSchema = z.object({
   csv: z

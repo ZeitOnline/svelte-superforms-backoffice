@@ -1,4 +1,4 @@
-import type { WortgeflechtLetterRow } from '$lib/games/wortgeflecht';
+import type { WortgeflechtLetterRow } from '#lib/games/wortgeflecht.js';
 
 const GRID_WIDTH = 6;
 const GRID_HEIGHT = 8;

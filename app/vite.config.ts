@@ -18,16 +18,6 @@ export default defineConfig({
       // for more information about preprocessors
       hot: !process.env.VITEST, // disable hot module reload when tests are running
       preprocess: vitePreprocess(),
-      alias: {
-        $components: './src/components',
-        $views: './src/views',
-        $types: './src/types',
-        $stores: './src/stores',
-        $data: './src/data',
-        $utils: './src/utils',
-        $schemas: './src/schemas',
-        $config: './src/config',
-      },
       paths: {
         base: process.env.NODE_ENV === 'development' ? '/backoffice' : '',
       },

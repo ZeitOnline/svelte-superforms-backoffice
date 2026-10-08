@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { HighlightSegment } from '$utils';
+  import type { HighlightSegment } from '#utils';
 
   type Props = {
     segments: HighlightSegment[];

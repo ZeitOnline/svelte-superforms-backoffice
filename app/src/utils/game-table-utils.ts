@@ -1,4 +1,4 @@
-import type { GameComplete, SortDirection, TableColumn } from '$types';
+import type { GameComplete, SortDirection, TableColumn } from '#types';
 import { isEckchenGame, isSpellingBeeGame, isWortgeflechtGame, isWortigerGame } from '.';
 
 /**

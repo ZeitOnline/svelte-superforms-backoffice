@@ -1,6 +1,6 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
-  import type { BeginningOptions, GameWortgeflechtComplete } from '$types';
+  import type { BeginningOptions, GameWortgeflechtComplete } from '#types';
   import type { SuperValidated } from 'sveltekit-superforms';
   import { superForm, setError } from 'sveltekit-superforms';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
@@ -9,25 +9,25 @@
   import { SvelteDate } from 'svelte/reactivity';
   import ViewNavigation from '../../ViewNavigation.svelte';
   import IconHandler from '../../icons/IconHandler.svelte';
-  import { APP_MESSAGES } from '$lib/app-messages';
-  import { ERRORS } from '$lib/error-messages';
-  import { view } from '$stores/view-state-store.svelte';
-  import { getToastState } from '$lib/toast-state.svelte';
-  import { getNextAvailableDateForGame } from '$lib/queries';
-  import { isWortgeflechtGame } from '$utils';
+  import { APP_MESSAGES } from '#lib/app-messages.js';
+  import { ERRORS } from '#lib/error-messages.js';
+  import { view } from '#stores/view-state-store.svelte.js';
+  import { getToastState } from '#lib/toast-state.svelte.js';
+  import { getNextAvailableDateForGame } from '#lib/queries.js';
+  import { isWortgeflechtGame } from '#utils';
   import {
     fetchWortgeflechtLettersByGameId,
     replaceWortgeflechtLettersByGameId,
     sortWortgeflechtRowsByWordThenLetter,
     type WortgeflechtLetterRow,
     upsertWortgeflechtGame,
-  } from '$lib/games/wortgeflecht';
+  } from '#lib/games/wortgeflecht.js';
   import {
     buildWortgeflechtPreviewFromRows,
     generateWortgeflechtLayout,
     toGridRows,
     type WortgeflechtWordPath,
-  } from '$lib/games/wortgeflecht-generator';
+  } from '#lib/games/wortgeflecht-generator.js';
   import {
     analyzeWortgeflechtGenerationInput,
     hasSameWordSetForWortgeflecht,
@@ -35,11 +35,11 @@
     normalizeWortgeflechtWordLines,
     normalizeWortgeflechtWordLineValue,
     validateWortgeflechtGenerationInput,
-  } from '$lib/games/wortgeflecht-utils';
+  } from '#lib/games/wortgeflecht-utils.js';
   import {
     saveWortgeflechtGameFormSchema,
     type SaveWortgeflechtGameFormSchema,
-  } from '$schemas/wortgeflecht';
+  } from '#schemas/wortgeflecht.js';
   import WordListEditor from './WordListEditor.svelte';
   import GridPreview from './GridPreview.svelte';
 

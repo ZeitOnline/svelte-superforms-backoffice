@@ -1,9 +1,9 @@
 <script lang="ts">
   import '../app.css';
-  import BreakpointsDebug from '$components/BreakpointsDebug.svelte';
-  import Toaster from '$components/toast/Toaster.svelte';
-  import { setToastState } from '$lib/toast-state.svelte';
-  import OidcLogin from '$components/OidcLogin.svelte';
+  import BreakpointsDebug from '#components/BreakpointsDebug.svelte';
+  import Toaster from '#components/toast/Toaster.svelte';
+  import { setToastState } from '#lib/toast-state.svelte.js';
+  import OidcLogin from '#components/OidcLogin.svelte';
 
   let { children }: { children: () => ReturnType<import('svelte').Snippet> } = $props();
 

@@ -5,8 +5,8 @@
     GameComplete,
     GameDataByType,
     GameType,
-  } from '$types';
-  import { isEckchenGame, isSpellingBeeGame, isWortgeflechtGame, isWortigerGame } from '$utils';
+  } from '#types';
+  import { isEckchenGame, isSpellingBeeGame, isWortgeflechtGame, isWortigerGame } from '#utils';
   import { SpellingBeeGameForm, WortigerGameForm, EckchenGameForm, WortgeflechtGameForm } from './games';
 
   type Props = {
