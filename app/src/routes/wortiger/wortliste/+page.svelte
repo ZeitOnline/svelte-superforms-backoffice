@@ -8,7 +8,7 @@
   import WortigerWordList from '$components/games/wortiger/WortigerWordList.svelte';
 
   const handleBackToDashboard = () => {
-    goto(resolve(`/wortiger`));
+    goto(resolve(`wortiger`));
   };
 
 </script>

@@ -8,7 +8,7 @@
   import WortgeflechtWordList from '$components/games/wortgeflecht/WortgeflechtWordList.svelte';
 
   const handleBackToDashboard = () => {
-    goto(resolve('/wortgeflecht'));
+    goto(resolve('wortgeflecht'));
   };
 </script>
 
