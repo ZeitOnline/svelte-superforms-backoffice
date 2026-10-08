@@ -2,7 +2,7 @@
   import type { BeginningOptions, DataProps, GameType } from '$types';
   import { superForm, setError } from 'sveltekit-superforms';
   import Papa from 'papaparse';
-  import { dev } from '$app/environment';
+  import { dev } from '$app/env';
   import ViewNavigation from './ViewNavigation.svelte';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
   import { ERRORS } from '$lib/error-messages';

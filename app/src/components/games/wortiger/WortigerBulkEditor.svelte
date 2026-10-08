@@ -20,7 +20,7 @@
   import { onMount } from 'svelte';
   import { isWortigerGame } from '$utils';
   import ViewNavigation from '$components/ViewNavigation.svelte';
-  import { dev } from '$app/environment';
+  import { dev } from '$app/env';
 
   type Props = {
     data: DataProps;
