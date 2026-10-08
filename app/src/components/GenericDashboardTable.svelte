@@ -99,7 +99,7 @@
     },
     replaceState = false,
   ) {
-    const url = new URL(page.url);
+    const url = new URL(page.url.href);
     const params = url.searchParams;
 
     if (next.page !== undefined) {
@@ -140,9 +140,8 @@
     }
 
     goto(`${url.pathname}?${params.toString()}`, {
-      replaceState,
-      keepFocus: true,
-      noScroll: true,
+      replace: replaceState,
+      reset: false,
     });
   }
 

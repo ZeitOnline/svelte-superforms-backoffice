@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { invalidateAll } from '$app/navigation';
+  import { refreshAll } from '$app/navigation';
   import type { GameComplete, GameEckchenComplete, QuestionComplete } from '#types';
   import { superForm, arrayProxy, setError, formFieldProxy } from 'sveltekit-superforms';
   import type { SuperValidated } from 'sveltekit-superforms';
@@ -245,7 +245,7 @@
   }
 
   async function refreshDataAndGoToDashboard() {
-    await invalidateAll();
+    await refreshAll();
     resetAll();
     view.updateView('dashboard');
   }

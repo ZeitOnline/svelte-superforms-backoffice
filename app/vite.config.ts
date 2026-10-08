@@ -16,7 +16,6 @@ export default defineConfig({
     sveltekit({
       // Consult https://kit.svelte.dev/docs/integrations#preprocessors
       // for more information about preprocessors
-      hot: !process.env.VITEST, // disable hot module reload when tests are running
       preprocess: vitePreprocess(),
       paths: {
         base: process.env.NODE_ENV === 'development' ? '/backoffice' : '',

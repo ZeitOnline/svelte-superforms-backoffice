@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { invalidateAll } from '$app/navigation';
+  import { refreshAll } from '$app/navigation';
   import type { BeginningOptions, DataProps, GameComplete } from '#types';
   import { view } from '#stores/view-state-store.svelte.js';
   import {
@@ -455,7 +455,7 @@
   };
 
   async function refreshDataAndGoToDashboard() {
-    await invalidateAll();
+    await refreshAll();
     view.updateSelectedGameId(-1);
     view.updateView('dashboard');
     beginning_option = null;

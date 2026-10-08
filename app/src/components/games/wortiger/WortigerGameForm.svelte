@@ -9,7 +9,7 @@
   import type { BeginningOptions } from '#types';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
   import { onMount } from 'svelte';
-  import { invalidateAll } from '$app/navigation';
+  import { refreshAll } from '$app/navigation';
   import { view } from '#stores/view-state-store.svelte.js';
   import { APP_MESSAGES } from '#lib/app-messages.js';
   import { ERRORS } from '#lib/error-messages.js';
@@ -301,7 +301,7 @@
   }
 
   async function refreshDataAndGoToDashboard() {
-    await invalidateAll();
+    await refreshAll();
     resetAll();
     view.updateView('dashboard');
   }

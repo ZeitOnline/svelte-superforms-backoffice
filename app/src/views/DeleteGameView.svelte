@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { invalidateAll } from '$app/navigation';
+  import { refreshAll } from '$app/navigation';
   import ViewWrapper from '#components/ViewWrapper.svelte';
   import type { GameComplete, GameType } from '#types';
   import { view } from '#stores/view-state-store.svelte.js';
@@ -48,7 +48,7 @@
   };
 
   async function refreshDataAndGoToDashboard() {
-    await invalidateAll();
+    await refreshAll();
     view.updateView('dashboard');
     view.updateSelectedGameId(-1);
   }
