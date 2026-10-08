@@ -55,15 +55,11 @@
   "imports": {
     "#components/*": "./src/components/*",
     "#config/*": "./src/config/*",
-    "#data/*": "./src/data/*",
     "#lib/*": "./src/lib/*",
     "#schemas/*": "./src/schemas/*",
     "#stores/*": "./src/stores/*",
     "#types": "./src/types/index.js",
-    "#types/*": "./src/types/*",
     "#utils": "./src/utils/index.js",
-    "#utils/*": "./src/utils/*",
-    "#views": "./src/views/index.js",
-    "#views/*": "./src/views/*"
+    "#views": "./src/views/index.js"
   }
 }
