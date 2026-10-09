@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { view } from '$stores/view-state-store.svelte';
-  import type { BeginningOptions, CsvResultsRenderMode, DataProps, GameType, IconOption } from '$types';
+  import { view } from '#stores/view-state-store.svelte.js';
+  import type { BeginningOptions, CsvResultsRenderMode, DataProps, GameType, IconOption } from '#types';
 
-  import GameTableWrapper from '$components/GameTableWrapper.svelte';
-  import CSVGameFileUploader from '$components/CSVGameFileUploader.svelte';
-  import ViewWrapper from '$components/ViewWrapper.svelte';
-  import ViewNavigation from '$components/ViewNavigation.svelte';
-  import IconHandler from '$components/icons/IconHandler.svelte';
-  import WortigerBulkEditor from '$components/games/wortiger/WortigerBulkEditor.svelte';
-  import { CONFIG_GAMES } from '$config/games.config';
+  import GameTableWrapper from '#components/GameTableWrapper.svelte';
+  import CSVGameFileUploader from '#components/CSVGameFileUploader.svelte';
+  import ViewWrapper from '#components/ViewWrapper.svelte';
+  import ViewNavigation from '#components/ViewNavigation.svelte';
+  import IconHandler from '#components/icons/IconHandler.svelte';
+  import WortigerBulkEditor from '#components/games/wortiger/WortigerBulkEditor.svelte';
+  import { CONFIG_GAMES } from '#config/games.config.js';
 
   type Props = {
     data: DataProps;

@@ -1,4 +1,4 @@
-import type { ActiveFilterOption, SortOption } from '$types';
+import type { ActiveFilterOption, SortOption } from '#types';
 
 export const SORT_OPTIONS: SortOption[] = ['az', 'za', 'dateAsc', 'dateDesc'];
 export const DEFAULT_SORT: SortOption = 'dateDesc';

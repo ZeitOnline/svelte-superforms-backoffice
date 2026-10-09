@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
+import { buildQueryParams, pg, requestPostgrest } from '#lib/postgrest-client.js';
 
 describe('postgrest-client', () => {
   it('returns parsed JSON data on success', async () => {

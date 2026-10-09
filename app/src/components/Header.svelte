@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { GameType } from '$types';
+  import type { GameType } from '#types';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { resolve } from '$app/paths';
   import ZeitSpieleLogo from './ZeitSpieleLogo.svelte';
-  import { view } from '$stores/view-state-store.svelte';
-  import { GAME_UI_BY_ID, GAME_UI_CONFIG } from '$lib/games/ui-config';
+  import { view } from '#stores/view-state-store.svelte.js';
+  import { GAME_UI_BY_ID, GAME_UI_CONFIG } from '#lib/games/ui-config.js';
 
   let { gameName }: { gameName?: GameType } = $props();
 

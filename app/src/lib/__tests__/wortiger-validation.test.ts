@@ -7,7 +7,7 @@ import {
   hasLevelDateConflict,
   normalizeWortigerWord,
   validateAgainstWordList,
-} from '$lib/games/wortiger-validation';
+} from '#lib/games/wortiger-validation.js';
 
 describe('wortiger-validation', () => {
   it('normalizes words (trim + lowercase)', () => {

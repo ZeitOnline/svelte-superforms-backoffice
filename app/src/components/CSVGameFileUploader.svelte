@@ -1,15 +1,15 @@
 <script lang="ts">
-  import type { BeginningOptions, DataProps, GameType } from '$types';
+  import type { BeginningOptions, DataProps, GameType } from '#types';
   import { superForm, setError } from 'sveltekit-superforms';
   import Papa from 'papaparse';
-  import { dev } from '$app/environment';
+  import { dev } from '$app/env';
   import ViewNavigation from './ViewNavigation.svelte';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
-  import { ERRORS } from '$lib/error-messages';
-  import { APP_MESSAGES } from '$lib/app-messages';
-  import { CONFIG_GAMES } from '$config/games.config';
-  import { validateSpellingBeeCsvRows } from '$lib/games/spelling-bee-letters';
-  import { isWortigerLength, WORTIGER_LENGTHS } from '$lib/games/wortiger';
+  import { ERRORS } from '#lib/error-messages.js';
+  import { APP_MESSAGES } from '#lib/app-messages.js';
+  import { CONFIG_GAMES } from '#config/games.config.js';
+  import { validateSpellingBeeCsvRows } from '#lib/games/spelling-bee-letters.js';
+  import { isWortigerLength, WORTIGER_LENGTHS } from '#lib/games/wortiger.js';
 
   function parseCsv(file: File): Promise<string[][]> {
     return new Promise((resolve, reject) => {

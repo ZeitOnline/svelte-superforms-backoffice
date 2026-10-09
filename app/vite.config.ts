@@ -1,3 +1,5 @@
+import adapter from '@sveltejs/adapter-node';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vitest/config';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
@@ -9,7 +11,24 @@ const POSTGREST_SPELLING_BEE_URL = 'http://localhost:3003';
 const POSTGREST_WORTGEFLECHT_URL = 'http://localhost:3004';
 
 export default defineConfig({
-  plugins: [tailwindcss(), sveltekit(), svelteTesting()],
+  plugins: [
+    tailwindcss(),
+    sveltekit({
+      // Consult https://kit.svelte.dev/docs/integrations#preprocessors
+      // for more information about preprocessors
+      preprocess: vitePreprocess(),
+      paths: {
+        base: process.env.NODE_ENV === 'development' ? '/backoffice' : '',
+      },
+      adapter: adapter({
+        // default options are shown
+        out: 'build',
+        precompress: false,
+        envPrefix: '',
+      }),
+    }),
+    svelteTesting(),
+  ],
   build: {
     manifest: true,
   },

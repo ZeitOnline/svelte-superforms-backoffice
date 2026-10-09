@@ -1,6 +1,6 @@
 import type { Component } from 'svelte';
-import type { GameType } from '$types';
-import { EckchenLogo, SpellingBeeLogo, WortgeflechtLogo, WortigerLogo } from '$components/games';
+import type { GameType } from '#types';
+import { EckchenLogo, SpellingBeeLogo, WortgeflechtLogo, WortigerLogo } from '#components/games/index.js';
 
 type GameUiSubnavItem = {
   label: string;

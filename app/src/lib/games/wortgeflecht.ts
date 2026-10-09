@@ -4,7 +4,7 @@ import {
   parseContentRangeTotal,
   pg,
   requestPostgrest,
-} from '$lib/postgrest-client';
+} from '#lib/postgrest-client.js';
 
 const normalizeStoredWord = (value: string) => value.trim().toLocaleLowerCase('de-DE');
 

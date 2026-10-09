@@ -2,13 +2,13 @@
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
 
-  import Header from '$components/Header.svelte';
-  import ViewNavigation from '$components/ViewNavigation.svelte';
-  import ViewWrapper from '$components/ViewWrapper.svelte';
-  import WortgeflechtWordList from '$components/games/wortgeflecht/WortgeflechtWordList.svelte';
+  import Header from '#components/Header.svelte';
+  import ViewNavigation from '#components/ViewNavigation.svelte';
+  import ViewWrapper from '#components/ViewWrapper.svelte';
+  import WortgeflechtWordList from '#components/games/wortgeflecht/WortgeflechtWordList.svelte';
 
   const handleBackToDashboard = () => {
-    goto(resolve('/wortgeflecht'));
+    goto(resolve('wortgeflecht'));
   };
 </script>
 

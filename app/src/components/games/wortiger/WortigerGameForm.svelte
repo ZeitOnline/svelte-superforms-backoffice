@@ -1,21 +1,21 @@
 <script lang="ts">
-  import type { GameComplete, GameWortigerComplete } from '$types';
+  import type { GameComplete, GameWortigerComplete } from '#types';
   import { superForm, setError } from 'sveltekit-superforms';
   import type { SuperValidated } from 'sveltekit-superforms';
   import { blur } from 'svelte/transition';
   import IconHandler from '../../icons/IconHandler.svelte';
-  import { getNextAvailableDateForGame } from '$lib/queries';
+  import { getNextAvailableDateForGame } from '#lib/queries.js';
   import ViewNavigation from '../../ViewNavigation.svelte';
-  import type { BeginningOptions } from '$types';
+  import type { BeginningOptions } from '#types';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
   import { onMount } from 'svelte';
-  import { invalidateAll } from '$app/navigation';
-  import { view } from '$stores/view-state-store.svelte';
-  import { APP_MESSAGES } from '$lib/app-messages';
-  import { ERRORS } from '$lib/error-messages';
-  import { getToastState } from '$lib/toast-state.svelte';
-  import { saveWortigerGameFormSchema, type SaveWortigerGameFormSchema } from '$schemas/wortiger';
-  import { isWortigerGame } from '$utils';
+  import { refreshAll } from '$app/navigation';
+  import { view } from '#stores/view-state-store.svelte.js';
+  import { APP_MESSAGES } from '#lib/app-messages.js';
+  import { ERRORS } from '#lib/error-messages.js';
+  import { getToastState } from '#lib/toast-state.svelte.js';
+  import { saveWortigerGameFormSchema, type SaveWortigerGameFormSchema } from '#schemas/wortiger.js';
+  import { isWortigerGame } from '#utils';
   import {
     type LastUsedInfo,
     fetchLastUsedInfo,
@@ -23,10 +23,10 @@
     getLastUsedInfo,
     hasLevelDateConflict,
     validateAgainstWordList,
-  } from '$lib/games/wortiger-validation';
+  } from '#lib/games/wortiger-validation.js';
   import { SvelteDate, SvelteMap } from 'svelte/reactivity';
-  import { CONFIG_GAMES } from '$config/games.config';
-  import { createWortigerGame, MAP_LEVEL_CHARACTERS, updateWortigerGame } from '$lib/games/wortiger';
+  import { CONFIG_GAMES } from '#config/games.config.js';
+  import { createWortigerGame, MAP_LEVEL_CHARACTERS, updateWortigerGame } from '#lib/games/wortiger.js';
 
   type DataProps = {
     games: GameWortigerComplete[];
@@ -301,7 +301,7 @@
   }
 
   async function refreshDataAndGoToDashboard() {
-    await invalidateAll();
+    await refreshAll();
     resetAll();
     view.updateView('dashboard');
   }

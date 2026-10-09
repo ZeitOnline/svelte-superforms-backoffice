@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { GameComplete, GameType, GamesPageInfo } from '$types';
-  import GenericDashboardTable from '$components/GenericDashboardTable.svelte';
-  import ViewNavigation from '$components/ViewNavigation.svelte';
-  import ViewWrapper from '$components/ViewWrapper.svelte';
-  import { view } from '$stores/view-state-store.svelte';
+  import type { GameComplete, GameType, GamesPageInfo } from '#types';
+  import GenericDashboardTable from '#components/GenericDashboardTable.svelte';
+  import ViewNavigation from '#components/ViewNavigation.svelte';
+  import ViewWrapper from '#components/ViewWrapper.svelte';
+  import { view } from '#stores/view-state-store.svelte.js';
 
   type Props = {
     games: GameComplete[];

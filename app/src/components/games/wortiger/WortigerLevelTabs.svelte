@@ -1,8 +1,8 @@
 <script lang="ts">
-  import IconHandler from '$components/icons/IconHandler.svelte';
-  import { toCSV } from '$components/games/wortiger/utils';
-  import { MAP_LEVEL_CHARACTERS, WORTIGER_LENGTHS } from '$lib/games/wortiger';
-  import { buildQueryParams, pg, requestPostgrest } from '$lib/postgrest-client';
+  import IconHandler from '#components/icons/IconHandler.svelte';
+  import { toCSV } from '#components/games/wortiger/utils/index.js';
+  import { MAP_LEVEL_CHARACTERS, WORTIGER_LENGTHS } from '#lib/games/wortiger.js';
+  import { buildQueryParams, pg, requestPostgrest } from '#lib/postgrest-client.js';
 
   type Props = {
     apiBase: string;

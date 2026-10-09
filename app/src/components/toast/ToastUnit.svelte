@@ -1,7 +1,7 @@
 <script lang="ts">
-    import IconHandler from '$components/icons/IconHandler.svelte';
-	import { getToastState } from '$lib/toast-state.svelte';
-	import type { ToastType } from '$types';
+    import IconHandler from '#components/icons/IconHandler.svelte';
+	import { getToastState } from '#lib/toast-state.svelte.js';
+	import type { ToastType } from '#types';
 	import { fade, fly } from 'svelte/transition';
 
 	type Props = {

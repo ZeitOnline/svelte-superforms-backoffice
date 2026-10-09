@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import WortgeflechtWordList from '$components/games/wortgeflecht/WortgeflechtWordList.svelte';
+import WortgeflechtWordList from '#components/games/wortgeflecht/WortgeflechtWordList.svelte';
 
 const makeJsonResponse = (data: unknown, contentRange: string) =>
   new Response(JSON.stringify(data), {

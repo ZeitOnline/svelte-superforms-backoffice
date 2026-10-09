@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { DataProps } from '$types';
-  import { DashboardView, DeleteGameView, EditGameView, NewGameView } from '$views';
-  import { view } from '$stores/view-state-store.svelte';
+  import type { DataProps } from '#types';
+  import { DashboardView, DeleteGameView, EditGameView, NewGameView } from '#views';
+  import { view } from '#stores/view-state-store.svelte.js';
 
   let { data }: { data: DataProps } = $props();
 </script>

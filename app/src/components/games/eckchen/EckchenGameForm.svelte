@@ -1,23 +1,23 @@
 <script lang="ts">
-  import { invalidateAll } from '$app/navigation';
-  import type { GameComplete, GameEckchenComplete, QuestionComplete } from '$types';
+  import { refreshAll } from '$app/navigation';
+  import type { GameComplete, GameEckchenComplete, QuestionComplete } from '#types';
   import { superForm, arrayProxy, setError, formFieldProxy } from 'sveltekit-superforms';
   import type { SuperValidated } from 'sveltekit-superforms';
   import Separator from '../../Separator.svelte';
   import { blur } from 'svelte/transition';
   import IconHandler from '../../icons/IconHandler.svelte';
   import { cubicInOut } from 'svelte/easing';
-  import { getNextAvailableDateForGame } from '$lib/queries';
+  import { getNextAvailableDateForGame } from '#lib/queries.js';
   import ViewNavigation from '../../ViewNavigation.svelte';
-  import type { BeginningOptions } from '$types';
+  import type { BeginningOptions } from '#types';
   import { zodClient, type ZodObjectType } from 'sveltekit-superforms/adapters';
   import { onMount } from 'svelte';
-  import { view } from '$stores/view-state-store.svelte';
-  import { APP_MESSAGES } from '$lib/app-messages';
-  import { ERRORS } from '$lib/error-messages';
-  import { getToastState } from '$lib/toast-state.svelte';
-  import { type SaveEckchenGameFormSchema } from '$schemas/eckchen';
-  import { isEckchenGame } from '$utils';
+  import { view } from '#stores/view-state-store.svelte.js';
+  import { APP_MESSAGES } from '#lib/app-messages.js';
+  import { ERRORS } from '#lib/error-messages.js';
+  import { getToastState } from '#lib/toast-state.svelte.js';
+  import { type SaveEckchenGameFormSchema } from '#schemas/eckchen.js';
+  import { isEckchenGame } from '#utils';
   import {
     createEckchenGame,
     createGameQuestions,
@@ -25,8 +25,8 @@
     serializeRow,
     updateEckchenGame,
     updateGameQuestions,
-  } from '$lib/games/eckchen';
-  import { CONFIG_GAMES } from '$config/games.config';
+  } from '#lib/games/eckchen.js';
+  import { CONFIG_GAMES } from '#config/games.config.js';
   import { SvelteDate } from 'svelte/reactivity';
 
   type DataProps = {
@@ -245,7 +245,7 @@
   }
 
   async function refreshDataAndGoToDashboard() {
-    await invalidateAll();
+    await refreshAll();
     resetAll();
     view.updateView('dashboard');
   }

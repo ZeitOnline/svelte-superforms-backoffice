@@ -1,5 +1,5 @@
 <script lang="ts">
-    import IconHandler from "$components/icons/IconHandler.svelte";
+    import IconHandler from "#components/icons/IconHandler.svelte";
 
 
 	let {

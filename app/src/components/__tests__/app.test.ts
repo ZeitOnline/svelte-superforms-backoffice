@@ -1,10 +1,10 @@
 import { getByRole, render } from '@testing-library/svelte';
 import { describe, expect, it, vi } from 'vitest';
 import { MOCK_GAMES } from '../../data/mock';
-import App from '$components/App.svelte';
-import { DEFAULT_SORT } from '$lib/game-table-utils';
+import App from '#components/App.svelte';
+import { DEFAULT_SORT } from '#lib/game-table-utils.js';
 
-vi.mock('$lib/queries', () => ({
+vi.mock('#lib/queries.js', () => ({
   getAllGames: vi.fn().mockResolvedValue({ games: MOCK_GAMES.ECKCHEN, total: MOCK_GAMES.ECKCHEN.length }),
 }));
 

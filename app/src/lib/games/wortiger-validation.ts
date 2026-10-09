@@ -1,6 +1,6 @@
-import { MAP_LEVEL_CHARACTERS } from '$lib/games/wortiger';
-import { buildQueryParams, requestPostgrest } from '$lib/postgrest-client';
-import type { GameWortiger } from '$types';
+import { MAP_LEVEL_CHARACTERS } from '#lib/games/wortiger.js';
+import { buildQueryParams, requestPostgrest } from '#lib/postgrest-client.js';
+import type { GameWortiger } from '#types';
 
 export type WordListRule = 'must-exist' | 'must-not-exist';
 

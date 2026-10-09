@@ -7,7 +7,7 @@ import {
   parseWortgeflechtWords,
   prioritizeWordsForPlacement,
   toGridRows,
-} from '$lib/games/wortgeflecht-generator';
+} from '#lib/games/wortgeflecht-generator.js';
 
 // A deterministic PRNG for testing purposes, based on the Mulberry32 algorithm.
 // Always returns the same sequence, which

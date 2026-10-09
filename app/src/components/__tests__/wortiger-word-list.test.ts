@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import WortigerWordList from '$components/games/wortiger/WortigerWordList.svelte';
+import WortigerWordList from '#components/games/wortiger/WortigerWordList.svelte';
 
 const makeJsonResponse = (data: unknown, contentRange: string) =>
   new Response(JSON.stringify(data), {

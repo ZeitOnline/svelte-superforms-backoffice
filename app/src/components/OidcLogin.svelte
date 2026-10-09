@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { oidc } from '@zeitonline/svelte-oidc';
-  import { dev } from '$app/environment';
+  import { dev } from '$app/env';
 
   let { children }: { children: () => ReturnType<import('svelte').Snippet> } = $props();
 

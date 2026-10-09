@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { DataProps } from '$types';
-  import App from '$components/App.svelte';
-  import Header from '$components/Header.svelte';
-  import IconHandler from '$components/icons/IconHandler.svelte';
-  import HighlightedText from '$components/HighlightedText.svelte';
-  import { wortgeflechtStore } from '$stores/wortgeflecht-word.svelte';
-  import { highlightMatch } from '$utils';
+  import type { DataProps } from '#types';
+  import App from '#components/App.svelte';
+  import Header from '#components/Header.svelte';
+  import IconHandler from '#components/icons/IconHandler.svelte';
+  import HighlightedText from '#components/HighlightedText.svelte';
+  import { wortgeflechtStore } from '#stores/wortgeflecht-word.svelte.js';
+  import { highlightMatch } from '#utils';
   import { page } from '$app/state';
 
   let { data } = $props();

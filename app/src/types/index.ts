@@ -1,8 +1,8 @@
-import type { SaveEckchenGameFormSchema } from '$schemas/eckchen';
-import type { SaveSpellingBeeGameFormSchema } from '$schemas/spelling-bee';
-import type { SpellingBeeType } from '$lib/games/spelling-bee-letters';
-import type { SaveWortgeflechtGameFormSchema } from '$schemas/wortgeflecht';
-import type { SaveWortigerGameFormSchema } from '$schemas/wortiger';
+import type { SaveEckchenGameFormSchema } from '#schemas/eckchen.js';
+import type { SaveSpellingBeeGameFormSchema } from '#schemas/spelling-bee.js';
+import type { SpellingBeeType } from '#lib/games/spelling-bee-letters.js';
+import type { SaveWortgeflechtGameFormSchema } from '#schemas/wortgeflecht.js';
+import type { SaveWortigerGameFormSchema } from '#schemas/wortiger.js';
 import type { SuperValidated } from 'sveltekit-superforms';
 import type { ZodValidationSchema } from 'sveltekit-superforms/adapters';
 

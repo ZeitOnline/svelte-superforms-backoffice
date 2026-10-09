@@ -1,5 +1,5 @@
-import { ERRORS } from '$lib/error-messages';
-import { Orientation } from '$types';
+import { ERRORS } from '#lib/error-messages.js';
+import { Orientation } from '#types';
 import { z } from 'zod';
 
 export const generateEckchenGameSchema = z.object({

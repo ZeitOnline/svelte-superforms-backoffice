@@ -4,9 +4,9 @@ import {
   parseContentRangeTotal,
   pg,
   requestPostgrest,
-} from '$lib/postgrest-client';
-import type { GameComplete, SortDirection } from '$types';
-import { toCSV } from '$components/games/wortiger/utils';
+} from '#lib/postgrest-client.js';
+import type { GameComplete, SortDirection } from '#types';
+import { toCSV } from '#components/games/wortiger/utils/index.js';
 
 /**
  * The characters per level in the Wortiger game.

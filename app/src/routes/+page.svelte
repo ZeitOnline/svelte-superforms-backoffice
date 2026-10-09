@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
-  import ViewWrapper from '$components/ViewWrapper.svelte';
-  import { GAME_UI_CONFIG } from '$lib/games/ui-config';
+  import ViewWrapper from '#components/ViewWrapper.svelte';
+  import { GAME_UI_CONFIG } from '#lib/games/ui-config.js';
 
   const tagColorClass = (color: string) => {
     switch (color) {

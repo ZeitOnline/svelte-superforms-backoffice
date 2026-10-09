@@ -13,7 +13,7 @@ The app is frontend-heavy and talks directly to PostgREST endpoints for each gam
 
 ## Tech Stack
 
-- Frontend: Svelte 5, SvelteKit 2
+- Frontend: Svelte 5, SvelteKit 3
 - Language: TypeScript
 - Forms and validation: `sveltekit-superforms` with Zod-based schemas
 - Styling: Tailwind CSS v4 plus ZEIT design system styles/tokens
@@ -28,7 +28,9 @@ Key package metadata lives in [app/package.json](app/package.json).
 
 - The Svelte app lives in `app/`.
 - `ssr = false` in [app/src/routes/+layout.ts](app/src/routes/+layout.ts#L10), so this is effectively a client-rendered admin app.
-- In development, SvelteKit runs under the base path `/backoffice`. This is configured in [app/svelte.config.js](app/svelte.config.js#L17).
+- In development, SvelteKit runs under the base path `/backoffice`. This is configured in the `sveltekit()` options in [app/vite.config.ts](app/vite.config.ts#L21).
+- There is no `svelte.config.js`: all SvelteKit config lives in `app/vite.config.ts`.
+- Path aliases are subpath imports in the `imports` field of [app/package.json](app/package.json) (`#lib/*`, `#components/*`, `#config/*`, `#schemas/*`, `#stores/*`, `#types`, `#utils`, `#views`, …). Imports of `.ts` modules need the `.js` extension, e.g. `#lib/queries.js`; `.svelte` files keep theirs.
 - In non-dev environments, access is gated by OIDC login in [app/src/components/OidcLogin.svelte](app/src/components/OidcLogin.svelte#L1).
 
 ## Local Dev Topology

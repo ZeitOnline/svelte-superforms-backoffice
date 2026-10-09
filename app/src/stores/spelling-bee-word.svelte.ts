@@ -1,5 +1,5 @@
-import type { SpellingBeeSolutionItem, GameSpellingBeeComplete } from "$types";
-import { getDisplayWordcloud, getSpellingBeeLetters, type SpellingBeeType } from '$lib/games/spelling-bee-letters';
+import type { SpellingBeeSolutionItem, GameSpellingBeeComplete } from "#types";
+import { getDisplayWordcloud, getSpellingBeeLetters, type SpellingBeeType } from '#lib/games/spelling-bee-letters.js';
 
 type SpellingBeeStore = {
   gameId: number | null;
