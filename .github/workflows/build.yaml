@@ -1,5 +1,11 @@
 name: Build and Test
 on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Release tag to build and push
+        required: true
+        type: string
   push:
     tags:
         - '*'
@@ -21,13 +27,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
 
-      - name: extraxt version
+      - name: extract version
         shell: bash
-        run: |
-          REF=${{ github.ref_name }}
-          TAG=${REF#${{ inputs.context }}-}
-          echo "TAG=$TAG" >> $GITHUB_ENV
+        run: echo "TAG=${{ inputs.tag || github.ref_name }}" >> $GITHUB_ENV
 
       - name: Baseproject
         id: baseproject
@@ -47,5 +52,5 @@ jobs:
           cache-to: type=gha,mode=max
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ env.TAG }}
             ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.sha }}
