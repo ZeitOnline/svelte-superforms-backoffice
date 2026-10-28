@@ -15,6 +15,7 @@
   } from '#lib/games/wortiger-validation.js';
   import IconHandler from '#components/icons/IconHandler.svelte';
   import { createGamesBulk } from '#lib/queries.js';
+  import { getPostgrestErrorMessage } from '#lib/postgrest-client.js';
   import { getToastState } from '#lib/toast-state.svelte.js';
   import { CONFIG_GAMES } from '#config/games.config.js';
   import { onMount } from 'svelte';
@@ -141,6 +142,7 @@
       wordSets = next;
     } catch (e) {
       console.error(e);
+      error = `Wortlisten konnten nicht geladen werden: ${getPostgrestErrorMessage(e)}`;
     } finally {
       if (dev) {
         console.log('Loaded word sets', wordSets);
