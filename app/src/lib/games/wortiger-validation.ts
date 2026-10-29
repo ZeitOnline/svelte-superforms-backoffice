@@ -50,51 +50,28 @@ export function buildWordSetFromResponse(rows: Array<{ word?: string }>): Set<st
   return set;
 }
 
-const WORD_LIST_PAGE_SIZE = 1000;
-
-const fetchWordsPage = async (options: {
+const fetchWordsForLength = async (options: {
   apiBase: string;
   endpointName: string;
   length: number;
-  offset: number;
   fetchFn?: typeof fetch;
 }) =>
   requestPostgrest<Array<{ word?: string }>>({
     fetchFn: options.fetchFn,
     baseUrl: options.apiBase,
     path: `${options.endpointName}_${options.length}`,
-    query: buildQueryParams([
-      ['select', 'word'],
-      // Stable order is required for limit/offset paging.
-      ['order', 'word.asc'],
-      ['limit', WORD_LIST_PAGE_SIZE],
-      ['offset', options.offset],
-    ]),
+    query: buildQueryParams([['select', 'word']]),
     errorMessage: `Fetch failed for ${options.length}`,
   });
 
-/**
- * Loads the full word list in pages instead of one unbounded request, so
- * server-side row limits or proxy timeouts cannot silently truncate it.
- */
 export async function fetchWordSetForLength(options: {
   apiBase: string;
   endpointName: string;
   length: number;
   fetchFn?: typeof fetch;
 }): Promise<Set<string>> {
-  const set = new Set<string>();
-  let offset = 0;
-
-  while (true) {
-    const { data } = await fetchWordsPage({ ...options, offset });
-    const rows = Array.isArray(data) ? data : [];
-    for (const word of buildWordSetFromResponse(rows)) set.add(word);
-    if (rows.length < WORD_LIST_PAGE_SIZE) break;
-    offset += WORD_LIST_PAGE_SIZE;
-  }
-
-  return set;
+  const { data } = await fetchWordsForLength(options);
+  return buildWordSetFromResponse(data);
 }
 
 export async function fetchLastUsedInfo(options: {

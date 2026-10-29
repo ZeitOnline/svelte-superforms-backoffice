@@ -129,35 +129,12 @@ describe('wortiger-validation', () => {
       fetchFn,
     });
 
-    expect(fetchFn).toHaveBeenCalledWith(
-      'https://example.test/wortliste_4?select=word&order=word.asc&limit=1000&offset=0',
-      {
-        method: 'GET',
-        headers: expect.any(Headers),
-        body: undefined,
-      },
-    );
-    expect(set.has('wort')).toBe(true);
-  });
-
-  it('pages through the word list until a short page is returned', async () => {
-    const fullPage = Array.from({ length: 1000 }, (_, i) => ({ word: `w${i}` }));
-    const fetchFn = vi
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => fullPage })
-      .mockResolvedValueOnce({ ok: true, json: async () => [{ word: 'LAST' }] });
-
-    const set = await fetchWordSetForLength({
-      apiBase: 'https://example.test',
-      endpointName: 'wortliste',
-      length: 4,
-      fetchFn,
+    expect(fetchFn).toHaveBeenCalledWith('https://example.test/wortliste_4?select=word', {
+      method: 'GET',
+      headers: expect.any(Headers),
+      body: undefined,
     });
-
-    expect(fetchFn).toHaveBeenCalledTimes(2);
-    expect(fetchFn.mock.calls[1][0]).toContain('offset=1000');
-    expect(set.size).toBe(1001);
-    expect(set.has('last')).toBe(true);
+    expect(set.has('wort')).toBe(true);
   });
 
   it('fetches duplicate usage info across wortiger games', async () => {
@@ -189,7 +166,9 @@ describe('wortiger-validation', () => {
     const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       headers: new Headers({ 'content-type': 'application/json' }),
-      json: async () => [{ id: 2, level: 4, solution: 'WORT', release_date: '2025-02-01' }],
+      json: async () => [
+        { id: 2, level: 4, solution: 'WORT', release_date: '2025-02-01' },
+      ],
     });
 
     const result = await fetchLastUsedInfo({
