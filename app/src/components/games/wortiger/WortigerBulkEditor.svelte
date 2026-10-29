@@ -15,6 +15,7 @@
   } from '#lib/games/wortiger-validation.js';
   import IconHandler from '#components/icons/IconHandler.svelte';
   import { createGamesBulk } from '#lib/queries.js';
+  import { getPostgrestErrorMessage } from '#lib/postgrest-client.js';
   import { getToastState } from '#lib/toast-state.svelte.js';
   import { CONFIG_GAMES } from '#config/games.config.js';
   import { onMount } from 'svelte';
@@ -141,6 +142,7 @@
       wordSets = next;
     } catch (e) {
       console.error(e);
+      error = `Wortlisten konnten nicht geladen werden: ${getPostgrestErrorMessage(e)}`;
     } finally {
       if (dev) {
         console.log('Loaded word sets', wordSets);
@@ -504,7 +506,7 @@
     </thead>
     <tbody>
       {#each rows as r, i (i)}
-        {const dateMsg = validateReleaseDate(r[0])}
+        {const dateMsg = $derived(validateReleaseDate(r[0]))}
         <tr>
           <td class="px-2 py-1 w-42.5">
             <input
@@ -522,10 +524,11 @@
           {#each detectedLevels as lvl, j (lvl)}
             {const expected = MAP_LEVEL_CHARACTERS[lvl]}
             {const colIndex = 1 + j}
-            {const msg = validateAgainstWordListCell(lvl, r[colIndex])}
-            {const levelDateMsg = validateLevelDateConflict(lvl, r[0], r[colIndex])}
-            {const dupMsg = validateAgainstExistingSolutions(lvl, r[colIndex])}
-            {const tableDupMsg = validateWithinTableDuplicates(r[colIndex], i, colIndex)}
+            <!-- Without $derived, declaration tags are evaluated once and miss async word list loads. -->
+            {const msg = $derived(validateAgainstWordListCell(lvl, r[colIndex]))}
+            {const levelDateMsg = $derived(validateLevelDateConflict(lvl, r[0], r[colIndex]))}
+            {const dupMsg = $derived(validateAgainstExistingSolutions(lvl, r[colIndex]))}
+            {const tableDupMsg = $derived(validateWithinTableDuplicates(r[colIndex], i, colIndex))}
             <td class="px-2 py-1">
               <input
                 type="text"

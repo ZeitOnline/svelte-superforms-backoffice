@@ -342,8 +342,10 @@
     <tbody>
       {#if games.length > 0}
         {#each games as item (item.id)}
-          {const isOneOfTwentyLatestActiveGames =
-            currentGameConfig.table.hasLiveView && latestActiveGameIds.includes(item.id)}
+          <!-- $derived keeps row values current if data refreshes while the dashboard stays mounted. -->
+          {const isOneOfTwentyLatestActiveGames = $derived(
+            currentGameConfig.table.hasLiveView && latestActiveGameIds.includes(item.id),
+          )}
 
           <tr in:blur={{ duration: 300, delay: 0, easing: cubicInOut }}>
             <!-- Generate cells dynamically from configuration -->
@@ -358,7 +360,7 @@
                         title="In der Datenbank aktiv"
                       />
                       {#if isOneOfTwentyLatestActiveGames}
-                        {const liveViewUrl = `${environmentURL}/${gameName}/#${item.id}`}
+                        {const liveViewUrl = $derived(`${environmentURL}/${gameName}/#${item.id}`)}
                         <a
                           title={`Das Spiel mit ID ${item.id} im ${currentGameConfig.label} anschauen`}
                           target="_blank"
@@ -374,14 +376,15 @@
                   {/if}
                 {:else if gameName === 'spelling-bee' && column.key === 'wordcloud'}
                   <HighlightedText segments={renderCellContent(item, column)} />
-                  {const solutionsForGame = (item as GameSpellingBeeComplete).game_solution ?? []}
-                  {const maxPoints = solutionsForGame.reduce(
-                    (max, current) => Math.max(max, current.points),
-                    0,
+                  {const solutionsForGame = $derived(
+                    (item as GameSpellingBeeComplete).game_solution ?? [],
+                  )}
+                  {const maxPoints = $derived(
+                    solutionsForGame.reduce((max, current) => Math.max(max, current.points), 0),
                   )}
 
-                  {const wordsWithMaxPoints = solutionsForGame.filter(
-                    solution => solution.points === maxPoints,
+                  {const wordsWithMaxPoints = $derived(
+                    solutionsForGame.filter(solution => solution.points === maxPoints),
                   )}
                   <br />
                   <span class="flex text-z-ds-12">
@@ -413,7 +416,9 @@
             <td>
               <div class="flex justify-end gap-z-ds-4">
                 {#if gameName === 'spelling-bee' && isSpellingBeeGame(item)}
-                  {const solutionsForGame = (item as GameSpellingBeeComplete).game_solution ?? []}
+                  {const solutionsForGame = $derived(
+                    (item as GameSpellingBeeComplete).game_solution ?? [],
+                  )}
 
                   {#if solutionsForGame.length > 0}
                     <button
@@ -433,8 +438,8 @@
                   {/if}
                 {/if}
                 {#if gameName === 'wortgeflecht' && isWortgeflechtGame(item)}
-                  {const wordsForGame = ((item as GameWortgeflechtComplete).game_word ?? []).map(
-                    entry => entry.word,
+                  {const wordsForGame = $derived(
+                    ((item as GameWortgeflechtComplete).game_word ?? []).map(entry => entry.word),
                   )}
 
                   {#if wordsForGame.length > 0}
