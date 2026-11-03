@@ -37,14 +37,33 @@ jobs:
           environment: ${{ env.ENVIRONMENT }}
           gar_docker_auth: true
 
-      - name: Build and push image
+      - name: Build image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: Dockerfile
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.sha }}
+
+      - name: Scan image
+        uses: ZeitOnline/sysdig-scan-action@67b45f2f91a3205a0876a45f89e3cd9d36c55c41 # v1.3.0
+        with:
+          gha_vault_role: ${{ steps.baseproject.outputs.gha_vault_role }}
+          image_tag: ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.sha }}
+          stop_on_failed_policy_eval: false # report only until the images pass the policy
+
+      - name: Publish image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           file: Dockerfile
           push: true
           cache-from: type=gha
-          cache-to: type=gha,mode=max
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ github.ref_name }}
