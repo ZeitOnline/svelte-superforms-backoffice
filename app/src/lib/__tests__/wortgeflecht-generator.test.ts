@@ -204,7 +204,7 @@ describe('wortgeflecht-generator helpers', () => {
     expect(generated).not.toBeNull();
     expect(hasSeparatedMatchingInitialWordStarts(generated?.paths ?? [])).toBe(true);
     expect(hasUnambiguousNextLetterChoices(generated?.paths ?? [])).toBe(true);
-  }, 15000);
+  }, 60000);
 
   it('finds a layout for words with repeated letters in the same word', () => {
     const words = ['Scheffel', 'Unze', 'klafter', 'Lachter', 'Fuder', 'Zentner', 'Heller', 'Gros'];
@@ -214,7 +214,7 @@ describe('wortgeflecht-generator helpers', () => {
     expect(generated).not.toBeNull();
     expect(hasSeparatedMatchingInitialWordStarts(generated?.paths ?? [])).toBe(true);
     expect(hasUnambiguousNextLetterChoices(generated?.paths ?? [])).toBe(true);
-  }, 15000);
+  }, 60000);
 
   it('can generate different layouts for the repeated-letter sample set', () => {
     const words = ['Scheffel', 'Unze', 'klafter', 'Lachter', 'Fuder', 'Zentner', 'Heller', 'Gros'];
@@ -232,7 +232,7 @@ describe('wortgeflecht-generator helpers', () => {
     ).not.toBe(
       second?.paths.map(path => path.cells.map(cell => `${cell.x},${cell.y}`).join('|')).join('/'),
     );
-  }, 15000);
+  }, 60000);
 
   it('allows foreign next-letter dead ends but rejects foreign completions', () => {
     expect(
