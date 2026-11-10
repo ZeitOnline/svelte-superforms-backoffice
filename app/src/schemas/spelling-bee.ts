@@ -8,7 +8,10 @@ import {
   type SpellingBeeSolutionIssue,
   type SpellingBeeType,
 } from '#lib/games/spelling-bee-letters.js';
-import { saveSpellingBeeSolutionArraySchema, saveSpellingBeeSolutionSchema } from './spelling-bee_game-solutions';
+import {
+  saveSpellingBeeSolutionArraySchema,
+  saveSpellingBeeSolutionSchema,
+} from './spelling-bee_game-solutions';
 
 export const SPELLING_BEE_SOLUTION_ISSUE_MESSAGES: Record<SpellingBeeSolutionIssue, string> = {
   too_short: ERRORS.SPELLING_BEE.SOLUTION_RULES.TOO_SHORT,
@@ -43,10 +46,10 @@ export const saveSpellingBeeGameFormSchema = z
       .string()
       .min(1, { error: ERRORS.GAME.NAME.REQUIRED })
       .max(254, { error: ERRORS.GAME.NAME.TOO_LONG }),
-    start_time: z
-      .string()
-      .min(1, { error: ERRORS.GAME.RELEASE_DATE.EMPTY }),
-    type: z.enum(SPELLING_BEE_TYPES, { error: ERRORS.SPELLING_BEE.TYPE.INVALID }).default('regular'),
+    start_time: z.string().min(1, { error: ERRORS.GAME.RELEASE_DATE.EMPTY }),
+    type: z
+      .enum(SPELLING_BEE_TYPES, { error: ERRORS.SPELLING_BEE.TYPE.INVALID })
+      .default('regular'),
     central_letter: z
       .string()
       .length(1, { error: ERRORS.SPELLING_BEE.CENTRAL_LETTER.LENGTH })

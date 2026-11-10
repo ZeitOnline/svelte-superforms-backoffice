@@ -96,10 +96,7 @@ export type GameWortgeflechtComplete = CompleteGame<GameWortgeflecht>;
 export type GameSpellingBeeComplete = CompleteGame<GameSpellingBee>;
 
 export type GameComplete =
-  | GameEckchenComplete
-  | GameWortigerComplete
-  | GameWortgeflechtComplete
-  | GameSpellingBeeComplete;
+  GameEckchenComplete | GameWortigerComplete | GameWortgeflechtComplete | GameSpellingBeeComplete;
 
 export type GameDataByType = {
   eckchen: {

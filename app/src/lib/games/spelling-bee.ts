@@ -1,5 +1,5 @@
-import type { GameComplete, SpellingBeeSolutionItem } from "#types";
-import { CONFIG_GAMES } from "#config/games.config.js";
+import type { GameComplete, SpellingBeeSolutionItem } from '#types';
+import { CONFIG_GAMES } from '#config/games.config.js';
 import { buildQueryParams, pg, requestPostgrest } from '#lib/postgrest-client.js';
 
 export const DEFAULT_SPELLING_BEE_SOLUTION = {

@@ -48,5 +48,5 @@ export const MOCK_GAMES = {
         },
       ],
     },
-  ]
-}
+  ],
+};

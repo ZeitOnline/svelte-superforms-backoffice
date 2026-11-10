@@ -1,5 +1,11 @@
 import { SHOULD_DELETE_STATE } from '#lib/queries.js';
-import { Orientation, type GameComplete, type GameEckchen, type Question, type QuestionComplete } from '#types';
+import {
+  Orientation,
+  type GameComplete,
+  type GameEckchen,
+  type Question,
+  type QuestionComplete,
+} from '#types';
 import { CONFIG_GAMES } from '../../config/games.config';
 import { buildQueryParams, pg, requestPostgrest } from '#lib/postgrest-client.js';
 
@@ -203,7 +209,11 @@ export async function createEckchenGame(data: GameComplete): Promise<GameComplet
   return game;
 }
 
-export async function getResultBodyForGame(id: number, game: GameEckchen, resultsDataBody: string[][]) {
+export async function getResultBodyForGame(
+  id: number,
+  game: GameEckchen,
+  resultsDataBody: string[][],
+) {
   const questions = await getAllQuestionsByGameId(id);
   game.questions = questions;
   resultsDataBody = questions.map((question: QuestionComplete) => {
@@ -219,5 +229,4 @@ export async function getResultBodyForGame(id: number, game: GameEckchen, result
   });
 
   return resultsDataBody;
-
 }

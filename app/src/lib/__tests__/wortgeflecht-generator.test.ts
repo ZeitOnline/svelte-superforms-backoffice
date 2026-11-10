@@ -196,9 +196,7 @@ describe('wortgeflecht-generator helpers', () => {
     expect(generated === null || hasSeparatedMatchingInitialWordStarts(generated.paths)).toBe(true);
   });
 
-  it(
-    'still finds a layout for the walz/wanderbuch sample set',
-    () => {
+  it('still finds a layout for the walz/wanderbuch sample set', () => {
     const words = ['walz', 'wanderbuch', 'stenz', 'kluft', 'geselle', 'handwerk', 'schallern'];
     vi.spyOn(Math, 'random').mockImplementation(mulberry32(0x5eed1234));
     const generated = generateWortgeflechtLayout({ words, attempts: 200 });
@@ -206,43 +204,35 @@ describe('wortgeflecht-generator helpers', () => {
     expect(generated).not.toBeNull();
     expect(hasSeparatedMatchingInitialWordStarts(generated?.paths ?? [])).toBe(true);
     expect(hasUnambiguousNextLetterChoices(generated?.paths ?? [])).toBe(true);
-    },
-    15000,
-  );
+  }, 15000);
 
-  it(
-    'finds a layout for words with repeated letters in the same word',
-    () => {
-      const words = ['Scheffel', 'Unze', 'klafter', 'Lachter', 'Fuder', 'Zentner', 'Heller', 'Gros'];
-      vi.spyOn(Math, 'random').mockImplementation(mulberry32(0x5eed2026));
-      const generated = generateWortgeflechtLayout({ words, attempts: 200 });
+  it('finds a layout for words with repeated letters in the same word', () => {
+    const words = ['Scheffel', 'Unze', 'klafter', 'Lachter', 'Fuder', 'Zentner', 'Heller', 'Gros'];
+    vi.spyOn(Math, 'random').mockImplementation(mulberry32(0x5eed2026));
+    const generated = generateWortgeflechtLayout({ words, attempts: 200 });
 
-      expect(generated).not.toBeNull();
-      expect(hasSeparatedMatchingInitialWordStarts(generated?.paths ?? [])).toBe(true);
-      expect(hasUnambiguousNextLetterChoices(generated?.paths ?? [])).toBe(true);
-    },
-    15000,
-  );
+    expect(generated).not.toBeNull();
+    expect(hasSeparatedMatchingInitialWordStarts(generated?.paths ?? [])).toBe(true);
+    expect(hasUnambiguousNextLetterChoices(generated?.paths ?? [])).toBe(true);
+  }, 15000);
 
-  it(
-    'can generate different layouts for the repeated-letter sample set',
-    () => {
-      const words = ['Scheffel', 'Unze', 'klafter', 'Lachter', 'Fuder', 'Zentner', 'Heller', 'Gros'];
-      vi.spyOn(Math, 'random').mockImplementation(mulberry32(0x5eed2026));
-      const first = generateWortgeflechtLayout({ words, attempts: 200 });
-      vi.restoreAllMocks();
+  it('can generate different layouts for the repeated-letter sample set', () => {
+    const words = ['Scheffel', 'Unze', 'klafter', 'Lachter', 'Fuder', 'Zentner', 'Heller', 'Gros'];
+    vi.spyOn(Math, 'random').mockImplementation(mulberry32(0x5eed2026));
+    const first = generateWortgeflechtLayout({ words, attempts: 200 });
+    vi.restoreAllMocks();
 
-      vi.spyOn(Math, 'random').mockImplementation(mulberry32(0x5eed2027));
-      const second = generateWortgeflechtLayout({ words, attempts: 200 });
+    vi.spyOn(Math, 'random').mockImplementation(mulberry32(0x5eed2027));
+    const second = generateWortgeflechtLayout({ words, attempts: 200 });
 
-      expect(first).not.toBeNull();
-      expect(second).not.toBeNull();
-      expect(first?.paths.map(path => path.cells.map(cell => `${cell.x},${cell.y}`).join('|')).join('/')).not.toBe(
-        second?.paths.map(path => path.cells.map(cell => `${cell.x},${cell.y}`).join('|')).join('/'),
-      );
-    },
-    15000,
-  );
+    expect(first).not.toBeNull();
+    expect(second).not.toBeNull();
+    expect(
+      first?.paths.map(path => path.cells.map(cell => `${cell.x},${cell.y}`).join('|')).join('/'),
+    ).not.toBe(
+      second?.paths.map(path => path.cells.map(cell => `${cell.x},${cell.y}`).join('|')).join('/'),
+    );
+  }, 15000);
 
   it('allows foreign next-letter dead ends but rejects foreign completions', () => {
     expect(

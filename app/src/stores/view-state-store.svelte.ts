@@ -9,4 +9,4 @@ export const view = $state({
   updateSelectedGameId(newValue: number) {
     this.selectedGameId = newValue;
   },
-})
+});

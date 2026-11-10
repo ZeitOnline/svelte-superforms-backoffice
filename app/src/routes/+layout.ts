@@ -12,92 +12,91 @@ import { isWortigerLength } from '#lib/games/wortiger.js';
 export const ssr = false;
 
 export const load: LayoutLoad = async ({ url, fetch }) => {
-    // We extract the game type after base path
-    const gameType = url.pathname.split('/')[2] as GameType;
+  // We extract the game type after base path
+  const gameType = url.pathname.split('/')[2] as GameType;
 
-    // Only run for game routes
-    const config = CONFIG_GAMES[gameType];
-    if (!config) {
-        return {};
-    }
+  // Only run for game routes
+  const config = CONFIG_GAMES[gameType];
+  if (!config) {
+    return {};
+  }
 
-    const { schemas } = config;
+  const { schemas } = config;
 
-    const pageParam = url.searchParams.get('page');
-    const searchParam = url.searchParams.get('q') ?? '';
-    const sortParam = url.searchParams.get('sort');
-    const activeParam = url.searchParams.get('active');
-    const levelParam = url.searchParams.get('level');
+  const pageParam = url.searchParams.get('page');
+  const searchParam = url.searchParams.get('q') ?? '';
+  const sortParam = url.searchParams.get('sort');
+  const activeParam = url.searchParams.get('active');
+  const levelParam = url.searchParams.get('level');
 
-    const pageSize = 10;
-    let page = Math.max(1, Number(pageParam) || 1);
-    const sort = isSortOption(sortParam) ? sortParam : DEFAULT_SORT;
-    const hasActiveColumn = config.table.columns.some(col => col.key === 'active');
-    const levelLength = Number(levelParam);
-    const normalizedLevelLength =
-        gameType === 'wortiger' && Number.isFinite(levelLength) && isWortigerLength(levelLength)
-            ? levelLength
-            : null;
-    const activeFilter =
-        hasActiveColumn && isActiveFilterOption(activeParam) ? activeParam : null;
+  const pageSize = 10;
+  let page = Math.max(1, Number(pageParam) || 1);
+  const sort = isSortOption(sortParam) ? sortParam : DEFAULT_SORT;
+  const hasActiveColumn = config.table.columns.some(col => col.key === 'active');
+  const levelLength = Number(levelParam);
+  const normalizedLevelLength =
+    gameType === 'wortiger' && Number.isFinite(levelLength) && isWortigerLength(levelLength)
+      ? levelLength
+      : null;
+  const activeFilter = hasActiveColumn && isActiveFilterOption(activeParam) ? activeParam : null;
 
-    const [generateGameForm, saveGameForm, initialGames] = await Promise.all([
-        superValidate(zod4(schemas.generateGameSchema)),
-        superValidate(zod4(schemas.saveGameFormSchema)),
-        getAllGames({
-            gameName: gameType,
-            fetch,
-            page,
-            pageSize,
-            search: searchParam,
-            sort,
-            activeFilter,
-            levelLength: normalizedLevelLength,
-        }),
-    ]);
+  const [generateGameForm, saveGameForm, initialGames] = await Promise.all([
+    superValidate(zod4(schemas.generateGameSchema)),
+    superValidate(zod4(schemas.saveGameFormSchema)),
+    getAllGames({
+      gameName: gameType,
+      fetch,
+      page,
+      pageSize,
+      search: searchParam,
+      sort,
+      activeFilter,
+      levelLength: normalizedLevelLength,
+    }),
+  ]);
 
-    let { games, total } = initialGames;
+  let { games, total } = initialGames;
 
-    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-    if (page > totalPages && totalPages > 0) {
-        page = totalPages;
-        const result = await getAllGames({
-            gameName: gameType,
-            fetch,
-            page,
-            pageSize,
-            search: searchParam,
-            sort,
-            activeFilter,
-            levelLength: normalizedLevelLength,
-        });
-        games = result.games;
-        total = result.total;
-    }
+  if (page > totalPages && totalPages > 0) {
+    page = totalPages;
+    const result = await getAllGames({
+      gameName: gameType,
+      fetch,
+      page,
+      pageSize,
+      search: searchParam,
+      sort,
+      activeFilter,
+      levelLength: normalizedLevelLength,
+    });
+    games = result.games;
+    total = result.total;
+  }
 
-    const latestActiveGameIds = hasActiveColumn
-        ? await getLatestActiveGameIds({
-              gameName: gameType,
-              fetch,
-          })
-        : [];
+  const latestActiveGameIds = hasActiveColumn
+    ? await getLatestActiveGameIds({
+        gameName: gameType,
+        fetch,
+      })
+    : [];
 
-    return {
-        gameType,
-        generateGameForm,
-        saveGameForm,
-        games,
-        gamesPage: {
-            page,
-            pageSize,
-            total,
-            totalPages,
-            search: searchParam,
-            sort,
-            activeFilter,
-            levelLength: normalizedLevelLength,
-        },
-        latestActiveGameIds,
-    };
-}
+  return {
+    gameType,
+    generateGameForm,
+    saveGameForm,
+    games,
+    gamesPage: {
+      page,
+      pageSize,
+      total,
+      totalPages,
+      search: searchParam,
+      sort,
+      activeFilter,
+      levelLength: normalizedLevelLength,
+    },
+    latestActiveGameIds,
+  };
+};

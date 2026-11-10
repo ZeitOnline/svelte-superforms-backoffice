@@ -3,7 +3,7 @@
 /* -------------------------------------------------------
   Cascade Layers Order
 ------------------------------------------------------- */
-@import "./styles/design-system.css" layer(core);
-@import "./styles/tw-tokens.css" layer(core);
-@import "./styles/elements.css" layer(components);
-@import "./styles/utilities.css" layer(utilities);
+@import './styles/design-system.css' layer(core);
+@import './styles/tw-tokens.css' layer(core);
+@import './styles/elements.css' layer(components);
+@import './styles/utilities.css' layer(utilities);

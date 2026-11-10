@@ -1,5 +1,9 @@
-import type { SpellingBeeSolutionItem, GameSpellingBeeComplete } from "#types";
-import { getDisplayWordcloud, getSpellingBeeLetters, type SpellingBeeType } from '#lib/games/spelling-bee-letters.js';
+import type { SpellingBeeSolutionItem, GameSpellingBeeComplete } from '#types';
+import {
+  getDisplayWordcloud,
+  getSpellingBeeLetters,
+  type SpellingBeeType,
+} from '#lib/games/spelling-bee-letters.js';
 
 type SpellingBeeStore = {
   gameId: number | null;
@@ -14,11 +18,13 @@ export const spellingBeeStore = $state<SpellingBeeStore>({
   word: '',
   centralLetter: '',
   type: null,
-  solutions: []
+  solutions: [],
 });
 
-
-export const toggleLegend = (item: GameSpellingBeeComplete, solutionsForGame: SpellingBeeSolutionItem) => {
+export const toggleLegend = (
+  item: GameSpellingBeeComplete,
+  solutionsForGame: SpellingBeeSolutionItem,
+) => {
   const legendSpellingBee = document.getElementById('legend-spelling-bee') as HTMLDetailsElement;
   if (legendSpellingBee) {
     legendSpellingBee.open = true;

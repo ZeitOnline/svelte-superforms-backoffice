@@ -166,9 +166,7 @@ describe('wortiger-validation', () => {
     const fetchFn = vi.fn().mockResolvedValue({
       ok: true,
       headers: new Headers({ 'content-type': 'application/json' }),
-      json: async () => [
-        { id: 2, level: 4, solution: 'WORT', release_date: '2025-02-01' },
-      ],
+      json: async () => [{ id: 2, level: 4, solution: 'WORT', release_date: '2025-02-01' }],
     });
 
     const result = await fetchLastUsedInfo({

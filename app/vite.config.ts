@@ -37,9 +37,7 @@ export default defineConfig({
     setupFiles: ['./vitest-setup.js'],
   },
   server: {
-    allowedHosts: [
-      'localhost.staging.zeit.de',
-    ],
+    allowedHosts: ['localhost.staging.zeit.de'],
     proxy: {
       '/backoffice/api/eckchen': {
         target: POSTGREST_ECKCHEN_URL,

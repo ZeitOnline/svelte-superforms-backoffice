@@ -5,7 +5,9 @@ import App from '#components/App.svelte';
 import { DEFAULT_SORT } from '#lib/game-table-utils.js';
 
 vi.mock('#lib/queries.js', () => ({
-  getAllGames: vi.fn().mockResolvedValue({ games: MOCK_GAMES.ECKCHEN, total: MOCK_GAMES.ECKCHEN.length }),
+  getAllGames: vi
+    .fn()
+    .mockResolvedValue({ games: MOCK_GAMES.ECKCHEN, total: MOCK_GAMES.ECKCHEN.length }),
 }));
 
 const fakeData = {
