@@ -27,7 +27,7 @@ Key package metadata lives in [app/package.json](app/package.json).
 ## Runtime Model
 
 - The Svelte app lives in `app/`.
-- `ssr = false` in [app/src/routes/+layout.ts](app/src/routes/+layout.ts#L10), so this is effectively a client-rendered admin app.
+- `ssr = false` in [app/src/routes/+layout.ts](app/src/routes/+layout.ts), so this is effectively a client-rendered admin app.
 - In development, SvelteKit runs under the base path `/backoffice`. This is configured in the `sveltekit()` options in [app/vite.config.ts](app/vite.config.ts#L21).
 - There is no `svelte.config.js`: all SvelteKit config lives in `app/vite.config.ts`.
 - Path aliases are subpath imports in the `imports` field of [app/package.json](app/package.json) (`#lib/*`, `#components/*`, `#config/*`, `#schemas/*`, `#stores/*`, `#types`, `#utils`, `#views`, …). Imports of `.ts` modules need the `.js` extension, e.g. `#lib/queries.js`; `.svelte` files keep theirs.
@@ -52,7 +52,7 @@ The Vite dev server proxies frontend requests to those PostgREST services throug
 - `/backoffice/api/spelling-bee`
 - `/backoffice/api/wortgeflecht`
 
-Proxy config is in [app/vite.config.ts](app/vite.config.ts#L20).
+Proxy config is in [app/vite.config.ts](app/vite.config.ts) (`server.proxy`).
 
 ## Repo Layout
 
@@ -79,7 +79,7 @@ The route tree is under [app/src/routes](app/src/routes).
 
 ## Game Configuration Contract
 
-`CONFIG_GAMES` in [app/src/config/games.config.ts](app/src/config/games.config.ts#L22) is the central source of truth for game behavior. Each game defines:
+`CONFIG_GAMES` in [app/src/config/games.config.ts](app/src/config/games.config.ts) is the central source of truth for game behavior. Each game defines:
 
 - `apiBase`
 - endpoint names
@@ -99,7 +99,7 @@ Current endpoint mappings:
 
 ## Data Access Pattern
 
-The project uses `requestPostgrest` from [app/src/lib/postgrest-client.ts](app/src/lib/postgrest-client.ts#L156) as the shared HTTP wrapper for PostgREST calls.
+The project uses `requestPostgrest` from [app/src/lib/postgrest-client.ts](app/src/lib/postgrest-client.ts) as the shared HTTP wrapper for PostgREST calls.
 
 Common conventions:
 
@@ -131,7 +131,7 @@ When adding list views, prefer server-side pagination and server-side search ove
 
 - Dictionary words live in the `dictionary` table
 - Game data is spread across `game`, `game_word`, and `game_letter`
-- The local seed dictionary is defined in [docker/init/init-db.sql](docker/init/init-db.sql#L68904)
+- The local seed dictionary is defined in [docker/init/init-db.sql](docker/init/init-db.sql) (`INSERT INTO wortgeflecht.dictionary`)
 - Dictionary ordering is expected to come from database collation on `word`
 - If seed changes are made, existing local Docker volumes must be recreated to re-run init SQL:
 
@@ -152,7 +152,7 @@ Primary commands from `app/`:
 
 Test setup:
 
-- Vitest config is in [app/vite.config.ts](app/vite.config.ts#L14)
+- Vitest config is in [app/vite.config.ts](app/vite.config.ts) (`test`)
 - Jest DOM setup is in [app/vitest-setup.js](app/vitest-setup.js#L1)
 
 Useful test locations:
